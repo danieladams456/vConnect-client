@@ -1,0 +1,9 @@
+C:\Users\Charlie\Documents\Visual Studio 2013\Projects\vConnect\vConnect\bin\Debug\vConnect.exe.config
+C:\Users\Charlie\Documents\Visual Studio 2013\Projects\vConnect\vConnect\bin\Debug\vConnect.exe
+C:\Users\Charlie\Documents\Visual Studio 2013\Projects\vConnect\vConnect\bin\Debug\vConnect.pdb
+C:\Users\Charlie\Documents\Visual Studio 2013\Projects\vConnect\vConnect\obj\Debug\vConnect-Client.csprojResolveAssemblyReference.cache
+C:\Users\Charlie\Documents\Visual Studio 2013\Projects\vConnect\vConnect\obj\Debug\vConnect.Form1.resources
+C:\Users\Charlie\Documents\Visual Studio 2013\Projects\vConnect\vConnect\obj\Debug\vConnect.Properties.Resources.resources
+C:\Users\Charlie\Documents\Visual Studio 2013\Projects\vConnect\vConnect\obj\Debug\vConnect-Client.csproj.GenerateResource.Cache
+C:\Users\Charlie\Documents\Visual Studio 2013\Projects\vConnect\vConnect\obj\Debug\vConnect.exe
+C:\Users\Charlie\Documents\Visual Studio 2013\Projects\vConnect\vConnect\obj\Debug\vConnect.pdb
