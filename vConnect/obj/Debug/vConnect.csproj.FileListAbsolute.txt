@@ -7,3 +7,14 @@ C:\Users\Charlie\Documents\Visual Studio 2013\Projects\vConnect\vConnect\bin\Deb
 C:\Users\Charlie\Documents\Visual Studio 2013\Projects\vConnect\vConnect\obj\Debug\vConnect.exe
 C:\Users\Charlie\Documents\Visual Studio 2013\Projects\vConnect\vConnect\obj\Debug\vConnect.pdb
 C:\Users\Charlie\Documents\Visual Studio 2013\Projects\vConnect\vConnect\obj\Debug\vConnect.Form1.resources
+C:\Users\Public\Documents\vConnect-client\vConnect\bin\Debug\vConnect.exe.config
+C:\Users\Public\Documents\vConnect-client\vConnect\obj\Debug\vConnect.exe
+C:\Users\Public\Documents\vConnect-client\vConnect\obj\Debug\vConnect.pdb
+C:\Users\Public\Documents\vConnect-client\vConnect\bin\Debug\vConnect.exe
+C:\Users\Public\Documents\vConnect-client\vConnect\bin\Debug\vConnect.pdb
+C:\Users\Public\Documents\vConnect-client\vConnect\obj\Debug\vConnect.csprojResolveAssemblyReference.cache
+C:\Users\Public\Documents\vConnect-client\vConnect\obj\Debug\vConnect.Form1.resources
+C:\Users\Public\Documents\vConnect-client\vConnect\obj\Debug\vConnect.Properties.Resources.resources
+C:\Users\Public\Documents\vConnect-client\vConnect\obj\Debug\vConnect.csproj.GenerateResource.Cache
+C:\Users\Public\Documents\vConnect-client\vConnect\bin\Debug\InTheHand.Net.Personal.dll
+C:\Users\Public\Documents\vConnect-client\vConnect\bin\Debug\InTheHand.Net.Personal.xml
