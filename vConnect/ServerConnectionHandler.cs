@@ -17,6 +17,10 @@ namespace vConnect
         private string ipAddress = "";
         private int portNumber = 0;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         bool EstablishServerConnection()
         {
             return true;
