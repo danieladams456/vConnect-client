@@ -20,16 +20,21 @@ namespace vConnect
 
     public partial class Form1 : Form
     {
+        BluetoothConnectionHandler BT_Connect = new BluetoothConnectionHandler();
+
+
+
         public Form1()
         {
             InitializeComponent();
+ 
            
            
         }
 
         private void cancel_button_Click(object sender, EventArgs e)
         {
-
+            Application.Exit();
         }
 
         private void textBox2_TextChanged(object sender, EventArgs e)
@@ -123,6 +128,8 @@ namespace vConnect
             }
             BluetoothDeviceInfo device = dlg.SelectedDevice;
             BluetoothAddress addr = device.DeviceAddress;
+            label5.Text = device.DeviceName;
+            BT_Connect.changeBTAddress(addr);
             /*    // bool isPaired = false;
            var serviceClass = new Guid();
            serviceClass = BluetoothService.SerialPort;

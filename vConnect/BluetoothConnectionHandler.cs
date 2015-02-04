@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using InTheHand.Net;
 
 namespace vConnect
 {
@@ -14,6 +15,13 @@ namespace vConnect
         private string deviceID = "";
         private bool BTConnectionStatus = false;
         private string erorrMessageToUI = "";
+        // new addition!!
+        private BluetoothAddress bluetooth_Address;
+
+        public void changeBTAddress(BluetoothAddress addr)
+        {
+            bluetooth_Address = addr;
+        }
 
         bool EstablishBTConnection()
         {

@@ -52,6 +52,7 @@
             this.device_Status_Label = new System.Windows.Forms.Label();
             this.refresh_button = new System.Windows.Forms.Button();
             this.browse_button = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // trayIcon
@@ -256,7 +257,7 @@
             // 
             // browse_button
             // 
-            this.browse_button.Location = new System.Drawing.Point(138, 198);
+            this.browse_button.Location = new System.Drawing.Point(138, 217);
             this.browse_button.Name = "browse_button";
             this.browse_button.Size = new System.Drawing.Size(75, 23);
             this.browse_button.TabIndex = 23;
@@ -264,11 +265,21 @@
             this.browse_button.UseVisualStyleBackColor = true;
             this.browse_button.Click += new System.EventHandler(this.browse_button_Click);
             // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(139, 198);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(35, 13);
+            this.label5.TabIndex = 24;
+            this.label5.Text = "label5";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(543, 334);
+            this.Controls.Add(this.label5);
             this.Controls.Add(this.browse_button);
             this.Controls.Add(this.refresh_button);
             this.Controls.Add(this.device_Status_Label);
@@ -322,6 +333,7 @@
         private System.Windows.Forms.Label device_Status_Label;
         private System.Windows.Forms.Button refresh_button;
         private System.Windows.Forms.Button browse_button;
+        private System.Windows.Forms.Label label5;
 
     }
 }
