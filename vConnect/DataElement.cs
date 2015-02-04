@@ -22,6 +22,9 @@ namespace vConnect
 
         public void FormatData()
         {
+            //
+            // Place code here to package/format the data and add it to the cache.
+            //
             return;
         }
 

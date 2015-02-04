@@ -23,8 +23,8 @@ namespace vConnect
         public Form1()
         {
             InitializeComponent();
-           
-           
+            //this.WindowState = FormWindowState.Minimized;
+            
         }
 
         private void cancel_button_Click(object sender, EventArgs e)
