@@ -13,15 +13,9 @@ namespace vConnect
     public class BluetoothConnectionHandler
     {
         private string deviceID = "";
-        private bool BTConnectionStatus = false;
-        private string erorrMessageToUI = "";
-        // new addition!!
-        private BluetoothAddress bluetooth_Address;
-
-        public void changeBTAddress(BluetoothAddress addr)
-        {
-            bluetooth_Address = addr;
-        }
+        private bool bTConnectionStatus = false;
+        private string errorMessageToUI = "";
+        private BluetoothAddress bluetoothAddress;
 
         bool EstablishBTConnection()
         {
@@ -33,15 +27,17 @@ namespace vConnect
             return true;
         }
 
-        bool CheckBTConnection()
-        {
-            return BTConnectionStatus;
-        }
-
         bool SendWindowsErrorMessage()
         {
             return true;
         }
+
+        // C# Style Accessors. Refer to DataElement.cs for example usage.
+
+        public string DeviceID { get { return deviceID; } set { deviceID = value; } }
+        public bool BTConnectionStatus { get { return bTConnectionStatus; } set { bTConnectionStatus = value; } }
+        public string ErorrMessageToUI { get { return errorMessageToUI; } set { errorMessageToUI = value; } }
+        public BluetoothAddress BluetoothAddress { get { return bluetoothAddress; } set { bluetoothAddress = value; } }
 
 
     }

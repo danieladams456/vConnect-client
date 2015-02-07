@@ -201,12 +201,11 @@
             // server_status_label
             // 
             this.server_status_label.AutoSize = true;
-            this.server_status_label.Location = new System.Drawing.Point(210, 123);
+            this.server_status_label.Location = new System.Drawing.Point(213, 123);
             this.server_status_label.Name = "server_status_label";
             this.server_status_label.Size = new System.Drawing.Size(130, 13);
             this.server_status_label.TabIndex = 17;
             this.server_status_label.Text = "Connected/Disconnected";
-            this.server_status_label.Click += new System.EventHandler(this.label8_Click);
             // 
             // server_test
             // 

@@ -25,9 +25,6 @@ namespace vConnect
         {
             InitializeComponent();
 
-            BluetoothConnectionHandler BTConnection = new BluetoothConnectionHandler();
-            ServerConnectionHandler serverConnection = new ServerConnectionHandler();
-            
             // This function begins requesting the car for data.
             // requestDataForElements();
         }
@@ -134,10 +131,11 @@ namespace vConnect
             string value = "Port Number";
             if (InputBox("New Port Number", "New Port Number (1-65535):", ref value) == DialogResult.OK)
             {
+                // Bounds checking for a valid port number
                 if (Int32.Parse(value) > 0 && Int32.Parse(value) < 65535)
                 {
                     port_number.Text = value;
-                    serverConnection.setPortNumber(Int32.Parse(value));
+                    serverConnection.PortNumber = Int32.Parse(value);
                 }
             }
         }
@@ -156,15 +154,9 @@ namespace vConnect
 
                 /* Should probably validate IP address here... */
 
-                serverConnection.setIPAddress(value);
+                serverConnection.IPAddress = value;
             }
         }
-
-        private void label8_Click(object sender, EventArgs e)
-        {
-
-        }
-
 
         // Refresh button for BT Devices
         private void refresh_button_Click(object sender, EventArgs e)
@@ -188,7 +180,7 @@ namespace vConnect
 
         private void ok_button_Click(object sender, EventArgs e)
         {
-
+            Application.Exit();
         }
 
         private void server_test_Click(object sender, EventArgs e)
@@ -207,7 +199,7 @@ namespace vConnect
             BluetoothDeviceInfo device = dlg.SelectedDevice;
             BluetoothAddress addr = device.DeviceAddress;
             label5.Text = device.DeviceName;
-            BTConnection.changeBTAddress(addr);
+            BTConnection.BluetoothAddress = addr;
             /*    // bool isPaired = false;
            var serviceClass = new Guid();
            serviceClass = BluetoothService.SerialPort;

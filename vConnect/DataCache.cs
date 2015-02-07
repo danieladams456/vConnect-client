@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml;
+//using Newtonsoft.Json;
 
 namespace vConnect
 {
@@ -13,8 +13,8 @@ namespace vConnect
     /// </summary>
     class DataCache
     {
-        private XmlDocument cache = new XmlDocument();
-
+        // JSON Object Datatype
+        
         bool AddElementToCache()
         {
             return true;

@@ -46,27 +46,18 @@ namespace vConnect
             return true;
         }
 
-        public bool setIPAddress(string newIP)
-        {
-            ipAddress = newIP;
 
-            if (newIP.Length > 0)
-                return true;
-            else
-                return false;
-        }
+        // C# Style Accessors (get and set)
+        // Refer to DataElement.cs accessors for method of using them.
 
-        public bool setPortNumber(int newPortNum)
-        {
-            if (newPortNum > 0 && newPortNum < 65535)
-            {
-                portNumber = newPortNum;
-                return true;
-            }
-            else
-                return false;
-        }
+        public bool ServerConnectionStatus { get { return serverConnectionStatus; } set { serverConnectionStatus = value; } }
 
+        public string IPAddress { get { return ipAddress; } set { ipAddress = value; } }
 
+        public int PortNumber { get { return portNumber; } set { portNumber = value; } }
+
+        public string ErrorMessageToServer { get { return errorMessageToServer; } set { errorMessageToServer = value; } }
+
+        public string ErrorMessageToClient { get { return errorMessageToClient; } set { errorMessageToClient = value; } }
     }
 }

@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace vConnect
 {
+    /// <summary>
+    /// This class describes a data element received from the car via BT.
+    /// </summary>
     public class DataElement
     {
-        /// <summary>
-        /// This class describes a data element received from the car via BT.
-        /// </summary>
         private string obdPID = "";
         private string name = "";
         private int returnDataSize = 0;
@@ -76,7 +76,7 @@ namespace vConnect
     			AttemptToReestalblishBTConnection
 			    requestDataFromCar(obdPID,returnDataSize);
 		    }
-             * */
+            */
 
             return true;
             
@@ -96,14 +96,20 @@ namespace vConnect
             return true;
         }
 
-        public string getobdPID()
-        {
-            return obdPID;
-        }
+        // The following are C#'s way of using accessors (get and set). Call them with
+        // Set:
+        //      object.ObdPID = "02"
+        // Get:
+        //      object.ObdPID
 
-        public int getReturnDataSize()
-        {
-            return returnDataSize;
-        }
+        public string ObdPID { get { return obdPID; } set { obdPID = value; } }
+
+        public string Name { get { return name; } set { name = value; } }
+
+        public int ReturnDataSize { get { return returnDataSize; } set { returnDataSize = value; } }
+
+        public byte[] ReturnData { get { return returnData; } set { returnData = value; } }
+
+
     }
 }
