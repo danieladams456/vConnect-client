@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace vConnect
 {
-    class DataElement
+    public class DataElement
     {
         /// <summary>
         /// This class describes a data element received from the car via BT.
@@ -17,7 +17,7 @@ namespace vConnect
         private byte[] returnData;
 
         // This connection gets passed from the caller. It is the current connection.
-        BluetoothConnectionHandler BTConnection;
+        public BluetoothConnectionHandler BTConnection;
 
         // This defines the largest potential size of return data from the car. It should never
         //  really even get close to this value

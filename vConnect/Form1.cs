@@ -18,7 +18,7 @@ namespace vConnect
 
     public partial class Form1 : Form
     {
-        BluetoothConnectionHandler BTConnection;
+        public BluetoothConnectionHandler BTConnection;
   
         public Form1()
         {
@@ -126,7 +126,7 @@ namespace vConnect
             BluetoothDeviceInfo device = dlg.SelectedDevice;
             BluetoothAddress addr = device.DeviceAddress;
             label5.Text = device.DeviceName;
-            BT_Connect.changeBTAddress(addr);
+            BTConnection.changeBTAddress(addr);
             /*    // bool isPaired = false;
            var serviceClass = new Guid();
            serviceClass = BluetoothService.SerialPort;

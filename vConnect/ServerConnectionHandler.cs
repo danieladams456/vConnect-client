@@ -36,17 +36,17 @@ namespace vConnect
             return serverConnectionStatus;
         }
 
-        bool sendServerErrorMessage()
+        bool SendServerErrorMessage()
         {
             return true;
         }
 
-        bool sendClientErrorMessage()
+        bool SendClientErrorMessage()
         {
             return true;
         }
 
-        bool changeIPAddress(string newIP)
+        bool setIPAddress(string newIP)
         {
             ipAddress = newIP;
 
@@ -56,7 +56,7 @@ namespace vConnect
                 return false;
         }
 
-        bool changePortNumber(int newPortNum)
+        bool setPortNumber(int newPortNum)
         {
             if (newPortNum > 0 && newPortNum < 65535)
             {

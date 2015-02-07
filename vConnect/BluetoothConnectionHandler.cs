@@ -10,7 +10,7 @@ namespace vConnect
     /// <summary>
     /// This class manages the BT connection.
     /// </summary>
-    class BluetoothConnectionHandler
+    public class BluetoothConnectionHandler
     {
         private string deviceID = "";
         private bool BTConnectionStatus = false;
