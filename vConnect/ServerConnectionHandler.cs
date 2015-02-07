@@ -9,7 +9,7 @@ namespace vConnect
     /// <summary>
     /// This class manages the application's connection to the server.
     /// </summary>
-    class ServerConnectionHandler
+    public class ServerConnectionHandler
     {
         private bool serverConnectionStatus = false;
         private string errorMessageToServer = "";
@@ -46,7 +46,7 @@ namespace vConnect
             return true;
         }
 
-        bool setIPAddress(string newIP)
+        public bool setIPAddress(string newIP)
         {
             ipAddress = newIP;
 
@@ -56,7 +56,7 @@ namespace vConnect
                 return false;
         }
 
-        bool setPortNumber(int newPortNum)
+        public bool setPortNumber(int newPortNum)
         {
             if (newPortNum > 0 && newPortNum < 65535)
             {
