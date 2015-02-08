@@ -35,8 +35,6 @@
             this.cancel_button = new System.Windows.Forms.Button();
             this.apply_button = new System.Windows.Forms.Button();
             this.ok_button = new System.Windows.Forms.Button();
-            this.BT_Devices = new System.Windows.Forms.ListBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
@@ -50,7 +48,6 @@
             this.BT_ID = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.device_Status_Label = new System.Windows.Forms.Label();
-            this.refresh_button = new System.Windows.Forms.Button();
             this.browse_button = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.SuspendLayout();
@@ -102,24 +99,6 @@
             this.ok_button.UseVisualStyleBackColor = true;
             this.ok_button.Click += new System.EventHandler(this.ok_button_Click);
             // 
-            // BT_Devices
-            // 
-            this.BT_Devices.FormattingEnabled = true;
-            this.BT_Devices.Location = new System.Drawing.Point(12, 198);
-            this.BT_Devices.Name = "BT_Devices";
-            this.BT_Devices.Size = new System.Drawing.Size(120, 95);
-            this.BT_Devices.TabIndex = 4;
-            this.BT_Devices.SelectedIndexChanged += new System.EventHandler(this.BT_Devices_SelectedIndexChanged);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 182);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(109, 13);
-            this.label1.TabIndex = 5;
-            this.label1.Text = "Available BT Devices";
-            // 
             // label2
             // 
             this.label2.AutoSize = true;
@@ -128,7 +107,6 @@
             this.label2.Size = new System.Drawing.Size(95, 13);
             this.label2.TabIndex = 7;
             this.label2.Text = "Server IP Address:";
-            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // label3
             // 
@@ -147,7 +125,6 @@
             this.label4.Size = new System.Drawing.Size(74, 13);
             this.label4.TabIndex = 10;
             this.label4.Text = "Server Status:";
-            this.label4.Click += new System.EventHandler(this.label4_Click);
             // 
             // port_number
             // 
@@ -157,7 +134,6 @@
             this.port_number.Size = new System.Drawing.Size(103, 13);
             this.port_number.TabIndex = 12;
             this.port_number.Text = "Current Port Number";
-            this.port_number.Click += new System.EventHandler(this.label5_Click);
             // 
             // server_IP
             // 
@@ -167,7 +143,6 @@
             this.server_IP.Size = new System.Drawing.Size(129, 13);
             this.server_IP.TabIndex = 13;
             this.server_IP.Text = "Current Server IP Address";
-            this.server_IP.Click += new System.EventHandler(this.label6_Click);
             // 
             // edit_port
             // 
@@ -244,19 +219,9 @@
             this.device_Status_Label.TabIndex = 21;
             this.device_Status_Label.Text = "Connected/Disconnected";
             // 
-            // refresh_button
-            // 
-            this.refresh_button.Location = new System.Drawing.Point(12, 299);
-            this.refresh_button.Name = "refresh_button";
-            this.refresh_button.Size = new System.Drawing.Size(75, 23);
-            this.refresh_button.TabIndex = 22;
-            this.refresh_button.Text = "Refresh";
-            this.refresh_button.UseVisualStyleBackColor = true;
-            this.refresh_button.Click += new System.EventHandler(this.refresh_button_Click);
-            // 
             // browse_button
             // 
-            this.browse_button.Location = new System.Drawing.Point(138, 217);
+            this.browse_button.Location = new System.Drawing.Point(12, 165);
             this.browse_button.Name = "browse_button";
             this.browse_button.Size = new System.Drawing.Size(75, 23);
             this.browse_button.TabIndex = 23;
@@ -267,11 +232,12 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(139, 198);
+            this.label5.Location = new System.Drawing.Point(12, 149);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(35, 13);
+            this.label5.Size = new System.Drawing.Size(131, 13);
             this.label5.TabIndex = 24;
-            this.label5.Text = "label5";
+            this.label5.Text = "Connect to ODBII Device:";
+           
             // 
             // Form1
             // 
@@ -280,7 +246,6 @@
             this.ClientSize = new System.Drawing.Size(543, 334);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.browse_button);
-            this.Controls.Add(this.refresh_button);
             this.Controls.Add(this.device_Status_Label);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.BT_ID);
@@ -294,8 +259,6 @@
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.BT_Devices);
             this.Controls.Add(this.ok_button);
             this.Controls.Add(this.apply_button);
             this.Controls.Add(this.cancel_button);
@@ -315,8 +278,6 @@
         private System.Windows.Forms.Button cancel_button;
         private System.Windows.Forms.Button apply_button;
         private System.Windows.Forms.Button ok_button;
-        private System.Windows.Forms.ListBox BT_Devices;
-        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
@@ -330,7 +291,6 @@
         private System.Windows.Forms.Label BT_ID;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label device_Status_Label;
-        private System.Windows.Forms.Button refresh_button;
         private System.Windows.Forms.Button browse_button;
         private System.Windows.Forms.Label label5;
 

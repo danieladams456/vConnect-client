@@ -80,46 +80,31 @@ namespace vConnect
             return dialogResult;
 
         }
-
+        /// <summary>
+        /// This button will close the setting GUI without applying any changes made.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void cancel_button_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
 
-        private void textBox2_TextChanged(object sender, EventArgs e)
-        {
-
-        }
+        
 
         private void Form1_Load(object sender, EventArgs e)
         {
 
         }
 
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
+        
 
         private void help_button_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void label4_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label5_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label6_Click(object sender, EventArgs e)
-        {
-
-        }
+       
         
         /// <summary>
         ///  Allows the user to enter a new port number using the GUI
@@ -158,24 +143,13 @@ namespace vConnect
             }
         }
 
-        // Refresh button for BT Devices
-        private void refresh_button_Click(object sender, EventArgs e)
-        {
-            var cli = new BluetoothClient();
-            BluetoothDeviceInfo[] peers = cli.DiscoverDevices();
-            this.BT_Devices.DisplayMember = "DeviceName";
-            this.BT_Devices.ValueMember = null;
-            this.BT_Devices.DataSource = peers;
-        }
+        
 
-        private void BT_Devices_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            
-        }
-
+       
         private void apply_button_Click(object sender, EventArgs e)
         {
-
+            /*(MessageBox.Show("The calculations are complete", "My Application",
+/MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);*/
         }
 
         private void ok_button_Click(object sender, EventArgs e)
@@ -200,6 +174,19 @@ namespace vConnect
             BluetoothAddress addr = device.DeviceAddress;
             label5.Text = device.DeviceName;
             BTConnection.BluetoothAddress = addr;
+
+            Guid serviceClass;
+            serviceClass = BluetoothService.SerialPort;
+            var ep = new BluetoothEndPoint(addr, serviceClass);
+            var cli = new BluetoothClient();
+            cli.Connect(ep);
+            if (cli.Connected == true)
+            {
+                MessageBox.Show("We're coonected!", "My Application",
+MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+            }
+
+
             /*    // bool isPaired = false;
            var serviceClass = new Guid();
            serviceClass = BluetoothService.SerialPort;
@@ -257,6 +244,8 @@ namespace vConnect
             accel.RequestDataFromCar();
             dist_with_MIL.RequestDataFromCar();
         }
+
+      
 
     }
 
