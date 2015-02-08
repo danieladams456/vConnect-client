@@ -68,7 +68,7 @@ namespace vConnect
                 peerStream.Read(rawTest, 0, rawTest.Length);
 
                 byte[] test = new byte[20];
-                Buffer.BlockCopy(rawTest, 2, test, 0, 15);
+                Buffer.BlockCopy(rawTest, 10, test, 0, 4);
                 string codeString = System.Text.Encoding.ASCII.GetString(test);
 
                 MessageBox.Show(codeString, "My Application",
