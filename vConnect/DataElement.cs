@@ -67,10 +67,14 @@ namespace vConnect
                 
                 peerStream.Read(rawTest, 0, rawTest.Length);
 
-                byte[] test = new byte[20];
-                Buffer.BlockCopy(rawTest, 10, test, 0, 4);
-                string codeString = System.Text.Encoding.ASCII.GetString(test);
+               //Skips repeated bytes. 
+                Buffer.BlockCopy(rawTest, 10, returnData, 0, 4);
 
+
+                // For testing.
+                string codeString = System.Text.Encoding.ASCII.GetString(returnData);
+                 
+                
                 MessageBox.Show(codeString, "My Application",
                     MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             }
@@ -80,29 +84,7 @@ namespace vConnect
                  MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
               
               }
-             
-
-        
-            /*
-           
-               
-			
-			
-			    // Since the data received back repeats the mode (e.g. Mode 01) and the PID (e.g. "0D"), we will have a 
-			    // 	temporary holding space for the response.
-			    // 	For example, the response will be like "410D17".
-			    int recievedRaw = 0;
-			    recievedRaw = listenForResponse();
-
-			    // Depending on the size of the actual return data we are looking for, shift the raw response the given
-			    // 	number of bytes and store it in returnData. We do not want the first two bytes (e.g. 410D)
-			    // 	See Maciek's answer on http://stackoverflow.com/questions/1318933/c-sharp-int-to-byte for more details.
-			    returnData = (byte)(recievedRaw >> 8*getReturnDataSize());	
-		
-		    }
-		   
-            */
-
+              
             return true;
             
         }
@@ -138,3 +120,25 @@ namespace vConnect
 
     }
 }
+
+
+
+/*
+           
+               
+			
+			
+               // Since the data received back repeats the mode (e.g. Mode 01) and the PID (e.g. "0D"), we will have a 
+               // 	temporary holding space for the response.
+               // 	For example, the response will be like "410D17".
+               int recievedRaw = 0;
+               recievedRaw = listenForResponse();
+
+               // Depending on the size of the actual return data we are looking for, shift the raw response the given
+               // 	number of bytes and store it in returnData. We do not want the first two bytes (e.g. 410D)
+               // 	See Maciek's answer on http://stackoverflow.com/questions/1318933/c-sharp-int-to-byte for more details.
+               returnData = (byte)(recievedRaw >> 8*getReturnDataSize());	
+		
+           }
+		   
+           */
