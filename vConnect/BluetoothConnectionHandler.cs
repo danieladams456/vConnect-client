@@ -1,9 +1,14 @@
 ﻿using System;
+using System.IO;
+
+using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using InTheHand.Net;
+using InTheHand.Net.Bluetooth;
+using InTheHand.Net.Sockets;
 
 namespace vConnect
 {
@@ -16,18 +21,67 @@ namespace vConnect
         private bool bTConnectionStatus = false;
         private string errorMessageToUI = "";
         private BluetoothAddress bluetoothAddress;
+        private BluetoothEndPoint endpoint;
+        private Guid serviceClass;
+        private BluetoothClient client;
+        private string PIN = "1234";
 
-        bool EstablishBTConnection()
+        public bool EstablishBTConnection()
         {
-            return true;
+            serviceClass = BluetoothService.SerialPort;
+            endpoint = new BluetoothEndPoint(bluetoothAddress, serviceClass);
+            client = new BluetoothClient();
+            
+            // can keep this static for our purposes, but should probably implement 
+            // a method for user specified PIN just in case. 
+            
+            client.SetPin(PIN);
+            client.Connect(endpoint);
+
+            // Lil message for testing. 
+            if (client.Connected)
+            {
+                MessageBox.Show("We're connected!", "My Application",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                return true;
+            }
+
+            Stream peerStream = client.GetStream();
+            string stuff = "010D\r";
+            byte[] test = System.Text.Encoding.ASCII.GetBytes(stuff);
+            peerStream.Write(test, 0, test.Length);
+
+            System.Threading.Thread.Sleep(10000);
+
+            byte[] readtest = new byte[200];
+            peerStream.Read(readtest, 0, 199);
+            string da = "not a code";
+            da = System.Text.Encoding.ASCII.GetString(readtest);
+            MessageBox.Show(da, "My Application",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+
+            return false;
         }
 
-        bool CloseBTConnection()
+
+
+        /// <summary>
+        /// Closes the current BT Connection, if one exists. 
+        /// </summary>
+        /// <returns></returns>
+        public bool CloseBTConnection()
         {
-            return true;
+            if (client.Connected) { client.Close(); return true; }
+            else
+            {
+                MessageBox.Show("No connection to close.", "My Application",
+                  MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                return false;
+            }
+
         }
 
-        bool SendWindowsErrorMessage()
+        public bool SendWindowsErrorMessage()
         {
             return true;
         }

@@ -26,6 +26,9 @@ namespace vConnect
         {
             InitializeComponent();
 
+            System.Threading.Thread.Sleep(5000);
+            
+
             // This function begins requesting the car for data.
             // requestDataForElements();
         }
@@ -93,16 +96,13 @@ namespace vConnect
 
         
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
+     
         
 
         private void help_button_Click(object sender, EventArgs e)
         {
-
+            MessageBox.Show("Sorry, this button isn't quite helpful yet...", "My Application",
+                  MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
         }
 
        
@@ -163,7 +163,11 @@ namespace vConnect
 
         }
 
-       
+       /// <summary>
+       /// Button opens up a Dialog box to select a BT device to attempt to connect to.
+       /// </summary>
+       /// <param name="sender"></param>
+       /// <param name="e"></param>
         private void browse_button_Click(object sender, EventArgs e)
         {
            
@@ -177,16 +181,11 @@ namespace vConnect
             BluetoothAddress BTaddr = device.DeviceAddress;
             label5.Text = device.DeviceName;
             BTConnection.BluetoothAddress = BTaddr;
-            Guid serviceClass = BluetoothService.SerialPort;
-            var ep = new BluetoothEndPoint(BTaddr, serviceClass);
-            var cli = new BluetoothClient();
-            cli.SetPin("1234");
-            cli.Connect(ep);
-            if (cli.Connected)
-            {
-                MessageBox.Show("We're connected!", "My Application",
-                    MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
-            }
+            
+            // Can call this elsewhere, just have it here for now. 
+            BTConnection.EstablishBTConnection();
+
+
             
          }
 
