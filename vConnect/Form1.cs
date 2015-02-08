@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Timers;
 using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,6 +15,7 @@ using InTheHand.Net.Ports;
 using InTheHand.Net.Bluetooth;
 using InTheHand.Windows.Forms;
 
+
 namespace vConnect
 {    
 
@@ -21,16 +23,98 @@ namespace vConnect
     {
         BluetoothConnectionHandler BTConnection = new BluetoothConnectionHandler();
         ServerConnectionHandler serverConnection = new ServerConnectionHandler();
-        DataElement firstDataElement = new DataElement();
 
         public Form1()
         {
             InitializeComponent();
 
+            // This will eventauly try to connect to BT device address in a config file, but will do this for now.
+            var dlg = new SelectBluetoothDeviceDialog();
+            DialogResult result = dlg.ShowDialog(this);
+            if (result != DialogResult.OK)
+            {
+                return;
+            }
+            BluetoothDeviceInfo device = dlg.SelectedDevice;
+            BluetoothAddress BTaddr = device.DeviceAddress;
+            label5.Text = device.DeviceName;
+            BTConnection.BluetoothAddress = BTaddr;
 
+            BTConnection.EstablishBTConnection();
+
+
+
+            System.Timers.Timer myTimer = new System.Timers.Timer(60000);
+            myTimer.Elapsed += new ElapsedEventHandler(requestDataForElements);
+
+            myTimer.Enabled = true;
+
+           
             // This function begins requesting the car for data.
             // requestDataForElements();
         }
+
+        /// <summary>
+        /// This function serves as the launching point for requesting data.
+        ///     Note: These objects will not be explicitly named in the future.
+        /// </summary>
+        private void requestDataForElements(object sender, ElapsedEventArgs e)
+        {
+            // Obviously, for the final version, we will not explicitly name these and define
+            //  their obdPID and numBytesReturned values. THESE WILL COME FROM THE JSON SCHEMA.
+            //  However, for current testing purposes, it will be simpler to call each object by
+            //  the name of the actual element.
+            // Name, obdPID, numBytes
+            DataElement vin = new DataElement("vin", "02", 1, getBTConnection());
+            DataElement speed = new DataElement("speed", "0D", 1, getBTConnection());
+            DataElement rpm = new DataElement("rpm", "0C", 2, getBTConnection());
+            DataElement run_time_since_start = new DataElement("run_time_since_start", "1F", 2, getBTConnection());
+            DataElement fuel = new DataElement("fuel_level_input", "2F", 1, getBTConnection());
+            DataElement oil_temp = new DataElement("oil_temp", "5C", 1, getBTConnection());
+            DataElement accel = new DataElement("accel_position", "5A", 1, getBTConnection());
+            DataElement dist_with_MIL = new DataElement("distance_since_MIL", "21", 2, getBTConnection());
+
+            // Note that for the final version, we will be running all of this in some form of loop, 
+            //  not only one time. But for the purposes of making sure each part of this application is
+            //  functional, it will be simplest to call them explicitly, once.
+            vin.RequestDataFromCar();
+            speed.RequestDataFromCar();
+            rpm.RequestDataFromCar();
+            run_time_since_start.RequestDataFromCar();
+            fuel.RequestDataFromCar();
+            oil_temp.RequestDataFromCar();
+            accel.RequestDataFromCar();
+            dist_with_MIL.RequestDataFromCar();
+
+
+            // Format ze data. 
+            vin.FormatData();
+            speed.FormatData();
+            rpm.FormatData();
+            run_time_since_start.FormatData();
+            fuel.FormatData();
+            oil_temp.FormatData();
+            accel.FormatData();
+            dist_with_MIL.FormatData();
+
+            ///
+            // Some type of impelementation to put data elements into data cache.
+            ///
+
+
+            // Cleaning up memory
+            vin = null;
+            speed = null;
+            rpm = null;
+            run_time_since_start = null;
+            fuel = null;
+            oil_temp = null;
+            accel = null;
+            dist_with_MIL = null;
+            
+        }
+
+    
 
 
         /// <summary>
@@ -212,38 +296,7 @@ namespace vConnect
             return BTConnection;
         }
 
-        /// <summary>
-        /// This function serves as the launching point for requesting data.
-        ///     Note: These objects will not be explicitly named in the future.
-        /// </summary>
-        public void requestDataForElements()
-        {
-            // Obviously, for the final version, we will not explicitly name these and define
-            //  their obdPID and numBytesReturned values. THESE WILL COME FROM THE JSON SCHEMA.
-            //  However, for current testing purposes, it will be simpler to call each object by
-            //  the name of the actual element.
-            // Name, obdPID, numBytes
-            DataElement vin = new DataElement("vin", "02", 1, getBTConnection());
-            DataElement speed = new DataElement("speed", "0D", 1, getBTConnection());
-            DataElement rpm = new DataElement("rpm", "0C", 2, getBTConnection());
-            DataElement run_time_since_start = new DataElement("run_time_since_start", "1F", 2, getBTConnection());
-            DataElement fuel = new DataElement("fuel_level_input", "2F", 1, getBTConnection());
-            DataElement oil_temp = new DataElement("oil_temp", "5C", 1, getBTConnection());
-            DataElement accel = new DataElement("accel_position", "5A", 1, getBTConnection());
-            DataElement dist_with_MIL = new DataElement("distance_since_MIL", "21", 2, getBTConnection());
-
-            // Note that for the final version, we will be running all of this in some form of loop, 
-            //  not only one time. But for the purposes of making sure each part of this application is
-            //  functional, it will be simplest to call them explicitly, once.
-            vin.RequestDataFromCar();
-            speed.RequestDataFromCar();
-            rpm.RequestDataFromCar();
-            run_time_since_start.RequestDataFromCar();
-            fuel.RequestDataFromCar();
-            oil_temp.RequestDataFromCar();
-            accel.RequestDataFromCar();
-            dist_with_MIL.RequestDataFromCar();
-        }
+       
 
       
 

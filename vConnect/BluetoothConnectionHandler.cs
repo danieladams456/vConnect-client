@@ -43,6 +43,7 @@ namespace vConnect
             // Lil message for testing. 
             if (client.Connected)
             {
+                bTConnectionStatus = true;
                 MessageBox.Show("We're connected!", "My Application",
                     MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
                 return true;
@@ -84,6 +85,8 @@ namespace vConnect
         public bool BTConnectionStatus { get { return bTConnectionStatus; } set { bTConnectionStatus = value; } }
         public string ErorrMessageToUI { get { return errorMessageToUI; } set { errorMessageToUI = value; } }
         public BluetoothAddress BluetoothAddress { get { return bluetoothAddress; } set { bluetoothAddress = value; } }
+
+        public BluetoothClient Client { get { return client; } set { client = value; } }
 
 
     }

@@ -50,25 +50,26 @@ namespace vConnect
 
         public bool RequestDataFromCar()
         {
+            if (BTConnection.Client.Connected)
+            {
+                Stream peerStream = BTConnection.Client.GetStream();
+                string writeString = "01" + obdPID + "\r";
 
-          /*  Stream peerStream = BTConnection.client.GetStream();
-            string stuff = "010D\r";
-            byte[] test = System.Text.Encoding.ASCII.GetBytes(stuff);
-            peerStream.Write(test, 0, test.Length);
+                byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
+                peerStream.Write(writeCode, 0, writeCode.Length);
 
+                System.Threading.Thread.Sleep(3000);
 
-            System.Threading.Thread.Sleep(5000);
+                
+                peerStream.Read(returnData, 0, returnData.Length);
 
-            byte[] readtest = new byte[400];
-            peerStream.Read(readtest, 0, 400);
-            string da = "not a code";
-            da = System.Text.Encoding.ASCII.GetString(readtest);
+                string codeString = System.Text.Encoding.ASCII.GetString(returnData);
 
-
-            MessageBox.Show(da, "My Application",
+                MessageBox.Show(codeString, "My Application",
                     MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
-            System.Threading.Thread.Sleep(10000);
-            */
+            }
+
+        
             /*
             if (BT_Connection_Open)
             {
