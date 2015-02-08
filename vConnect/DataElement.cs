@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,26 +62,31 @@ namespace vConnect
                 System.Threading.Thread.Sleep(10000);
 
                 
-                byte[] test =  new byte[100];
-                peerStream.Read(test, 0, test.Length);
+                byte[] rawTest =  new byte[20];
+                
+                
+                peerStream.Read(rawTest, 0, rawTest.Length);
 
+                byte[] test = new byte[20];
+                Buffer.BlockCopy(rawTest, 2, test, 0, 15);
                 string codeString = System.Text.Encoding.ASCII.GetString(test);
 
                 MessageBox.Show(codeString, "My Application",
                     MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             }
+             else 
+              {
+                MessageBox.Show("Something bad happened", "My Application",
+                 MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+              
+              }
+             
 
         
             /*
-            if (BT_Connection_Open)
-            {
-                //Craft the message to send to the car according to 
-			    // http://stackoverflow.com/questions/20477092/how-can-i-read-write-data-to-and-from-an-obd-ii-adapter-with-windows-phone-8
-			    string messageToSend = "01" + getobdPID() + "\r";
+           
+               
 			
-			    // Send the message to the car.
-			    //	For example, send "010D\r".
-			    WhateverBTCommandsAreNeededToPushDataToCar_Here(messageToSend);
 			
 			    // Since the data received back repeats the mode (e.g. Mode 01) and the PID (e.g. "0D"), we will have a 
 			    // 	temporary holding space for the response.
@@ -94,11 +100,7 @@ namespace vConnect
 			    returnData = (byte)(recievedRaw >> 8*getReturnDataSize());	
 		
 		    }
-		    else 
-		    {
-    			AttemptToReestalblishBTConnection
-			    requestDataFromCar(obdPID,returnDataSize);
-		    }
+		   
             */
 
             return true;

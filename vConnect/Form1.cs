@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 using InTheHand.Net;
 using InTheHand.Net.Sockets;
@@ -44,21 +45,19 @@ namespace vConnect
 
 
 
-            System.Timers.Timer myTimer = new System.Timers.Timer(20000);
-            myTimer.Elapsed += new ElapsedEventHandler(requestDataForElements);
-
-            myTimer.Enabled = true;
-
-           
-            // This function begins requesting the car for data.
-            // requestDataForElements();
+         //   System.Timers.Timer myTimer = new System.Timers.Timer(120000);
+          //  myTimer.Elapsed += new ElapsedEventHandler(requestDataForElements);
+           // myTimer.Enabled = true;
+            TimerCallback tcb = requestDataForElements;
+            System.Threading.Timer myTimer = new System.Threading.Timer(tcb, null, 0, 120000); 
+         
         }
 
         /// <summary>
         /// This function serves as the launching point for requesting data.
         ///     Note: These objects will not be explicitly named in the future.
         /// </summary>
-        private void requestDataForElements(object sender, ElapsedEventArgs e)
+        public void requestDataForElements(object sender)
         {
 
             MessageBox.Show("Beginning of Thread", "My Application",
