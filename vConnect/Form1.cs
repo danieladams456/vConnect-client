@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -162,8 +163,10 @@ namespace vConnect
 
         }
 
+       
         private void browse_button_Click(object sender, EventArgs e)
         {
+           
             var dlg = new SelectBluetoothDeviceDialog();
             DialogResult result = dlg.ShowDialog(this);
             if (result != DialogResult.OK)
@@ -171,41 +174,40 @@ namespace vConnect
                 return;
             }
             BluetoothDeviceInfo device = dlg.SelectedDevice;
-            BluetoothAddress addr = device.DeviceAddress;
+            BluetoothAddress BTaddr = device.DeviceAddress;
             label5.Text = device.DeviceName;
-            BTConnection.BluetoothAddress = addr;
-
-            Guid serviceClass;
-            serviceClass = BluetoothService.SerialPort;
-            var ep = new BluetoothEndPoint(addr, serviceClass);
+            BTConnection.BluetoothAddress = BTaddr;
+            Guid serviceClass = BluetoothService.SerialPort;
+            var ep = new BluetoothEndPoint(BTaddr, serviceClass);
             var cli = new BluetoothClient();
+            cli.SetPin("1234");
             cli.Connect(ep);
-            if (cli.Connected == true)
+            if (cli.Connected)
             {
-                MessageBox.Show("We're coonected!", "My Application",
-MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                MessageBox.Show("We're connected!", "My Application",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             }
-
-
-            /*    // bool isPaired = false;
-           var serviceClass = new Guid();
-           serviceClass = BluetoothService.SerialPort;
-           var cli = new BluetoothClient();
-           var ep = new BluetoothEndPoint(addr, serviceClass);
-         // isPaired = BluetoothSecurity.PairRequest(addr, "0000");
-           cli.Connect(ep);
-       if (cli.Connected)
-       {
             
-           BluetoothDeviceInfo[] peers = cli.DiscoverDevices();
-           this.BT_Devices.DisplayMember = "DeviceName";
-           this.BT_Devices.ValueMember = null;
-           this.BT_Devices.DataSource = peers;
+         }
 
-       }*/
+        /// <summary>
+        /// Sample read/write code, nothing crazy thus far. 
+        /// </summary>
+        /// <returns></returns>
+        /// 
+/*        Stream peerStream = cli.GetStream();
+            string stuff = "010D\r";
+            byte[] test = System.Text.Encoding.ASCII.GetBytes(stuff);
+            peerStream.Write(test, 0, test.Length);
+
+            byte[] readtest = new byte[200];
+            peerStream.Read(readtest, 0, 199);
+            string da = "not a code";
+            da = System.Text.Encoding.ASCII.GetString(readtest); 
+            MessageBox.Show(da, "My Application",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);*/
 
 
-        }
 
         public BluetoothConnectionHandler getBTConnection()
         {
