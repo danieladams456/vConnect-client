@@ -24,6 +24,9 @@ namespace vConnect
         private BluetoothEndPoint endpoint;
         private Guid serviceClass;
         private BluetoothClient client;
+
+        // can keep this static for our purposes, but should probably implement 
+        // a method for user specified PIN just in case.
         private string PIN = "1234";
 
         public bool EstablishBTConnection()
@@ -32,8 +35,7 @@ namespace vConnect
             endpoint = new BluetoothEndPoint(bluetoothAddress, serviceClass);
             client = new BluetoothClient();
             
-            // can keep this static for our purposes, but should probably implement 
-            // a method for user specified PIN just in case. 
+             
             
             client.SetPin(PIN);
             client.Connect(endpoint);
@@ -46,19 +48,9 @@ namespace vConnect
                 return true;
             }
 
-            Stream peerStream = client.GetStream();
-            string stuff = "010D\r";
-            byte[] test = System.Text.Encoding.ASCII.GetBytes(stuff);
-            peerStream.Write(test, 0, test.Length);
+     
 
-            System.Threading.Thread.Sleep(10000);
 
-            byte[] readtest = new byte[200];
-            peerStream.Read(readtest, 0, 199);
-            string da = "not a code";
-            da = System.Text.Encoding.ASCII.GetString(readtest);
-            MessageBox.Show(da, "My Application",
-                    MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
 
             return false;
         }

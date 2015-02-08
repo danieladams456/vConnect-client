@@ -21,13 +21,12 @@ namespace vConnect
     {
         BluetoothConnectionHandler BTConnection = new BluetoothConnectionHandler();
         ServerConnectionHandler serverConnection = new ServerConnectionHandler();
+        DataElement firstDataElement = new DataElement();
 
         public Form1()
         {
             InitializeComponent();
 
-            System.Threading.Thread.Sleep(5000);
-            
 
             // This function begins requesting the car for data.
             // requestDataForElements();

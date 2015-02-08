@@ -1,8 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace vConnect
 {
@@ -48,6 +50,25 @@ namespace vConnect
 
         public bool RequestDataFromCar()
         {
+
+          /*  Stream peerStream = BTConnection.client.GetStream();
+            string stuff = "010D\r";
+            byte[] test = System.Text.Encoding.ASCII.GetBytes(stuff);
+            peerStream.Write(test, 0, test.Length);
+
+
+            System.Threading.Thread.Sleep(5000);
+
+            byte[] readtest = new byte[400];
+            peerStream.Read(readtest, 0, 400);
+            string da = "not a code";
+            da = System.Text.Encoding.ASCII.GetString(readtest);
+
+
+            MessageBox.Show(da, "My Application",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+            System.Threading.Thread.Sleep(10000);
+            */
             /*
             if (BT_Connection_Open)
             {
