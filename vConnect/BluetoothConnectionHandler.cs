@@ -44,10 +44,10 @@ namespace vConnect
             if (client.Connected)
             {
                 bTConnectionStatus = true;
-                MessageBox.Show("We're connected!", "My Application",
-                    MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
                 return true;
             }
+
+           
 
      
 

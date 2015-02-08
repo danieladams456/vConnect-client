@@ -44,7 +44,7 @@ namespace vConnect
 
 
 
-            System.Timers.Timer myTimer = new System.Timers.Timer(60000);
+            System.Timers.Timer myTimer = new System.Timers.Timer(20000);
             myTimer.Elapsed += new ElapsedEventHandler(requestDataForElements);
 
             myTimer.Enabled = true;
@@ -60,6 +60,9 @@ namespace vConnect
         /// </summary>
         private void requestDataForElements(object sender, ElapsedEventArgs e)
         {
+
+            MessageBox.Show("Beginning of Thread", "My Application",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             // Obviously, for the final version, we will not explicitly name these and define
             //  their obdPID and numBytesReturned values. THESE WILL COME FROM THE JSON SCHEMA.
             //  However, for current testing purposes, it will be simpler to call each object by
@@ -277,17 +280,19 @@ namespace vConnect
         /// </summary>
         /// <returns></returns>
         /// 
-/*        Stream peerStream = cli.GetStream();
-            string stuff = "010D\r";
-            byte[] test = System.Text.Encoding.ASCII.GetBytes(stuff);
-            peerStream.Write(test, 0, test.Length);
+        /*        Stream peerStream = cli.GetStream();
+                    string stuff = "010D\r";
+                    byte[] test = System.Text.Encoding.ASCII.GetBytes(stuff);
+                    peerStream.Write(test, 0, test.Length);
 
-            byte[] readtest = new byte[200];
-            peerStream.Read(readtest, 0, 199);
-            string da = "not a code";
-            da = System.Text.Encoding.ASCII.GetString(readtest); 
-            MessageBox.Show(da, "My Application",
-                    MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);*/
+         *             System.Threading.Thread.Sleep(10000);
+
+                    byte[] readtest = new byte[200];
+                    peerStream.Read(readtest, 0, 199);
+                    string da = "not a code";
+                    da = System.Text.Encoding.ASCII.GetString(readtest); 
+                    MessageBox.Show(da, "My Application",
+                            MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);*/
 
 
 

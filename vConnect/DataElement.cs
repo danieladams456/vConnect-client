@@ -53,17 +53,18 @@ namespace vConnect
             if (BTConnection.Client.Connected)
             {
                 Stream peerStream = BTConnection.Client.GetStream();
-                string writeString = "01" + obdPID + "\r";
+                string writeString = "01"+ ObdPID + "\r";
 
                 byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
                 peerStream.Write(writeCode, 0, writeCode.Length);
 
-                System.Threading.Thread.Sleep(3000);
+                System.Threading.Thread.Sleep(10000);
 
                 
-                peerStream.Read(returnData, 0, returnData.Length);
+                byte[] test =  new byte[100];
+                peerStream.Read(test, 0, test.Length);
 
-                string codeString = System.Text.Encoding.ASCII.GetString(returnData);
+                string codeString = System.Text.Encoding.ASCII.GetString(test);
 
                 MessageBox.Show(codeString, "My Application",
                     MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
