@@ -24,12 +24,15 @@ namespace vConnect
     {
         BluetoothConnectionHandler BTConnection = new BluetoothConnectionHandler();
         ServerConnectionHandler serverConnection = new ServerConnectionHandler();
+        DataCache cache = new DataCache();
 
         public Form1()
         {
             InitializeComponent();
 
             // This will eventauly try to connect to BT device address in a config file, but will do this for now.
+            
+            // /*
             var dlg = new SelectBluetoothDeviceDialog();
             DialogResult result = dlg.ShowDialog(this);
             if (result != DialogResult.OK)
@@ -42,6 +45,7 @@ namespace vConnect
             BTConnection.BluetoothAddress = BTaddr;
 
             BTConnection.EstablishBTConnection();
+            // */
 
 
 
@@ -99,10 +103,26 @@ namespace vConnect
             accel.FormatData();
             dist_with_MIL.FormatData();
 
-            ///
-            // Some type of impelementation to put data elements into data cache.
-            ///
+            // Send to cache!
+            // Create new cluster containing each of the values read.
+            ElementCluster cluster = new ElementCluster(vin.ValueToSend, speed.ValueToSend, rpm.ValueToSend,
+                                            run_time_since_start.ValueToSend, fuel.ValueToSend, oil_temp.ValueToSend,
+                                            accel.ValueToSend, dist_with_MIL.ValueToSend);
 
+            // Add cluster to the list of clusters in the cache.
+            cache.AddElementToCache(cluster);
+
+            // Temporarily, SendToServer doesn't actually send it to the server, but it creates a JSON file 
+            //   (stored in a string) from the data currently in the cache.
+            cache.SendToServer();
+
+            // Since we aren't sending to server yet, the following message box allows you to view the created JSON.
+            //  With the box in focus, ctrl+c allows for copy'n'paste, even though it doesn't look like it.
+            MessageBox.Show(cache.JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+
+            // The following function will write the file to disk. It needs to be made MUCH more robust before Alpha.
+            // cache.WriteToDisk();
+            
 
             // Cleaning up memory
             vin = null;
@@ -180,10 +200,6 @@ namespace vConnect
         }
 
         
-
-     
-        
-
         private void help_button_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Sorry, this button isn't quite helpful yet...", "My Application",
@@ -229,9 +245,7 @@ namespace vConnect
             }
         }
 
-        
 
-       
         private void apply_button_Click(object sender, EventArgs e)
         {
             /*(MessageBox.Show("The calculations are complete", "My Application",

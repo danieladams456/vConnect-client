@@ -18,6 +18,7 @@ namespace vConnect
         private string name = "";
         private int returnDataSize = 0;
         private byte[] returnData;
+        private string valueToSend = "";
 
         // This connection gets passed from the caller. It is the current connection.
         public BluetoothConnectionHandler BTConnection;
@@ -51,6 +52,7 @@ namespace vConnect
 
         public bool RequestDataFromCar()
         {
+            // /*
             if (BTConnection.Client.Connected)
             {
                 Stream peerStream = BTConnection.Client.GetStream();
@@ -67,24 +69,26 @@ namespace vConnect
                 
                 peerStream.Read(rawTest, 0, rawTest.Length);
 
-               //Skips repeated bytes. 
+                //Skips repeated bytes. 
                 Buffer.BlockCopy(rawTest, 10, returnData, 0, 4);
 
 
                 // For testing.
-                string codeString = System.Text.Encoding.ASCII.GetString(returnData);
+                // string codeString = System.Text.Encoding.ASCII.GetString(returnData);
+                ValueToSend = System.Text.Encoding.ASCII.GetString(returnData);
                  
                 
-                MessageBox.Show(codeString, "My Application",
+                MessageBox.Show(ValueToSend, "My Application",
                     MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             }
-             else 
-              {
+            else 
+            {
                 MessageBox.Show("Something bad happened", "My Application",
                  MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
-              
-              }
-              
+            }
+            // */
+
+            // ValueToSend = "temp";
             return true;
             
         }
@@ -117,9 +121,17 @@ namespace vConnect
 
         public byte[] ReturnData { get { return returnData; } set { returnData = value; } }
 
+        public string ValueToSend { get { return valueToSend; } set { valueToSend = value; } }
+
 
     }
+
 }
+
+
+
+
+
 
 
 
