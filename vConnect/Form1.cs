@@ -111,6 +111,7 @@ namespace vConnect
 
             // Add cluster to the list of clusters in the cache.
             cache.AddElementToCache(cluster);
+            cache.AddElementToCache(cluster);
 
             // Temporarily, SendToServer doesn't actually send it to the server, but it creates a JSON file 
             //   (stored in a string) from the data currently in the cache.

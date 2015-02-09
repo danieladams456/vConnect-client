@@ -2,7 +2,6 @@
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -18,7 +17,9 @@ namespace vConnect
         private string name = "";
         private int returnDataSize = 0;
         private byte[] returnData;
+        private List<int> readBytes;
         private string valueToSend = "";
+        private string equation = "";
 
         // This connection gets passed from the caller. It is the current connection.
         public BluetoothConnectionHandler BTConnection;
@@ -88,7 +89,7 @@ namespace vConnect
             }
             // */
 
-            // ValueToSend = "temp";
+            ValueToSend = "temp";
             return true;
             
         }
