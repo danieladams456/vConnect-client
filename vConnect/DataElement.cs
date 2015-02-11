@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
+using NCalc;
 
 namespace vConnect
 {
@@ -20,6 +22,7 @@ namespace vConnect
         private List<int> readBytes;
         private string valueToSend = "";
         private string equation = "";
+        private List<byte> byteList;
 
         // This connection gets passed from the caller. It is the current connection.
         public BluetoothConnectionHandler BTConnection;
@@ -35,11 +38,13 @@ namespace vConnect
         /// <param name="PID">OBD PID to send to the car to get this value</param>
         /// <param name="numberBytesReturned">Number of bytes the car will return</param>
         /// <param name="btconnection">Current BT ConnectionHandler object.</param>
-        public DataElement(string elementName, string PID, int numberBytesReturned, BluetoothConnectionHandler btconnection)
+        public DataElement(string elementName, string PID, int numberBytesReturned, string eqn, BluetoothConnectionHandler btconnection)
         {
             name = elementName;
             obdPID = PID;
             returnData = new byte[numberBytesReturned];
+            ReturnDataSize = numberBytesReturned;
+            equation = eqn;
             BTConnection = btconnection;
         }
 
@@ -78,7 +83,7 @@ namespace vConnect
 
                 //Skips repeated bytes. 
                 Buffer.BlockCopy(rawTest, 10, returnData, 0, 4);
-                List<byte> byteList = new List<byte>(returnData);
+                byteList = new List<byte>(returnData);
 
                 // For testing.
                 // string codeString = System.Text.Encoding.ASCII.GetString(returnData);
@@ -94,7 +99,9 @@ namespace vConnect
             }
             // */
 
-            ValueToSend = "temp";
+            // byteList = new List<byte>(returnData);
+            // byteList.Add(2);
+            // ValueToSend = "1";
             return true;
             
         }
@@ -102,9 +109,31 @@ namespace vConnect
 
         public void FormatData()
         {
-            //
-            // Place code here to package/format the data and add it to the cache.
-            //
+            // Create an expression with the equation specified.
+            Expression expr = new Expression(Equation);
+
+            // If the equation only has an "A"
+            if (ReturnDataSize==1)
+            {
+                expr.Parameters["A"] = byteList[1].ToString();
+            }
+
+            // If the equation has A and B...
+            else if (ReturnDataSize==2)
+            {
+                expr.Parameters["A"] = byteList[1].ToString();
+                expr.Parameters["B"] = byteList[2];
+            }
+            
+            // Should we go further?
+            // else if...
+
+            // evaluate the expression with the variables
+            object answerToExpression = expr.Evaluate();
+
+            // Store the formatted answer in the valueToSend variable.
+            ValueToSend = answerToExpression.ToString();
+
             return;
         }
 
@@ -129,6 +158,7 @@ namespace vConnect
 
         public string ValueToSend { get { return valueToSend; } set { valueToSend = value; } }
 
+        public string Equation { get { return equation; } set { equation = value; } }
 
     }
 

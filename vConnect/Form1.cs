@@ -46,7 +46,7 @@ namespace vConnect
 
             // Attempt to Establish a BT Connection with the device with address BTaddr.
             BTConnection.EstablishBTConnection();
-
+            // */
             TimerCallback tcb = requestDataForElements;
             // make gui element for changing timer time 
             System.Threading.Timer myTimer = new System.Threading.Timer(tcb, null, 0, 120000); 
@@ -68,14 +68,14 @@ namespace vConnect
             //  the name of the actual element.
             // Name, obdPID, numBytes
             
-            DataElement vin = new DataElement("vin", "02", 1, getBTConnection());
-            DataElement speed = new DataElement("speed", "0D", 1, getBTConnection());
-            DataElement rpm = new DataElement("rpm", "0C", 2, getBTConnection());
-            DataElement run_time_since_start = new DataElement("run_time_since_start", "1F", 2, getBTConnection());
-            DataElement fuel = new DataElement("fuel_level_input", "2F", 1, getBTConnection());
-            DataElement oil_temp = new DataElement("oil_temp", "5C", 1, getBTConnection());
-            DataElement accel = new DataElement("accel_position", "5A", 1, getBTConnection());
-            DataElement dist_with_MIL = new DataElement("distance_since_MIL", "21", 2, getBTConnection());
+            DataElement vin = new DataElement("vin", "02", 1, "A", getBTConnection());
+            DataElement speed = new DataElement("speed", "0D", 1, "A", getBTConnection());
+            DataElement rpm = new DataElement("rpm", "0C", 2, "((A*256)+B)/4", getBTConnection());
+            DataElement run_time_since_start = new DataElement("run_time_since_start", "1F", 2, "(A*256)+B", getBTConnection());
+            DataElement fuel = new DataElement("fuel_level_input", "2F", 1, "A*100/255", getBTConnection());
+            DataElement oil_temp = new DataElement("oil_temp", "5C", 1, "A - 40", getBTConnection());
+            DataElement accel = new DataElement("accel_position", "5A", 1, "A*100/255", getBTConnection());
+            DataElement dist_with_MIL = new DataElement("distance_since_MIL", "21", 2, "(A*256)+B", getBTConnection());
 
             // Note that for the final version, we will be running all of this in some form of loop, 
             //  not only one time. But for the purposes of making sure each part of this application is
