@@ -23,7 +23,7 @@ namespace vConnect
         private BluetoothAddress bluetoothAddress;
         private BluetoothEndPoint endpoint;
         private Guid serviceClass;
-        private BluetoothClient client;
+        private BluetoothClient client = new BluetoothClient();
         private int connectLoop = 0;
 
         // can keep this static for our purposes, but should probably implement 
@@ -39,7 +39,7 @@ namespace vConnect
             
             serviceClass = BluetoothService.SerialPort;
             endpoint = new BluetoothEndPoint(bluetoothAddress, serviceClass);
-            client = new BluetoothClient();
+         
             
              client.SetPin(PIN);
             

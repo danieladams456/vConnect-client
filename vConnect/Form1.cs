@@ -32,7 +32,7 @@ namespace vConnect
 
             // This will eventauly try to connect to BT device address in a config file, but will do this for now.
             
-            // /*
+             /*
             var dlg = new SelectBluetoothDeviceDialog();
             DialogResult result = dlg.ShowDialog(this);
             if (result != DialogResult.OK)
@@ -43,14 +43,39 @@ namespace vConnect
             BluetoothAddress BTaddr = device.DeviceAddress;
             label5.Text = device.DeviceName;
             BTConnection.BluetoothAddress = BTaddr;
+            */
+            bool deviceDetect = false;
+            BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
+            int x = 0;
+            while (x < peers.Length)
+            {
+                if (peers[x].DeviceName == "CBT" || peers[x].DeviceName == "OBDII")
+                {
+                    BTConnection.BluetoothAddress = peers[x].DeviceAddress;
+                    x = peers.Length;
+                    deviceDetect = true;
 
-            // Attempt to Establish a BT Connection with the device with address BTaddr.
-            BTConnection.EstablishBTConnection();
+                }
+                x++;
+                
+            }
 
-            TimerCallback tcb = requestDataForElements;
-            // make gui element for changing timer time 
-            System.Threading.Timer myTimer = new System.Threading.Timer(tcb, null, 0, 120000); 
-         
+            if (deviceDetect == false)
+            {
+                var msg = "No OBDII devices were detected.";
+                MessageBox.Show(msg);
+
+            }
+
+            else
+            {
+                // Attempt to Establish a BT Connection with the device with address BTaddr.
+                BTConnection.EstablishBTConnection();
+
+                TimerCallback tcb = requestDataForElements;
+                // make gui element for changing timer time 
+                System.Threading.Timer myTimer = new System.Threading.Timer(tcb, null, 0, 120000);
+            }
         }
 
         /// <summary>
