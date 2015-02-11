@@ -44,15 +44,11 @@ namespace vConnect
             label5.Text = device.DeviceName;
             BTConnection.BluetoothAddress = BTaddr;
 
+            // Attempt to Establish a BT Connection with the device with address BTaddr.
             BTConnection.EstablishBTConnection();
-            // */
 
-
-
-         //   System.Timers.Timer myTimer = new System.Timers.Timer(120000);
-          //  myTimer.Elapsed += new ElapsedEventHandler(requestDataForElements);
-           // myTimer.Enabled = true;
             TimerCallback tcb = requestDataForElements;
+            // make gui element for changing timer time 
             System.Threading.Timer myTimer = new System.Threading.Timer(tcb, null, 0, 120000); 
          
         }
@@ -71,6 +67,7 @@ namespace vConnect
             //  However, for current testing purposes, it will be simpler to call each object by
             //  the name of the actual element.
             // Name, obdPID, numBytes
+            
             DataElement vin = new DataElement("vin", "02", 1, getBTConnection());
             DataElement speed = new DataElement("speed", "0D", 1, getBTConnection());
             DataElement rpm = new DataElement("rpm", "0C", 2, getBTConnection());

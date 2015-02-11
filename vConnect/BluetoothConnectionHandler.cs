@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-
+using System.Diagnostics;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,34 +24,53 @@ namespace vConnect
         private BluetoothEndPoint endpoint;
         private Guid serviceClass;
         private BluetoothClient client;
+        private int connectLoop = 0;
 
         // can keep this static for our purposes, but should probably implement 
         // a method for user specified PIN just in case.
         private string PIN = "1234";
 
+        // Number of times vConnect with attempt to connect to the application. 
+        private int connectionAttempts = 5;
+
+  
         public bool EstablishBTConnection()
         {
+            
             serviceClass = BluetoothService.SerialPort;
             endpoint = new BluetoothEndPoint(bluetoothAddress, serviceClass);
             client = new BluetoothClient();
             
-             
+             client.SetPin(PIN);
             
-            client.SetPin(PIN);
-            client.Connect(endpoint);
+            // Tries to connect, catches exception is connection fails,
+            // and then will try to connect 5 more times before giving it up.
+             try { client.Connect(endpoint); }
 
-            // Lil message for testing. 
+             catch ( Exception ex)
+             {
+                 if (connectLoop < connectionAttempts)
+                 {
+                     connectLoop++;
+                     EstablishBTConnection();
+                 }
+                 else
+                 {
+                     var msg = "failed to connect to BT Device. ERROR: " + ex;
+                     MessageBox.Show(msg);
+                     SendWindowsErrorMessage();
+                     return false;
+
+                 }
+
+             }
+            
             if (client.Connected)
             {
                 bTConnectionStatus = true;
+                connectLoop = 0;
                 return true;
             }
-
-           
-
-     
-
-
 
             return false;
         }
@@ -76,6 +95,19 @@ namespace vConnect
 
         public bool SendWindowsErrorMessage()
         {
+
+        // Code should work for sending error message to event log. However, admin must either run this program
+        // or, more simply, have the admin privileges during installation and register a event log source 
+        // for this program. Answer from 
+            // http://stackoverflow.com/questions/9564420/the-source-was-not-found-but-some-or-all-event-logs-could-not-be-searched
+        /*
+            string msg = "vConnect failed to connect to the BT device with address" + bluetoothAddress;
+            EventLog vConnectLog = new EventLog();
+            EventLog.CreateEventSource("vConnect", "vConnect");
+            vConnectLog.Source = "vConnect";
+            vConnectLog.WriteEntry(msg);
+
+          */  
             return true;
         }
 

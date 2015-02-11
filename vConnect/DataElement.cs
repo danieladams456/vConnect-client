@@ -69,22 +69,27 @@ namespace vConnect
                 
                 
                 peerStream.Read(rawTest, 0, rawTest.Length);
+                if (System.Text.Encoding.ASCII.GetString(rawTest).Contains("NO DATA"))
+                {
+                    // do whatever we are going to do if no data is received.
+
+
+                }
 
                 //Skips repeated bytes. 
                 Buffer.BlockCopy(rawTest, 10, returnData, 0, 4);
-
+                List<byte> byteList = new List<byte>(returnData);
 
                 // For testing.
                 // string codeString = System.Text.Encoding.ASCII.GetString(returnData);
-                ValueToSend = System.Text.Encoding.ASCII.GetString(returnData);
-                 
+                //ValueToSend = System.Text.Encoding.ASCII.GetString(returnData);
                 
-                MessageBox.Show(ValueToSend, "My Application",
-                    MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                
+               
             }
             else 
             {
-                MessageBox.Show("Something bad happened", "My Application",
+                MessageBox.Show("Lost BT Connection", "My Application",
                  MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             }
             // */
