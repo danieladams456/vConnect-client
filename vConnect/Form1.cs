@@ -49,7 +49,7 @@ namespace vConnect
             int x = 0;
             while (x < peers.Length)
             {
-                if (peers[x].DeviceName == "CBT" || peers[x].DeviceName == "OBDII")
+                if (peers[x].DeviceName == "CBT." || peers[x].DeviceName == "OBDII")
                 {
                     BTConnection.BluetoothAddress = peers[x].DeviceAddress;
                     x = peers.Length;

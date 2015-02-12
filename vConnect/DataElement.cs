@@ -23,6 +23,9 @@ namespace vConnect
         private string valueToSend = "";
         private string equation = "";
         private List<byte> byteList;
+        private int equVal1 = 0;
+        private int equVal2 = 0;
+
 
         // This connection gets passed from the caller. It is the current connection.
         public BluetoothConnectionHandler BTConnection;
@@ -74,21 +77,59 @@ namespace vConnect
                 
                 
                 peerStream.Read(rawTest, 0, rawTest.Length);
+                string lengthOfByte = "This is the number of bytes: " + rawTest.Length.ToString();
+                MessageBox.Show(lengthOfByte);
+                MessageBox.Show("This is the actual data given: \n " + System.Text.Encoding.ASCII.GetString(rawTest));
+               
                 if (System.Text.Encoding.ASCII.GetString(rawTest).Contains("NO DATA"))
                 {
                     // do whatever we are going to do if no data is received.
 
 
                 }
-
-                //Skips repeated bytes. 
-                Buffer.BlockCopy(rawTest, 10, returnData, 0, 4);
-                byteList = new List<byte>(returnData);
-
-                // For testing.
-                // string codeString = System.Text.Encoding.ASCII.GetString(returnData);
-                //ValueToSend = System.Text.Encoding.ASCII.GetString(returnData);
+                else
+                {
+                    List<byte> rawList = new List<byte>(rawTest);
+                      byteList = new List<byte>();
+                      string hexLiteral;
+                      string hexLiteral2;
                 
+                    byte[] deezBytes = new byte[3];
+                    //Skips repeated bytes.
+                    if (ReturnDataSize == 1)
+                      //  rawList.CopyTo(3, byteList, 0, 1 )
+                        // bytes at 11 and 12 0 -> 00
+                      {
+                          hexLiteral = System.Text.Encoding.ASCII.GetString(rawTest, 11, 1) + System.Text.Encoding.ASCII.GetString(rawTest, 12, 1);
+                      //  Buffer.BlockCopy(rawTest, 11, returnData , 0, 1);
+                      MessageBox.Show("This is the actual data given: \n " + hexLiteral);
+                      equVal1 = Convert.ToInt32(hexLiteral, 16);
+                    
+
+                    }
+                    else if (ReturnDataSize == 2)
+                        // bytes at 11,12,14,15
+                        {
+                            
+                            hexLiteral = System.Text.Encoding.ASCII.GetString(rawTest, 11, 1) + System.Text.Encoding.ASCII.GetString(rawTest, 12, 1);
+                            hexLiteral2 =  System.Text.Encoding.ASCII.GetString(rawTest, 14, 1) + System.Text.Encoding.ASCII.GetString(rawTest, 15, 1);
+                        //Buffer.BlockCopy(rawTest, 11, returnData, 0, 2);
+                        MessageBox.Show("This is the actual data given: \n " + hexLiteral);
+                        MessageBox.Show("This is the actual data given: \n " + hexLiteral2);
+                        equVal1 = Convert.ToInt32(hexLiteral, 16);
+                        equVal2 = Convert.ToInt32(hexLiteral2, 16);
+
+
+                    
+                    }
+
+
+                    byteList = new List<byte>();
+
+                    // For testing.
+                    // string codeString = System.Text.Encoding.ASCII.GetString(returnData);
+                    //ValueToSend = System.Text.Encoding.ASCII.GetString(returnData);
+                }
                 
                
             }
@@ -115,14 +156,17 @@ namespace vConnect
             // If the equation only has an "A"
             if (ReturnDataSize==1)
             {
-                expr.Parameters["A"] = byteList[1].ToString();
+                //expr.Parameters["A"] = byteList[1].ToString();
+                expr.Parameters["A"] = equVal1;
             }
 
             // If the equation has A and B...
             else if (ReturnDataSize==2)
             {
-                expr.Parameters["A"] = byteList[1].ToString();
-                expr.Parameters["B"] = byteList[2];
+                //expr.Parameters["A"] = byteList[1].ToString();
+                //expr.Parameters["B"] = byteList[2];
+                expr.Parameters["A"] = equVal1;
+                expr.Parameters["B"] = equVal2;
             }
             
             // Should we go further?
