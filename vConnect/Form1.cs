@@ -105,7 +105,7 @@ namespace vConnect
             // Note that for the final version, we will be running all of this in some form of loop, 
             //  not only one time. But for the purposes of making sure each part of this application is
             //  functional, it will be simplest to call them explicitly, once.
-            vin.RequestDataFromCar();
+          //  vin.RequestDataFromCar();
             speed.RequestDataFromCar();
             rpm.RequestDataFromCar();
             run_time_since_start.RequestDataFromCar();

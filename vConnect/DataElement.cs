@@ -19,12 +19,11 @@ namespace vConnect
         private string name = "";
         private int returnDataSize = 0;
         private byte[] returnData;
-        private List<int> readBytes;
         private string valueToSend = "";
         private string equation = "";
-        private List<byte> byteList;
-        private int equVal1 = 0;
-        private int equVal2 = 0;
+        //private int equVal1 = 0;
+        //private int equVal2 = 0;
+        private int[] equVals = new int[10];
 
 
         // This connection gets passed from the caller. It is the current connection.
@@ -32,7 +31,7 @@ namespace vConnect
 
         // This defines the largest potential size of return data from the car. It should never
         //  really even get close to this value
-        private int MAX_DATA_SIZE= 20;
+        private int MAX_DATA_SIZE= 30;
 
         /// <summary>
         /// Constructor that defines name and PID and number of bytes explicitly 
@@ -61,74 +60,79 @@ namespace vConnect
 
         public bool RequestDataFromCar()
         {
-            // /*
+
+            string writeString;
+            
             if (BTConnection.Client.Connected)
             {
                 Stream peerStream = BTConnection.Client.GetStream();
-                string writeString = "01"+ ObdPID + "\r";
+                
+                // Can do this with schema later, hard coded for now
+                if (name == "vin") { writeString = "09" + ObdPID + "\r"; }
+               
+                else { writeString = "01" + ObdPID + "\r"; }
+
+               
+
 
                 byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
                 peerStream.Write(writeCode, 0, writeCode.Length);
 
                 System.Threading.Thread.Sleep(10000);
-
-                
-                byte[] rawTest =  new byte[20];
                 
                 
-                peerStream.Read(rawTest, 0, rawTest.Length);
-                string lengthOfByte = "This is the number of bytes: " + rawTest.Length.ToString();
+                peerStream.Read(returnData, 0, returnData.Length);
+                string lengthOfByte = "This is the number of bytes: " + returnData.Length.ToString();
                 MessageBox.Show(lengthOfByte);
-                MessageBox.Show("This is the actual data given: \n " + System.Text.Encoding.ASCII.GetString(rawTest));
+                MessageBox.Show("This is the actual data given: \n " + System.Text.Encoding.ASCII.GetString(returnData));
                
-                if (System.Text.Encoding.ASCII.GetString(rawTest).Contains("NO DATA"))
+                if (System.Text.Encoding.ASCII.GetString(returnData).Contains("NO DATA"))
                 {
                     // do whatever we are going to do if no data is received.
 
 
                 }
+
+                // Will insert the vin into valueToSend, therefore we will not call formatData for
+                // VIN data elements.
+                else if (name == "vin")
+                {
+                //    valueToSend = System.Text.Encoding.ASCII.GetString(rawTest, 11, 17)
+
+                }
+
                 else
                 {
-                    List<byte> rawList = new List<byte>(rawTest);
-                      byteList = new List<byte>();
+                    
                       string hexLiteral;
                       string hexLiteral2;
                 
-                    byte[] deezBytes = new byte[3];
                     //Skips repeated bytes.
                     if (ReturnDataSize == 1)
-                      //  rawList.CopyTo(3, byteList, 0, 1 )
-                        // bytes at 11 and 12 0 -> 00
+                     
                       {
-                          hexLiteral = System.Text.Encoding.ASCII.GetString(rawTest, 11, 1) + System.Text.Encoding.ASCII.GetString(rawTest, 12, 1);
-                      //  Buffer.BlockCopy(rawTest, 11, returnData , 0, 1);
+                          hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
                       MessageBox.Show("This is the actual data given: \n " + hexLiteral);
-                      equVal1 = Convert.ToInt32(hexLiteral, 16);
-                    
+                      //equVal1 = Convert.ToInt32(hexLiteral, 16);
+                      equVals[0] = Convert.ToInt32(hexLiteral, 16);
 
                     }
                     else if (ReturnDataSize == 2)
-                        // bytes at 11,12,14,15
+                   
                         {
                             
-                            hexLiteral = System.Text.Encoding.ASCII.GetString(rawTest, 11, 1) + System.Text.Encoding.ASCII.GetString(rawTest, 12, 1);
-                            hexLiteral2 =  System.Text.Encoding.ASCII.GetString(rawTest, 14, 1) + System.Text.Encoding.ASCII.GetString(rawTest, 15, 1);
-                        //Buffer.BlockCopy(rawTest, 11, returnData, 0, 2);
-                        MessageBox.Show("This is the actual data given: \n " + hexLiteral);
-                        MessageBox.Show("This is the actual data given: \n " + hexLiteral2);
-                        equVal1 = Convert.ToInt32(hexLiteral, 16);
-                        equVal2 = Convert.ToInt32(hexLiteral2, 16);
-
+                            hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
+                            hexLiteral2 =  System.Text.Encoding.ASCII.GetString(returnData, 14, 1) + System.Text.Encoding.ASCII.GetString(returnData, 15, 1);
+                        
+                      
+                        //equVal1 = Convert.ToInt32(hexLiteral, 16);
+                      //  equVal2 = Convert.ToInt32(hexLiteral2, 16);
+                          equVals[0] = Convert.ToInt32(hexLiteral, 16);
+                          equVals[1] = Convert.ToInt32(hexLiteral2, 16);
 
                     
                     }
 
-
-                    byteList = new List<byte>();
-
-                    // For testing.
-                    // string codeString = System.Text.Encoding.ASCII.GetString(returnData);
-                    //ValueToSend = System.Text.Encoding.ASCII.GetString(returnData);
                 }
                 
                
@@ -138,11 +142,7 @@ namespace vConnect
                 MessageBox.Show("Lost BT Connection", "My Application",
                  MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             }
-            // */
-
-            // byteList = new List<byte>(returnData);
-            // byteList.Add(2);
-            // ValueToSend = "1";
+         
             return true;
             
         }
@@ -157,7 +157,7 @@ namespace vConnect
             if (ReturnDataSize==1)
             {
                 //expr.Parameters["A"] = byteList[1].ToString();
-                expr.Parameters["A"] = equVal1;
+                expr.Parameters["A"] = equVals[0];
             }
 
             // If the equation has A and B...
@@ -165,8 +165,8 @@ namespace vConnect
             {
                 //expr.Parameters["A"] = byteList[1].ToString();
                 //expr.Parameters["B"] = byteList[2];
-                expr.Parameters["A"] = equVal1;
-                expr.Parameters["B"] = equVal2;
+                expr.Parameters["A"] = equVals[0];
+                expr.Parameters["B"] = equVals[1];
             }
             
             // Should we go further?
