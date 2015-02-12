@@ -24,15 +24,16 @@ namespace vConnect
     {
         BluetoothConnectionHandler BTConnection = new BluetoothConnectionHandler();
         ServerConnectionHandler serverConnection = new ServerConnectionHandler();
-        DataCache cache = new DataCache();
+        DataCache cache = null;
 
         public Form1()
         {
             InitializeComponent();
+            cache = new DataCache(serverConnection);
 
             // This will eventauly try to connect to BT device address in a config file, but will do this for now.
             
-             /*
+            /*
             var dlg = new SelectBluetoothDeviceDialog();
             DialogResult result = dlg.ShowDialog(this);
             if (result != DialogResult.OK)
@@ -105,7 +106,7 @@ namespace vConnect
             // Note that for the final version, we will be running all of this in some form of loop, 
             //  not only one time. But for the purposes of making sure each part of this application is
             //  functional, it will be simplest to call them explicitly, once.
-          //  vin.RequestDataFromCar();
+            //  vin.RequestDataFromCar();
             speed.RequestDataFromCar();
             rpm.RequestDataFromCar();
             run_time_since_start.RequestDataFromCar();

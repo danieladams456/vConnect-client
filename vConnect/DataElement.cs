@@ -60,7 +60,7 @@ namespace vConnect
 
         public bool RequestDataFromCar()
         {
-
+            
             string writeString;
             
             if (BTConnection.Client.Connected)
@@ -142,7 +142,7 @@ namespace vConnect
                 MessageBox.Show("Lost BT Connection", "My Application",
                  MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             }
-         
+                     
             return true;
             
         }

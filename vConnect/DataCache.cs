@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using System.Text;
+using System.Net;
 using Newtonsoft.Json;
+using System.Windows.Forms;
 
 namespace vConnect
 {
@@ -17,7 +18,18 @@ namespace vConnect
     {
         List<ElementCluster> cache = new List<ElementCluster>();
         string jsonString = "";
+        ServerConnectionHandler serverConnection;
         
+        public DataCache(ServerConnectionHandler serverConn)
+        {
+            serverConnection = serverConn;
+        }
+
+        public DataCache()
+        {
+            // Empty
+        }
+
         public void AddElementToCache(ElementCluster cluster)
         {
             cache.Add(cluster);
@@ -25,12 +37,47 @@ namespace vConnect
 
         public void SendToServer()
         {
+            /*
+             * In order to test this without needing the actual server runnning, turn on
+             *  Kali in a VM. Make sure that it is connected on the virtual adapter and you
+             *  can ping its IP. Set up a netcat listener with 
+             *  $ echo -e "HTTP/1.1 200 OK\r\n" | nc -l -p 9999 -vvv
+             *  where 9999 is whatever port number you wish. Configure that port number and
+             *  your VM's ip in the settings for the app before you attempt to send the data.
+             *  
+             * Check and make sure the listener received the JSON and that the app received 
+             *  a response of 200. The status code should pop up in a message box.
+            */
             JsonString = JsonConvert.SerializeObject(cache);
-            
-            // JSONstring now contains the correct JSON file to send to the server.
-            
-            
-            // Send it. Server stuff here.
+
+            // Create the web address to connect to
+            string webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber.ToString() + "/";
+                
+            // Create the web request with Json/Post attributes and given address
+            var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
+            httpWebRequest.ContentType = "text/json";
+            httpWebRequest.Method = "POST";
+            httpWebRequest.UserAgent = "vConnect";
+            httpWebRequest.KeepAlive = false;
+    
+            // Write the current JSON string to the server
+            using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+            {
+                streamWriter.Write(JsonString);
+                streamWriter.Flush();
+                streamWriter.Close();
+
+                // Get web response (most importantly, status code)
+                var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                int statusCode = (int)httpResponse.StatusCode;
+
+                MessageBox.Show(statusCode.ToString());
+                // If the web response was anything except 200, then problem. Handle it.
+                //if (statusCode!=200)
+                //{
+                    // Handle Bad Error Request Here!
+                //}
+            }
         }
 
         /// <summary>
