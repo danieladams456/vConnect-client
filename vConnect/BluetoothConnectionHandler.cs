@@ -68,6 +68,7 @@ namespace vConnect
             if (client.Connected)
             {
                 bTConnectionStatus = true;
+                
                 connectLoop = 0;
                 return true;
             }

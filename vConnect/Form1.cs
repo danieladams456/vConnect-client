@@ -30,7 +30,10 @@ namespace vConnect
         {
             InitializeComponent();
             cache = new DataCache(serverConnection);
-
+            // TESTING ONLY !!!
+            serverConnection.PortNumber = 9999;
+            serverConnection.IPAddress = "192.168.56.101";
+   //         server_IP.Text = "192.168.56.101";
             // This will eventauly try to connect to BT device address in a config file, but will do this for now.
             
             /*
@@ -86,8 +89,6 @@ namespace vConnect
         public void requestDataForElements(object sender)
         {
 
-            MessageBox.Show("Beginning of Thread", "My Application",
-                    MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             // Obviously, for the final version, we will not explicitly name these and define
             //  their obdPID and numBytesReturned values. THESE WILL COME FROM THE JSON SCHEMA.
             //  However, for current testing purposes, it will be simpler to call each object by
@@ -106,7 +107,7 @@ namespace vConnect
             // Note that for the final version, we will be running all of this in some form of loop, 
             //  not only one time. But for the purposes of making sure each part of this application is
             //  functional, it will be simplest to call them explicitly, once.
-            //  vin.RequestDataFromCar();
+            vin.RequestDataFromCar();
             speed.RequestDataFromCar();
             rpm.RequestDataFromCar();
             run_time_since_start.RequestDataFromCar();

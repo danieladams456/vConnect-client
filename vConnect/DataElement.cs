@@ -31,7 +31,7 @@ namespace vConnect
 
         // This defines the largest potential size of return data from the car. It should never
         //  really even get close to this value
-        private int MAX_DATA_SIZE= 30;
+        private int MAX_DATA_SIZE= 20;
 
         /// <summary>
         /// Constructor that defines name and PID and number of bytes explicitly 
@@ -44,7 +44,7 @@ namespace vConnect
         {
             name = elementName;
             obdPID = PID;
-            returnData = new byte[numberBytesReturned];
+            returnData = new byte[20];
             ReturnDataSize = numberBytesReturned;
             equation = eqn;
             BTConnection = btconnection;
@@ -68,12 +68,11 @@ namespace vConnect
                 Stream peerStream = BTConnection.Client.GetStream();
                 
                 // Can do this with schema later, hard coded for now
-                if (name == "vin") { writeString = "09" + ObdPID + "\r"; }
+               if (name == "vin") { writeString = "09" + ObdPID + "\r"; }
                
                 else { writeString = "01" + ObdPID + "\r"; }
 
-               
-
+                writeString = "01" + ObdPID + "\r";
 
                 byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
                 peerStream.Write(writeCode, 0, writeCode.Length);
@@ -83,8 +82,8 @@ namespace vConnect
                 
                 peerStream.Read(returnData, 0, returnData.Length);
                 string lengthOfByte = "This is the number of bytes: " + returnData.Length.ToString();
-                MessageBox.Show(lengthOfByte);
-                MessageBox.Show("This is the actual data given: \n " + System.Text.Encoding.ASCII.GetString(returnData));
+             //   MessageBox.Show(lengthOfByte);
+              //  MessageBox.Show("This is the actual data given: \n " + System.Text.Encoding.ASCII.GetString(returnData));
                
                 if (System.Text.Encoding.ASCII.GetString(returnData).Contains("NO DATA"))
                 {
@@ -95,11 +94,11 @@ namespace vConnect
 
                 // Will insert the vin into valueToSend, therefore we will not call formatData for
                 // VIN data elements.
-                else if (name == "vin")
-                {
+                //else if (name == "vin")
+               // {
                 //    valueToSend = System.Text.Encoding.ASCII.GetString(rawTest, 11, 17)
 
-                }
+//                }
 
                 else
                 {
@@ -111,8 +110,8 @@ namespace vConnect
                     if (ReturnDataSize == 1)
                      
                       {
-                          hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
-                      MessageBox.Show("This is the actual data given: \n " + hexLiteral);
+                      hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
+                //      MessageBox.Show("This is the actual data given: \n " + hexLiteral);
                       //equVal1 = Convert.ToInt32(hexLiteral, 16);
                       equVals[0] = Convert.ToInt32(hexLiteral, 16);
 
