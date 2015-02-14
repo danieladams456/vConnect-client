@@ -50,7 +50,7 @@ namespace vConnect
             */
             JsonString = JsonConvert.SerializeObject(cache);
 
-            // Create the web address to connect to
+        /*    // Create the web address to connect to
             string webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber.ToString() + "/";
                 
             // Create the web request with Json/Post attributes and given address
@@ -77,7 +77,7 @@ namespace vConnect
                 //{
                     // Handle Bad Error Request Here!
                 //}
-            }
+            }*/
         }
 
         /// <summary>

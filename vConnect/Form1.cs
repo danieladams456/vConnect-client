@@ -33,10 +33,9 @@ namespace vConnect
             // TESTING ONLY !!!
             serverConnection.PortNumber = 9999;
             serverConnection.IPAddress = "192.168.56.101";
-   //         server_IP.Text = "192.168.56.101";
             // This will eventauly try to connect to BT device address in a config file, but will do this for now.
             
-            /*
+            
             var dlg = new SelectBluetoothDeviceDialog();
             DialogResult result = dlg.ShowDialog(this);
             if (result != DialogResult.OK)
@@ -47,8 +46,10 @@ namespace vConnect
             BluetoothAddress BTaddr = device.DeviceAddress;
             label5.Text = device.DeviceName;
             BTConnection.BluetoothAddress = BTaddr;
-            */
             bool deviceDetect = false;
+            if (BTConnection.EstablishBTConnection())
+                deviceDetect = true;
+       /*     bool deviceDetect = false;
             BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
             int x = 0;
             while (x < peers.Length)
@@ -56,13 +57,18 @@ namespace vConnect
                 if (peers[x].DeviceName == "CBT." || peers[x].DeviceName == "OBDII")
                 {
                     BTConnection.BluetoothAddress = peers[x].DeviceAddress;
-                    x = peers.Length;
-                    deviceDetect = true;
+                   
+                    if (BTConnection.EstablishBTConnection())
+                    {
+                        x = peers.Length;
+                        deviceDetect = true;
+
+                    }
 
                 }
                 x++;
                 
-            }
+            }*/
 
             if (deviceDetect == false)
             {
@@ -74,7 +80,7 @@ namespace vConnect
             else
             {
                 // Attempt to Establish a BT Connection with the device with address BTaddr.
-                BTConnection.EstablishBTConnection();
+                //BTConnection.EstablishBTConnection();
 
                 TimerCallback tcb = requestDataForElements;
                 // make gui element for changing timer time 
