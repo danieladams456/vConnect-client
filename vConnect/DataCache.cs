@@ -19,6 +19,11 @@ namespace vConnect
         List<ElementCluster> cache = new List<ElementCluster>();
         string jsonString = "";
         ServerConnectionHandler serverConnection;
+
+        // NOTE: These values are used for testing purposes only.
+        private bool cacheTest = false;
+        private bool serverTest = false;
+        private bool dataCacheTest = false;
         
         public DataCache(ServerConnectionHandler serverConn)
         {
@@ -91,7 +96,10 @@ namespace vConnect
 
         // C# Accessor Method
         public string JsonString { get { return jsonString; } set { jsonString = value; } }
-
+        public bool CacheTest { get { return cacheTest; } set { cacheTest = value; } }
+        public bool ServerTest { get { return serverTest; } set { serverTest = value; } }
+        public bool DataCacheTest { get { return dataCacheTest; } set { dataCacheTest = value; } }
+    
     }
 
     /// <summary>

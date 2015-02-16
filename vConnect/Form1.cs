@@ -25,32 +25,27 @@ namespace vConnect
         BluetoothConnectionHandler BTConnection = new BluetoothConnectionHandler();
         ServerConnectionHandler serverConnection = new ServerConnectionHandler();
         DataCache cache = null;
+        System.Threading.Timer myTimer;
+
 
         public Form1()
         {
             InitializeComponent();
             cache = new DataCache(serverConnection);
             // TESTING ONLY !!!
-            serverConnection.PortNumber = 9999;
-            serverConnection.IPAddress = "192.168.56.101";
-            // This will eventauly try to connect to BT device address in a config file, but will do this for now.
+            //serverConnection.PortNumber = 9999;
+            //serverConnection.IPAddress = "192.168.56.101";
             
             
-            var dlg = new SelectBluetoothDeviceDialog();
-            DialogResult result = dlg.ShowDialog(this);
-            if (result != DialogResult.OK)
-            {
-                return;
-            }
-            BluetoothDeviceInfo device = dlg.SelectedDevice;
-            BluetoothAddress BTaddr = device.DeviceAddress;
-            label5.Text = device.DeviceName;
-            BTConnection.BluetoothAddress = BTaddr;
+            // This will eventauly try to connect to BT device address in a config file first. 
+            
+            // Adds all detectable BT devices to peers[], then attempts to connect
+            // to any that are OBDII devices.
+
             bool deviceDetect = false;
-            if (BTConnection.EstablishBTConnection())
-                deviceDetect = true;
-       /*     bool deviceDetect = false;
+
             BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
+            
             int x = 0;
             while (x < peers.Length)
             {
@@ -67,24 +62,21 @@ namespace vConnect
 
                 }
                 x++;
-                
-            }*/
-
+            }
+            
+            // Didn't connect to OBDII module, start GUI, but not polling data. 
             if (deviceDetect == false)
             {
                 var msg = "No OBDII devices were detected.";
                 MessageBox.Show(msg);
-
             }
 
+            // Start asychronous timer to poll data from OBDII module. 
             else
             {
-                // Attempt to Establish a BT Connection with the device with address BTaddr.
-                //BTConnection.EstablishBTConnection();
-
                 TimerCallback tcb = requestDataForElements;
                 // make gui element for changing timer time 
-                System.Threading.Timer myTimer = new System.Threading.Timer(tcb, null, 0, 120000);
+                myTimer = new System.Threading.Timer(tcb, null, 0, 120000);
             }
         }
 
@@ -111,19 +103,54 @@ namespace vConnect
             DataElement dist_with_MIL = new DataElement("distance_since_MIL", "21", 2, "(A*256)+B", getBTConnection());
 
             // Note that for the final version, we will be running all of this in some form of loop, 
-            //  not only one time. But for the purposes of making sure each part of this application is
-            //  functional, it will be simplest to call them explicitly, once.
-            vin.RequestDataFromCar();
-            speed.RequestDataFromCar();
-            rpm.RequestDataFromCar();
-            run_time_since_start.RequestDataFromCar();
-            fuel.RequestDataFromCar();
-            oil_temp.RequestDataFromCar();
-            accel.RequestDataFromCar();
-            dist_with_MIL.RequestDataFromCar();
+            // not only one time. But for the purposes of making sure each part of this application is
+            // functional, it will be simplest to call them explicitly, once.
+
+            // Requests Data from Car. If BT connection to OBDII module is lost and not 
+            // automatically regained, then the function will end and the loop stop iterating.
+            if (!vin.RequestDataFromCar())
+            {
+                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                return;
+            }
+            if (speed.RequestDataFromCar())
+            {
+                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                return;
+            }
+            if (rpm.RequestDataFromCar())
+            {
+                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                return;
+            }
+            if (run_time_since_start.RequestDataFromCar())
+            {
+                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                return;
+            }
+            if (fuel.RequestDataFromCar())
+            {
+                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                return;
+            }
+            if (oil_temp.RequestDataFromCar())
+            {
+                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                return;
+            }
+            if (accel.RequestDataFromCar())
+            {
+                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                return;
+            }
+            if (dist_with_MIL.RequestDataFromCar())
+            {
+                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                return;
+            }
 
 
-            // Format ze data. 
+            // Format all the data elements in a manner that will be stored in the data cache. 
             vin.FormatData();
             speed.FormatData();
             rpm.FormatData();
@@ -153,22 +180,8 @@ namespace vConnect
 
             // The following function will write the file to disk. It needs to be made MUCH more robust before Alpha.
             // cache.WriteToDisk();
-            
-
-            // Cleaning up memory
-            vin = null;
-            speed = null;
-            rpm = null;
-            run_time_since_start = null;
-            fuel = null;
-            oil_temp = null;
-            accel = null;
-            dist_with_MIL = null;
-            
-        }
-
-    
-
+          
+       }
 
         /// <summary>
         ///  This handles a simple input dialog box. Taken from 
@@ -237,8 +250,6 @@ namespace vConnect
                   MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
         }
 
-       
-        
         /// <summary>
         ///  Allows the user to enter a new port number using the GUI
         /// </summary>
@@ -313,44 +324,44 @@ namespace vConnect
             BTConnection.BluetoothAddress = BTaddr;
             
             // Can call this elsewhere, just have it here for now. 
-            BTConnection.EstablishBTConnection();
-
-
-            
-         }
-
-        /// <summary>
-        /// Sample read/write code, nothing crazy thus far. 
-        /// </summary>
-        /// <returns></returns>
-        /// 
-        /*        Stream peerStream = cli.GetStream();
-                    string stuff = "010D\r";
-                    byte[] test = System.Text.Encoding.ASCII.GetBytes(stuff);
-                    peerStream.Write(test, 0, test.Length);
-
-         *             System.Threading.Thread.Sleep(10000);
-
-                    byte[] readtest = new byte[200];
-                    peerStream.Read(readtest, 0, 199);
-                    string da = "not a code";
-                    da = System.Text.Encoding.ASCII.GetString(readtest); 
-                    MessageBox.Show(da, "My Application",
-                            MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);*/
-
-
+            if (BTConnection.EstablishBTConnection())
+                myTimer.Change(0, 120000);
+        }
 
         public BluetoothConnectionHandler getBTConnection()
         {
             return BTConnection;
         }
 
-       
+        private void button3_Click(object sender, EventArgs e)
+        {
+            cache.DataCacheTest = true;
+        }
 
-      
+        private void OBDIITest_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ServerTest_Click(object sender, EventArgs e)
+        {
+            cache.ServerTest = true;
+        }
+
+        private void RemoveTest_Click(object sender, EventArgs e)
+        {
+            cache.CacheTest = true;
+        }
+
+        private void Disconnect_BT_Click(object sender, EventArgs e)
+        {
+            BTConnection.CloseBTConnection();
+        }
+
+        private void DataTest_Click(object sender, EventArgs e)
+        {
+
+        }
 
     }
-
-
-
 }

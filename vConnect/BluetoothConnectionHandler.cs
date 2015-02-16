@@ -31,7 +31,7 @@ namespace vConnect
         private string PIN = "1234";
 
         // Number of times vConnect with attempt to connect to the application. 
-        private int connectionAttempts = 5;
+        private int connectionAttempts = 7;
 
   
         public bool EstablishBTConnection()

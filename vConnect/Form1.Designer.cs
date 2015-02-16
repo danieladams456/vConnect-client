@@ -50,6 +50,12 @@
             this.device_Status_Label = new System.Windows.Forms.Label();
             this.browse_button = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
+            this.OBDIITest = new System.Windows.Forms.Button();
+            this.DataTest = new System.Windows.Forms.Button();
+            this.CacheTest = new System.Windows.Forms.Button();
+            this.ServerTest = new System.Windows.Forms.Button();
+            this.RemoveTest = new System.Windows.Forms.Button();
+            this.Disconnect_BT = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // trayIcon
@@ -237,13 +243,78 @@
             this.label5.Size = new System.Drawing.Size(131, 13);
             this.label5.TabIndex = 24;
             this.label5.Text = "Connect to ODBII Device:";
-           
+            // 
+            // OBDIITest
+            // 
+            this.OBDIITest.Location = new System.Drawing.Point(456, 248);
+            this.OBDIITest.Name = "OBDIITest";
+            this.OBDIITest.Size = new System.Drawing.Size(75, 45);
+            this.OBDIITest.TabIndex = 25;
+            this.OBDIITest.Text = "Test OBDII codes";
+            this.OBDIITest.UseVisualStyleBackColor = true;
+            this.OBDIITest.Click += new System.EventHandler(this.OBDIITest_Click);
+            // 
+            // DataTest
+            // 
+            this.DataTest.Location = new System.Drawing.Point(378, 248);
+            this.DataTest.Name = "DataTest";
+            this.DataTest.Size = new System.Drawing.Size(75, 45);
+            this.DataTest.TabIndex = 26;
+            this.DataTest.Text = "Test Vehicle Data Elements";
+            this.DataTest.UseVisualStyleBackColor = true;
+            this.DataTest.Click += new System.EventHandler(this.DataTest_Click);
+            // 
+            // CacheTest
+            // 
+            this.CacheTest.Location = new System.Drawing.Point(294, 248);
+            this.CacheTest.Name = "CacheTest";
+            this.CacheTest.Size = new System.Drawing.Size(75, 45);
+            this.CacheTest.TabIndex = 27;
+            this.CacheTest.Text = "Test Data Cache";
+            this.CacheTest.UseVisualStyleBackColor = true;
+            this.CacheTest.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // ServerTest
+            // 
+            this.ServerTest.Location = new System.Drawing.Point(213, 248);
+            this.ServerTest.Name = "ServerTest";
+            this.ServerTest.Size = new System.Drawing.Size(75, 45);
+            this.ServerTest.TabIndex = 28;
+            this.ServerTest.Text = "Test Data to Server";
+            this.ServerTest.UseVisualStyleBackColor = true;
+            this.ServerTest.Click += new System.EventHandler(this.ServerTest_Click);
+            // 
+            // RemoveTest
+            // 
+            this.RemoveTest.Location = new System.Drawing.Point(110, 248);
+            this.RemoveTest.Name = "RemoveTest";
+            this.RemoveTest.Size = new System.Drawing.Size(97, 45);
+            this.RemoveTest.TabIndex = 29;
+            this.RemoveTest.Text = "Test Removing data from cache";
+            this.RemoveTest.UseVisualStyleBackColor = true;
+            this.RemoveTest.Click += new System.EventHandler(this.RemoveTest_Click);
+            // 
+            // Disconnect_BT
+            // 
+            this.Disconnect_BT.Location = new System.Drawing.Point(12, 194);
+            this.Disconnect_BT.Name = "Disconnect_BT";
+            this.Disconnect_BT.Size = new System.Drawing.Size(75, 45);
+            this.Disconnect_BT.TabIndex = 30;
+            this.Disconnect_BT.Text = "Disconnect to BT Device";
+            this.Disconnect_BT.UseVisualStyleBackColor = true;
+            this.Disconnect_BT.Click += new System.EventHandler(this.Disconnect_BT_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(543, 334);
+            this.Controls.Add(this.Disconnect_BT);
+            this.Controls.Add(this.RemoveTest);
+            this.Controls.Add(this.ServerTest);
+            this.Controls.Add(this.CacheTest);
+            this.Controls.Add(this.DataTest);
+            this.Controls.Add(this.OBDIITest);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.browse_button);
             this.Controls.Add(this.device_Status_Label);
@@ -292,6 +363,12 @@
         private System.Windows.Forms.Label device_Status_Label;
         private System.Windows.Forms.Button browse_button;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Button OBDIITest;
+        private System.Windows.Forms.Button DataTest;
+        private System.Windows.Forms.Button CacheTest;
+        private System.Windows.Forms.Button ServerTest;
+        private System.Windows.Forms.Button RemoveTest;
+        private System.Windows.Forms.Button Disconnect_BT;
 
     }
 }

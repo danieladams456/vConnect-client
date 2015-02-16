@@ -22,7 +22,11 @@ namespace vConnect
         private string valueToSend = "";
         private string equation = "";
         private int[] equVals = new int[10];
+        private bool noDataCheck = false;
 
+        // NOTE: These are only used for testing purposes.
+        private bool testOBDII = false;
+        private bool testVehicleData = false;
 
         // This connection gets passed from the caller. It is the current connection.
         public BluetoothConnectionHandler BTConnection;
@@ -56,6 +60,13 @@ namespace vConnect
             returnData = new byte[MAX_DATA_SIZE];
         }
 
+        /// <summary>
+        /// Writes OBDII code to OBDII module, and parses the return bytes according the the code.
+        /// </summary>
+        /// <returns>
+        /// true - ODBII codes was successfully requested and corresponding data was read successfully.  
+        /// False - Connection to the BT Device was lost. 
+        /// </returns>
         public bool RequestDataFromCar()
         {
             
@@ -67,51 +78,60 @@ namespace vConnect
             {
                 Stream peerStream = BTConnection.Client.GetStream();
                 
-                // Can do this with schema later, hard coded for now
-                if (name == "vin") { writeString = "09" + ObdPID + "\r"; }
-               
+                // Creates proper string to write to the OBDII module to request data. 
+                if (name == "vin")
+                {
+                    writeString = "09" + ObdPID + "\r"; 
+                    returnData = new byte[50];
+                }
+
                 else { writeString = "01" + ObdPID + "\r"; }
 
-                writeString = "01" + ObdPID + "\r";
-
-                byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
-                peerStream.Write(writeCode, 0, writeCode.Length);
-
-                System.Threading.Thread.Sleep(10000);
-                
-                
-                peerStream.Read(returnData, 0, returnData.Length);
-                MessageBox.Show(System.Text.Encoding.ASCII.GetString(returnData));
-
-                string lengthOfByte = "This is the number of bytes: " + returnData.Length.ToString();
-             //   MessageBox.Show(lengthOfByte);
-              //  MessageBox.Show("This is the actual data given: \n " + System.Text.Encoding.ASCII.GetString(returnData));
-               
-                if (System.Text.Encoding.ASCII.GetString(returnData).Contains("NO DATA"))
+                try
                 {
-                    // do whatever we are going to do if no data is received.
+                    // Encode the writeString, then write it to the OBDII module. 
+                    byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
+                    peerStream.Write(writeCode, 0, writeCode.Length);
 
+                    // Wait 10 seconds for the OBDII module to process the code request
+                    System.Threading.Thread.Sleep(10000);
+
+                    // Read the OBDII code data from the OBDII module.
+                    peerStream.Read(returnData, 0, returnData.Length);
+                }
+
+                // Attempt to reconnect to OBDII device.
+                // If connection is true, recall RequestDataFromCar()
+                catch (Exception ex)
+                {
+                    if (BTConnection.EstablishBTConnection())
+                        RequestDataFromCar();
+                    else
+                    {
+                        var msg = "failed to connect to BT Device. ERROR: " + ex;
+                        MessageBox.Show(msg);
+                        BTConnection.SendWindowsErrorMessage();
+                        return false;
+                    }
 
                 }
 
+                if (System.Text.Encoding.ASCII.GetString(returnData).Contains("NO DATA"))
+                    noDataCheck = true;    
+
                 // Will insert the vin into valueToSend, therefore we will not call formatData for
                 // VIN data elements.
-                //else if (name == "vin")
-               // {
-                //    valueToSend = System.Text.Encoding.ASCII.GetString(rawTest, 11, 17)
-
-//                }
-
+                // have to format correctly. 
+                else if (name == "vin")
+                    valueToSend = System.Text.Encoding.ASCII.GetString(returnData, 5, 40);
+                
                 else
                 {
-                    
-                  
                     //Skips repeated bytes.
                     if (ReturnDataSize == 1)
                     {
                       hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
                       equVals[0] = Convert.ToInt32(hexLiteral, 16);
-
                     }
                     else if (ReturnDataSize == 2)
                    {
@@ -120,19 +140,16 @@ namespace vConnect
                           equVals[0] = Convert.ToInt32(hexLiteral, 16);
                           equVals[1] = Convert.ToInt32(hexLiteral2, 16);
                    }
-
                 }
-                
-               
             }
             else 
             {
                 MessageBox.Show("Lost BT Connection", "My Application",
                  MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                return false;
             }
                      
             return true;
-            
         }
 
 
@@ -141,31 +158,36 @@ namespace vConnect
             // Create an expression with the equation specified.
             Expression expr = new Expression(Equation);
 
-            // If the equation only has an "A"
-            if (ReturnDataSize==1)
-            {
-                //expr.Parameters["A"] = byteList[1].ToString();
-                expr.Parameters["A"] = equVals[0];
-            }
-
-            // If the equation has A and B...
-            else if (ReturnDataSize==2)
-            {
-                //expr.Parameters["A"] = byteList[1].ToString();
-                //expr.Parameters["B"] = byteList[2];
-                expr.Parameters["A"] = equVals[0];
-                expr.Parameters["B"] = equVals[1];
-            }
+            // Send empty string if no data was read from OBDII device.
+            if (noDataCheck == true)
+                valueToSend = "";
             
-            // Should we go further?
-            // else if...
+            // Compute values to store in the data cache.
+            else
+            {
+                // If the equation only has an "A"
+                if (ReturnDataSize == 1)
+                {
+                    expr.Parameters["A"] = equVals[0];
+                }
 
-            // evaluate the expression with the variables
-            object answerToExpression = expr.Evaluate();
+                // If the equation has A and B...
+                else if (ReturnDataSize == 2)
+                {
+                    expr.Parameters["A"] = equVals[0];
+                    expr.Parameters["B"] = equVals[1];
+                }
 
-            // Store the formatted answer in the valueToSend variable.
-            ValueToSend = answerToExpression.ToString();
+                // Should we go further?
+                // else if...
 
+                // evaluate the expression with the variables
+                object answerToExpression = expr.Evaluate();
+
+                // Store the formatted answer in the valueToSend variable.
+                ValueToSend = answerToExpression.ToString();
+
+            }
             return;
         }
 
@@ -192,33 +214,9 @@ namespace vConnect
 
         public string Equation { get { return equation; } set { equation = value; } }
 
+        public bool TestOBDII { get { return testOBDII; } set { testOBDII = value; } }
+
+        public bool TestVehicleData { get { return testVehicleData; } set { testVehicleData = value; } }
+
     }
-
 }
-
-
-
-
-
-
-
-
-/*
-           
-               
-			
-			
-               // Since the data received back repeats the mode (e.g. Mode 01) and the PID (e.g. "0D"), we will have a 
-               // 	temporary holding space for the response.
-               // 	For example, the response will be like "410D17".
-               int recievedRaw = 0;
-               recievedRaw = listenForResponse();
-
-               // Depending on the size of the actual return data we are looking for, shift the raw response the given
-               // 	number of bytes and store it in returnData. We do not want the first two bytes (e.g. 410D)
-               // 	See Maciek's answer on http://stackoverflow.com/questions/1318933/c-sharp-int-to-byte for more details.
-               returnData = (byte)(recievedRaw >> 8*getReturnDataSize());	
-		
-           }
-		   
-           */
