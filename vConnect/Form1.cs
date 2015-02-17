@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
@@ -15,6 +16,8 @@ using InTheHand.Net.Sockets;
 using InTheHand.Net.Ports;
 using InTheHand.Net.Bluetooth;
 using InTheHand.Windows.Forms;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 
 namespace vConnect
@@ -25,6 +28,9 @@ namespace vConnect
         BluetoothConnectionHandler BTConnection = new BluetoothConnectionHandler();
         ServerConnectionHandler serverConnection = new ServerConnectionHandler();
         DataCache cache = null;
+        List<Dictionary<string,object>> elementDictionaryList = 
+                                                new List<Dictionary<string,object>>();
+        String schema = "";
 
         public Form1()
         {
@@ -95,12 +101,17 @@ namespace vConnect
         public void requestDataForElements(object sender)
         {
 
+
+
+            // DataElement(elementName, mode, PID, dataType, numberBytesReturned, eqn, btconnection)
+                   
             // Obviously, for the final version, we will not explicitly name these and define
             //  their obdPID and numBytesReturned values. THESE WILL COME FROM THE JSON SCHEMA.
             //  However, for current testing purposes, it will be simpler to call each object by
             //  the name of the actual element.
             // Name, obdPID, numBytes
             
+            /*
             DataElement vin = new DataElement("vin", "02", 1, "A", getBTConnection());
             DataElement speed = new DataElement("speed", "0D", 1, "A", getBTConnection());
             DataElement rpm = new DataElement("rpm", "0C", 2, "((A*256)+B)/4", getBTConnection());
@@ -109,10 +120,13 @@ namespace vConnect
             DataElement oil_temp = new DataElement("oil_temp", "5C", 1, "A - 40", getBTConnection());
             DataElement accel = new DataElement("accel_position", "5A", 1, "A*100/255", getBTConnection());
             DataElement dist_with_MIL = new DataElement("distance_since_MIL", "21", 2, "(A*256)+B", getBTConnection());
-
+            */
+             
             // Note that for the final version, we will be running all of this in some form of loop, 
             //  not only one time. But for the purposes of making sure each part of this application is
             //  functional, it will be simplest to call them explicitly, once.
+            
+            /*
             vin.RequestDataFromCar();
             speed.RequestDataFromCar();
             rpm.RequestDataFromCar();
@@ -121,9 +135,10 @@ namespace vConnect
             oil_temp.RequestDataFromCar();
             accel.RequestDataFromCar();
             dist_with_MIL.RequestDataFromCar();
+            */
 
 
-            // Format ze data. 
+            /* 
             vin.FormatData();
             speed.FormatData();
             rpm.FormatData();
@@ -132,13 +147,16 @@ namespace vConnect
             oil_temp.FormatData();
             accel.FormatData();
             dist_with_MIL.FormatData();
+            */ 
 
+            /*
             // Send to cache!
             // Create new cluster containing each of the values read.
             ElementCluster cluster = new ElementCluster(vin.ValueToSend, speed.ValueToSend, rpm.ValueToSend,
                                             run_time_since_start.ValueToSend, fuel.ValueToSend, oil_temp.ValueToSend,
                                             accel.ValueToSend, dist_with_MIL.ValueToSend);
 
+            
             // Add cluster to the list of clusters in the cache.
             cache.AddElementToCache(cluster);
             cache.AddElementToCache(cluster);
@@ -164,6 +182,9 @@ namespace vConnect
             oil_temp = null;
             accel = null;
             dist_with_MIL = null;
+             * 
+            */
+            
             
         }
 
@@ -220,6 +241,8 @@ namespace vConnect
             return dialogResult;
 
         }
+
+
         /// <summary>
         /// This button will close the setting GUI without applying any changes made.
         /// </summary>
@@ -319,38 +342,172 @@ namespace vConnect
             
          }
 
-        /// <summary>
-        /// Sample read/write code, nothing crazy thus far. 
-        /// </summary>
-        /// <returns></returns>
-        /// 
-        /*        Stream peerStream = cli.GetStream();
-                    string stuff = "010D\r";
-                    byte[] test = System.Text.Encoding.ASCII.GetBytes(stuff);
-                    peerStream.Write(test, 0, test.Length);
-
-         *             System.Threading.Thread.Sleep(10000);
-
-                    byte[] readtest = new byte[200];
-                    peerStream.Read(readtest, 0, 199);
-                    string da = "not a code";
-                    da = System.Text.Encoding.ASCII.GetString(readtest); 
-                    MessageBox.Show(da, "My Application",
-                            MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);*/
-
-
 
         public BluetoothConnectionHandler getBTConnection()
         {
             return BTConnection;
         }
 
-       
+        /// <summary>
+        /// Update the Schema from the supplied web site, and store it in schema.json
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void getSchema_Click(object sender, EventArgs e)
+        {
+            string address = "http://vconnect-danieladams456.rhcloud.com/schema";
+            WebClient client = new WebClient();
+            Stream stream = client.OpenRead(address);
+            StreamReader reader = new StreamReader(stream);
+            String json = reader.ReadToEnd();
+            File.WriteAllText("schema.json", json);
+        }
 
-      
+        private void start_Click(object sender, EventArgs e)
+        {
+            string schema = schemaUpdate();          
+            List<DataElement> elemList = new List<DataElement>();
+            Dictionary<string,object> dictionary =  new Dictionary<string,object>();
+            
+            // This will loop through the make, read, add to cache process 10x.
+            for (int a = 0; a < 10; a++)
+            {
+                elemList = createElementsFromSchema(schema);
+                elemList = getElementData(elemList);
+                dictionary = createDictionary(elemList);
+                cache.AddElementToCache(dictionary);
+            }
+
+            cache.SendToServer();
+        }
+
+        private string schemaUpdate()
+        {
+            // GET SCHEMA!
+            try
+            {
+                StreamReader reader = new StreamReader("schema.json");
+                schema = reader.ReadToEnd();
+            }
+            catch (FileNotFoundException exception)
+            {
+                schema = "NOT FOUND";
+                // ERROR GOES HERE WITH EXCEPTION
+            }
+            return schema;
+        }
+
+        private List<DataElement> createElementsFromSchema(string schema)
+        {      
+            JObject jsonObjectList = JObject.Parse(schema);
+            List<DataElement> elementList = new List<DataElement>();
+
+            // Temporary variables to hold data before object creation.
+            string name = "", mode = "", code = "", size = "", type = "", equation = "";
+            
+            foreach (var pair in jsonObjectList)
+            {
+                name = pair.Key;
+
+                if (jsonObjectList[name]["mode"] == null)
+                    mode = "n/a";
+                else
+                    mode = (string)jsonObjectList[name]["mode"];
+
+                if (jsonObjectList[name]["code"] == null)
+                    code = "n/a";
+                else
+                    code = (string)jsonObjectList[name]["code"];
+
+                if (jsonObjectList[name]["size"] == null)
+                    size = "0";
+                else
+                    size = (string)jsonObjectList[name]["size"];
+
+                if (jsonObjectList[name]["type"] == null)
+                    type = "n/a";
+                else 
+                    type = (string)jsonObjectList[name]["type"];
+
+                if (jsonObjectList[name]["equation"] == null)
+                    equation = "n/a";
+                else 
+                    equation = (string)jsonObjectList[name]["equation"];
+
+                // Add a DataElement to the list containing the values of the parsed object.
+                elementList.Add(new DataElement(name, mode, code, type, Int32.Parse(size), equation, getBTConnection()));
+
+            }
+
+            return elementList;
+
+        }
+
+        private List<DataElement> getElementData(List<DataElement> elemList)
+        {
+            // We now have a List of DataElements that matches the schema.
+
+            // For each element in the list, if the element is not for TIME, 
+            //  get data from the car and format it.
+            foreach (DataElement elem in elemList)
+            {
+                if (elem.DataType == "date")
+                {
+                    // Do something here to place the date into this element.
+                }
+                else
+                {
+                    // Get data from the car for the element and format it.
+                    elem.RequestDataFromCar();
+                    elem.FormatData();
+                }
+            }
+
+            return elemList;
+        }
+
+        private Dictionary<string,object> createDictionary(List<DataElement> elemList)
+        {    
+            var elementDictionary = new Dictionary<string, object>();
+            
+            foreach (DataElement elem in elemList)
+            {
+                if (elem.DataType == "number")
+                    elementDictionary.Add(elem.Name, Int32.Parse(elem.ValueToSend));
+                else if (elem.DataType == "date") // Do we need to format 
+                                                  //  the date in a special way?
+                    elementDictionary.Add(elem.Name, elem.ValueToSend);
+                else if (elem.DataType == "string")
+                    elementDictionary.Add(elem.Name, elem.ValueToSend);
+            }
+
+            return elementDictionary;
+        }      
 
     }
 
+
+
+
+
+    /// <summary>
+    /// Sample read/write code, nothing crazy thus far. 
+    /// </summary>
+    /// <returns></returns>
+    /// 
+    /*        Stream peerStream = cli.GetStream();
+                string stuff = "010D\r";
+                byte[] test = System.Text.Encoding.ASCII.GetBytes(stuff);
+                peerStream.Write(test, 0, test.Length);
+
+     *             System.Threading.Thread.Sleep(10000);
+
+                byte[] readtest = new byte[200];
+                peerStream.Read(readtest, 0, 199);
+                string da = "not a code";
+                da = System.Text.Encoding.ASCII.GetString(readtest); 
+                MessageBox.Show(da, "My Application",
+                        MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);*/
 
 
 }

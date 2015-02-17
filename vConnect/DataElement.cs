@@ -16,7 +16,9 @@ namespace vConnect
     public class DataElement
     {
         private string obdPID = "";
+        private string obdMode = "";
         private string name = "";
+        private string dataType = "";
         private int returnDataSize = 0;
         private byte[] returnData;
         private string valueToSend = "";
@@ -38,13 +40,15 @@ namespace vConnect
         /// <param name="PID">OBD PID to send to the car to get this value</param>
         /// <param name="numberBytesReturned">Number of bytes the car will return</param>
         /// <param name="btconnection">Current BT ConnectionHandler object.</param>
-        public DataElement(string elementName, string PID, int numberBytesReturned, string eqn, BluetoothConnectionHandler btconnection)
+        public DataElement(string elementName, string mode, string PID, string type, int numberBytesReturned, string eqn, BluetoothConnectionHandler btconnection)
         {
-            name = elementName;
-            obdPID = PID;
-            returnData = new byte[MAX_DATA_SIZE];
+            Name = elementName;
+            ObdMode = mode;
+            ObdPID = PID;
+            DataType = type;
+            ReturnData = new byte[MAX_DATA_SIZE];
             ReturnDataSize = numberBytesReturned;
-            equation = eqn;
+            Equation = eqn;
             BTConnection = btconnection;
         }
 
@@ -68,11 +72,10 @@ namespace vConnect
                 Stream peerStream = BTConnection.Client.GetStream();
                 
                 // Can do this with schema later, hard coded for now
-                if (name == "vin") { writeString = "09" + ObdPID + "\r"; }
-               
-                else { writeString = "01" + ObdPID + "\r"; }
+                // if (name == "vin") { writeString = "09" + ObdPID + "\r"; }
+                // else { writeString = "01" + ObdPID + "\r"; }
 
-                writeString = "01" + ObdPID + "\r";
+                writeString = ObdMode + ObdPID + "\r";
 
                 byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
                 peerStream.Write(writeCode, 0, writeCode.Length);
@@ -84,8 +87,8 @@ namespace vConnect
                 MessageBox.Show(System.Text.Encoding.ASCII.GetString(returnData));
 
                 string lengthOfByte = "This is the number of bytes: " + returnData.Length.ToString();
-             //   MessageBox.Show(lengthOfByte);
-              //  MessageBox.Show("This is the actual data given: \n " + System.Text.Encoding.ASCII.GetString(returnData));
+                //   MessageBox.Show(lengthOfByte);
+                //  MessageBox.Show("This is the actual data given: \n " + System.Text.Encoding.ASCII.GetString(returnData));
                
                 if (System.Text.Encoding.ASCII.GetString(returnData).Contains("NO DATA"))
                 {
@@ -182,7 +185,11 @@ namespace vConnect
 
         public string ObdPID { get { return obdPID; } set { obdPID = value; } }
 
+        public string ObdMode { get { return obdMode; } set { obdMode = value; } }
+
         public string Name { get { return name; } set { name = value; } }
+
+        public string DataType { get { return dataType; } set { dataType = value; } }
 
         public int ReturnDataSize { get { return returnDataSize; } set { returnDataSize = value; } }
 

@@ -50,6 +50,8 @@
             this.device_Status_Label = new System.Windows.Forms.Label();
             this.browse_button = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
+            this.getSchema = new System.Windows.Forms.Button();
+            this.start = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // trayIcon
@@ -237,13 +239,34 @@
             this.label5.Size = new System.Drawing.Size(131, 13);
             this.label5.TabIndex = 24;
             this.label5.Text = "Connect to ODBII Device:";
-           
+            // 
+            // getSchema
+            // 
+            this.getSchema.Location = new System.Drawing.Point(378, 139);
+            this.getSchema.Name = "getSchema";
+            this.getSchema.Size = new System.Drawing.Size(100, 23);
+            this.getSchema.TabIndex = 25;
+            this.getSchema.Text = "Update Schema";
+            this.getSchema.UseVisualStyleBackColor = true;
+            this.getSchema.Click += new System.EventHandler(this.getSchema_Click);
+            // 
+            // start
+            // 
+            this.start.Location = new System.Drawing.Point(378, 164);
+            this.start.Name = "start";
+            this.start.Size = new System.Drawing.Size(75, 23);
+            this.start.TabIndex = 26;
+            this.start.Text = "Start";
+            this.start.UseVisualStyleBackColor = true;
+            this.start.Click += new System.EventHandler(this.start_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(543, 334);
+            this.Controls.Add(this.start);
+            this.Controls.Add(this.getSchema);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.browse_button);
             this.Controls.Add(this.device_Status_Label);
@@ -292,6 +315,8 @@
         private System.Windows.Forms.Label device_Status_Label;
         private System.Windows.Forms.Button browse_button;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Button getSchema;
+        private System.Windows.Forms.Button start;
 
     }
 }
