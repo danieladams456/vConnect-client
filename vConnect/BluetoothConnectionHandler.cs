@@ -36,7 +36,11 @@ namespace vConnect
   
         public bool EstablishBTConnection()
         {
-            
+            // Close connection if already established. 
+            // Not sure if we want to try and auto-connect to previous. 
+            if (client.Connected)
+                client.Close();
+
             serviceClass = BluetoothService.SerialPort;
             endpoint = new BluetoothEndPoint(bluetoothAddress, serviceClass);
          
@@ -68,7 +72,8 @@ namespace vConnect
             if (client.Connected)
             {
                 bTConnectionStatus = true;
-                
+                Properties.Settings.Default.BTDeviceName = deviceID;
+                Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
                 connectLoop = 0;
                 return true;
             }
@@ -84,7 +89,14 @@ namespace vConnect
         /// <returns></returns>
         public bool CloseBTConnection()
         {
-            if (client.Connected) { client.Close(); return true; }
+            if (client.Connected)
+            
+            {
+                Properties.Settings.Default.BTAddress = "";
+                Properties.Settings.Default.BTDeviceName = "";
+                client.Close(); 
+                return true; 
+            }
             else
             {
                 MessageBox.Show("No connection to close.", "My Application",

@@ -35,35 +35,61 @@ namespace vConnect
             // TESTING ONLY !!!
             //serverConnection.PortNumber = 9999;
             //serverConnection.IPAddress = "192.168.56.101";
-            
-            
+            bool deviceDetect = false;
+            TimerCallback tcb = requestDataForElements;
             // This will eventauly try to connect to BT device address in a config file first. 
             
             // Adds all detectable BT devices to peers[], then attempts to connect
             // to any that are OBDII devices.
-
-            bool deviceDetect = false;
-
-            BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
-            
-            int x = 0;
-            while (x < peers.Length)
+            if (Properties.Settings.Default.BTAddress != "")
             {
-                if (peers[x].DeviceName == "CBT." || peers[x].DeviceName == "OBDII")
+                BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
+                if(BTConnection.EstablishBTConnection())
                 {
-                    BTConnection.BluetoothAddress = peers[x].DeviceAddress;
-                   
-                    if (BTConnection.EstablishBTConnection())
-                    {
-                        x = peers.Length;
-                        deviceDetect = true;
-
-                    }
+                    BT_ID.Text = Properties.Settings.Default.BTDeviceName;
+                    device_Status_Label.Text = "Connected";
+                    byte[] introMessage = new byte[100];
+                    deviceDetect = true;
+                    System.Threading.Thread.Sleep(5000);
+                    // Read any intro text from pesky BT modules.
+                    Stream peerStream = BTConnection.Client.GetStream();
+                    peerStream.Read(introMessage, 0, 100);
+                    peerStream.Close();
 
                 }
-                x++;
+               
             }
-            
+            else if (!deviceDetect)
+            {
+                BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
+
+                int x = 0;
+                while (x < peers.Length)
+                {
+                    if (peers[x].DeviceName == "CBT." || peers[x].DeviceName == "OBDII")
+                    {
+                        BTConnection.BluetoothAddress = peers[x].DeviceAddress;
+
+                        if (BTConnection.EstablishBTConnection())
+                        {
+                            BT_ID.Text = peers[x].DeviceName;
+                            BTConnection.DeviceID = peers[x].DeviceName;
+                            device_Status_Label.Text = "Connected";
+                            byte[] introMessage = new byte[100];
+                            x = peers.Length;
+                            deviceDetect = true;
+                            System.Threading.Thread.Sleep(5000);
+                            // Read any intro text from pesky BT modules.
+                            Stream peerStream = BTConnection.Client.GetStream();
+                            peerStream.Read(introMessage, 0, 100);
+                            peerStream.Close();
+
+                        }
+
+                    }
+                    x++;
+                }
+            }
             // Didn't connect to OBDII module, start GUI, but not polling data. 
             if (deviceDetect == false)
             {
@@ -74,7 +100,6 @@ namespace vConnect
             // Start asychronous timer to poll data from OBDII module. 
             else
             {
-                TimerCallback tcb = requestDataForElements;
                 // make gui element for changing timer time 
                 myTimer = new System.Threading.Timer(tcb, null, 0, 120000);
             }
@@ -110,41 +135,55 @@ namespace vConnect
             // automatically regained, then the function will end and the loop stop iterating.
             if (!vin.RequestDataFromCar())
             {
+                device_Status_Label.Text = "Disconnected";
                 myTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 return;
             }
-            if (speed.RequestDataFromCar())
+            if (!speed.RequestDataFromCar())
             {
+                device_Status_Label.Text = "Disconnected";
+
                 myTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 return;
             }
-            if (rpm.RequestDataFromCar())
+            if (!rpm.RequestDataFromCar())
             {
+                device_Status_Label.Text = "Disconnected";
+
                 myTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 return;
             }
-            if (run_time_since_start.RequestDataFromCar())
+            if (!run_time_since_start.RequestDataFromCar())
             {
+                device_Status_Label.Text = "Disconnected";
+
                 myTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 return;
             }
-            if (fuel.RequestDataFromCar())
+            if (!fuel.RequestDataFromCar())
             {
+                device_Status_Label.Text = "Disconnected";
+
                 myTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 return;
             }
-            if (oil_temp.RequestDataFromCar())
+            if (!oil_temp.RequestDataFromCar())
             {
+                device_Status_Label.Text = "Disconnected";
+
                 myTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 return;
             }
-            if (accel.RequestDataFromCar())
+            if (!accel.RequestDataFromCar())
             {
+                device_Status_Label.Text = "Disconnected";
+
                 myTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 return;
             }
-            if (dist_with_MIL.RequestDataFromCar())
+            if (!dist_with_MIL.RequestDataFromCar())
             {
+                device_Status_Label.Text = "Disconnected";
                 myTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 return;
             }
@@ -290,8 +329,7 @@ namespace vConnect
 
         private void apply_button_Click(object sender, EventArgs e)
         {
-            /*(MessageBox.Show("The calculations are complete", "My Application",
-/MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);*/
+            
         }
 
         private void ok_button_Click(object sender, EventArgs e)
@@ -320,12 +358,17 @@ namespace vConnect
             }
             BluetoothDeviceInfo device = dlg.SelectedDevice;
             BluetoothAddress BTaddr = device.DeviceAddress;
-            label5.Text = device.DeviceName;
             BTConnection.BluetoothAddress = BTaddr;
             
             // Can call this elsewhere, just have it here for now. 
             if (BTConnection.EstablishBTConnection())
+            {
+                device_Status_Label.Text = "Connected";
+                BTConnection.DeviceID = device.DeviceName;
+                label5.Text = device.DeviceName;
                 myTimer.Change(0, 120000);
+                BT_ID.Text = device.DeviceName;
+            }
         }
 
         public BluetoothConnectionHandler getBTConnection()

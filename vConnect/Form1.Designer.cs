@@ -300,7 +300,7 @@
             this.Disconnect_BT.Name = "Disconnect_BT";
             this.Disconnect_BT.Size = new System.Drawing.Size(75, 45);
             this.Disconnect_BT.TabIndex = 30;
-            this.Disconnect_BT.Text = "Disconnect to BT Device";
+            this.Disconnect_BT.Text = "Disconnect BT Device";
             this.Disconnect_BT.UseVisualStyleBackColor = true;
             this.Disconnect_BT.Click += new System.EventHandler(this.Disconnect_BT_Click);
             // 
