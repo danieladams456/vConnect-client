@@ -285,8 +285,8 @@ namespace vConnect
         
         private void help_button_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Sorry, this button isn't quite helpful yet...", "My Application",
-                  MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+            MessageBox.Show("");
+           
         }
 
         /// <summary>
