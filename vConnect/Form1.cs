@@ -66,12 +66,14 @@ namespace vConnect
                 int x = 0;
                 while (x < peers.Length)
                 {
+                    MessageBox.Show("what");
                     if (peers[x].DeviceName == "CBT." || peers[x].DeviceName == "OBDII")
                     {
                         BTConnection.BluetoothAddress = peers[x].DeviceAddress;
 
                         if (BTConnection.EstablishBTConnection())
                         {
+                            MessageBox.Show("what2");
                             BT_ID.Text = peers[x].DeviceName;
                             BTConnection.DeviceID = peers[x].DeviceName;
                             device_Status_Label.Text = "Connected";
@@ -79,10 +81,12 @@ namespace vConnect
                             x = peers.Length;
                             deviceDetect = true;
                             System.Threading.Thread.Sleep(5000);
+                            MessageBox.Show("waht3");
                             // Read any intro text from pesky BT modules.
-                            Stream peerStream = BTConnection.Client.GetStream();
-                            peerStream.Read(introMessage, 0, 100);
-                            peerStream.Close();
+                           // Stream peerStream = BTConnection.Client.GetStream();
+                            //peerStream.Read(introMessage, 0, 100);
+                            
+                          //  peerStream.Close();
 
                         }
 

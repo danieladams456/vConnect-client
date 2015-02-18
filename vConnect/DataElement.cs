@@ -81,11 +81,12 @@ namespace vConnect
                 // Creates proper string to write to the OBDII module to request data. 
                 if (name == "vin")
                 {
-                    writeString = "09" + ObdPID + "\r"; 
+               //     writeString = "09" + ObdPID + "\r"; 
                     returnData = new byte[50];
                 }
 
                 else { writeString = "01" + ObdPID + "\r"; }
+                writeString = "01" + ObdPID + "\r";
 
                 try
                 {
