@@ -16,7 +16,9 @@ namespace vConnect
     public class DataElement
     {
         private string obdPID = "";
+        private string obdMode = "";
         private string name = "";
+        private string dataType = "";
         private int returnDataSize = 0;
         private byte[] returnData;
         private string valueToSend = "";
@@ -42,12 +44,14 @@ namespace vConnect
         /// <param name="PID">OBD PID to send to the car to get this value</param>
         /// <param name="numberBytesReturned">Number of bytes the car will return</param>
         /// <param name="btconnection">Current BT ConnectionHandler object.</param>
-        public DataElement(string elementName, string PID, int numberBytesReturned, string eqn, BluetoothConnectionHandler btconnection)
+        public DataElement(string elementName, string mode, string PID, string type, int numberBytesReturned, string eqn, BluetoothConnectionHandler btconnection)
         {
             name = elementName;
+            obdMode = mode;
             obdPID = PID;
+            dataType = type;
             returnData = new byte[MAX_DATA_SIZE];
-            ReturnDataSize = numberBytesReturned;
+            returnDataSize = numberBytesReturned;
             equation = eqn;
             BTConnection = btconnection;
         }
@@ -85,8 +89,9 @@ namespace vConnect
                     returnData = new byte[50];
                 }
 
-                else { writeString = "01" + ObdPID + "\r"; }
-                writeString = "01" + ObdPID + "\r";
+                else { writeString = "01" + obdPID + "\r"; }
+                writeString = "01" + obdPID + "\r";
+
 
                 try
                 {
@@ -100,6 +105,7 @@ namespace vConnect
                     // Read the OBDII code data from the OBDII module.
                     peerStream.Read(returnData, 0, returnData.Length);
                 }
+               
 
                 // Attempt to reconnect to OBDII device.
                 // If connection is true, recall RequestDataFromCar()
@@ -129,12 +135,12 @@ namespace vConnect
                 else
                 {
                     //Skips repeated bytes.
-                    if (ReturnDataSize == 1)
+                    if (returnDataSize == 1)
                     {
                       hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
                       equVals[0] = Convert.ToInt32(hexLiteral, 16);
                     }
-                    else if (ReturnDataSize == 2)
+                    else if (returnDataSize == 2)
                    {
                           hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
                           hexLiteral2 =  System.Text.Encoding.ASCII.GetString(returnData, 14, 1) + System.Text.Encoding.ASCII.GetString(returnData, 15, 1);
@@ -156,9 +162,10 @@ namespace vConnect
 
         public void FormatData()
         {
-            // Create an expression with the equation specified.
-            Expression expr = new Expression(Equation);
 
+            // Create an expression with the equation specified.
+            Expression expr = new Expression(equation);
+            
             // Send empty string if no data was read from OBDII device.
             if (noDataCheck == true)
                 valueToSend = "";
@@ -167,10 +174,13 @@ namespace vConnect
             else
             {
                 // If the equation only has an "A"
-                if (ReturnDataSize == 1)
+                if (returnDataSize == 1)
                 {
+                    //expr.Parameters["A"] = byteList[1].ToString();
+
                     expr.Parameters["A"] = equVals[0];
                 }
+            
 
                 // If the equation has A and B...
                 else if (ReturnDataSize == 2)
@@ -205,7 +215,11 @@ namespace vConnect
 
         public string ObdPID { get { return obdPID; } set { obdPID = value; } }
 
+        public string ObdMode { get { return obdMode; } set { obdMode = value; } }
+
         public string Name { get { return name; } set { name = value; } }
+
+        public string DataType { get { return dataType; } set { dataType = value; } }
 
         public int ReturnDataSize { get { return returnDataSize; } set { returnDataSize = value; } }
 

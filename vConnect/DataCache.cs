@@ -16,7 +16,8 @@ namespace vConnect
     /// </summary>
     class DataCache
     {
-        List<ElementCluster> cache = new List<ElementCluster>();
+        //List<ElementCluster> cache = new List<ElementCluster>();
+        List<Dictionary<string, object>> cache = new List<Dictionary<string, object>>();
         string jsonString = "";
         ServerConnectionHandler serverConnection;
 
@@ -35,9 +36,9 @@ namespace vConnect
             // Empty
         }
 
-        public void AddElementToCache(ElementCluster cluster)
+        public void AddElementToCache(Dictionary<string,object> dictionary)
         {
-            cache.Add(cluster);
+            cache.Add(dictionary);
         }
 
         public void SendToServer()

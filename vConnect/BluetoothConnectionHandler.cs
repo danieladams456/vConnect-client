@@ -23,6 +23,7 @@ namespace vConnect
         private BluetoothAddress bluetoothAddress;
         private BluetoothEndPoint endpoint;
         private Guid serviceClass;
+        // Declare this later and do exception handling for if no bt card
         private BluetoothClient client = new BluetoothClient();
         private int connectLoop = 0;
 

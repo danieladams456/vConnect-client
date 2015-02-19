@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
@@ -15,6 +16,8 @@ using InTheHand.Net.Sockets;
 using InTheHand.Net.Ports;
 using InTheHand.Net.Bluetooth;
 using InTheHand.Windows.Forms;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 
 namespace vConnect
@@ -27,6 +30,9 @@ namespace vConnect
         DataCache cache = null;
         System.Threading.Timer myTimer;
 
+        List<Dictionary<string,object>> elementDictionaryList = 
+                                                new List<Dictionary<string,object>>();
+        String schema = "";
 
         public Form1()
         {
@@ -42,7 +48,7 @@ namespace vConnect
             // Adds all detectable BT devices to peers[], then attempts to connect
             // to any that are OBDII devices.
             if (Properties.Settings.Default.BTAddress != "")
-            {
+            {          
                 BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
                 if(BTConnection.EstablishBTConnection())
                 {
@@ -50,30 +56,30 @@ namespace vConnect
                     device_Status_Label.Text = "Connected";
                     byte[] introMessage = new byte[100];
                     deviceDetect = true;
-                    System.Threading.Thread.Sleep(5000);
+                    //System.Threading.Thread.Sleep(5000);
                     // Read any intro text from pesky BT modules.
                     Stream peerStream = BTConnection.Client.GetStream();
                     peerStream.Read(introMessage, 0, 100);
                     peerStream.Close();
 
                 }
-               
             }
+               
+            // Automatically search for OBDII device, and connect if able. 
             else if (!deviceDetect)
             {
-                BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
-
-                int x = 0;
-                while (x < peers.Length)
-                {
-                    MessageBox.Show("what");
-                    if (peers[x].DeviceName == "CBT." || peers[x].DeviceName == "OBDII")
+               
+            BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
+            int x = 0;
+            while (x < peers.Length)
+            {
+ 
+                if (peers[x].DeviceName == "CBT." || peers[x].DeviceName == "OBDII")
                     {
                         BTConnection.BluetoothAddress = peers[x].DeviceAddress;
 
                         if (BTConnection.EstablishBTConnection())
                         {
-                            MessageBox.Show("what2");
                             BT_ID.Text = peers[x].DeviceName;
                             BTConnection.DeviceID = peers[x].DeviceName;
                             device_Status_Label.Text = "Connected";
@@ -81,7 +87,6 @@ namespace vConnect
                             x = peers.Length;
                             deviceDetect = true;
                             System.Threading.Thread.Sleep(5000);
-                            MessageBox.Show("waht3");
                             // Read any intro text from pesky BT modules.
                            // Stream peerStream = BTConnection.Client.GetStream();
                             //peerStream.Read(introMessage, 0, 100);
@@ -95,19 +100,22 @@ namespace vConnect
                 }
             }
             // Didn't connect to OBDII module, start GUI, but not polling data. 
-            if (deviceDetect == false)
-            {
-                var msg = "No OBDII devices were detected.";
-                MessageBox.Show(msg);
-            }
+           
+           if (deviceDetect == false)
+                MessageBox.Show("No OBDII devices were detected.");
+                // set Cursor to red. 
 
             // Start asychronous timer to poll data from OBDII module. 
-            else
-            {
-                // make gui element for changing timer time 
+            
+            
+               // make gui element for changing timer time 
+           else 
                 myTimer = new System.Threading.Timer(tcb, null, 0, 120000);
+            
+
             }
-        }
+        
+        
 
         /// <summary>
         /// This function serves as the launching point for requesting data.
@@ -115,12 +123,17 @@ namespace vConnect
         /// </summary>
         public void requestDataForElements(object sender)
         {
+            
+            /*
 
+            // DataElement(elementName, mode, PID, dataType, numberBytesReturned, eqn, btconnection)
+                   
             // Obviously, for the final version, we will not explicitly name these and define
             //  their obdPID and numBytesReturned values. THESE WILL COME FROM THE JSON SCHEMA.
             //  However, for current testing purposes, it will be simpler to call each object by
             //  the name of the actual element.
             // Name, obdPID, numBytes
+            
             
             DataElement vin = new DataElement("vin", "02", 1, "A", getBTConnection());
             DataElement speed = new DataElement("speed", "0D", 1, "A", getBTConnection());
@@ -130,7 +143,8 @@ namespace vConnect
             DataElement oil_temp = new DataElement("oil_temp", "5C", 1, "A - 40", getBTConnection());
             DataElement accel = new DataElement("accel_position", "5A", 1, "A*100/255", getBTConnection());
             DataElement dist_with_MIL = new DataElement("distance_since_MIL", "21", 2, "(A*256)+B", getBTConnection());
-
+            
+             
             // Note that for the final version, we will be running all of this in some form of loop, 
             // not only one time. But for the purposes of making sure each part of this application is
             // functional, it will be simplest to call them explicitly, once.
@@ -191,9 +205,25 @@ namespace vConnect
                 myTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 return;
             }
-
+            
 
             // Format all the data elements in a manner that will be stored in the data cache. 
+            //  not only one time. But for the purposes of making sure each part of this application is
+            //  functional, it will be simplest to call them explicitly, once.
+            
+            
+            vin.RequestDataFromCar();
+            speed.RequestDataFromCar();
+            rpm.RequestDataFromCar();
+            run_time_since_start.RequestDataFromCar();
+            fuel.RequestDataFromCar();
+            oil_temp.RequestDataFromCar();
+            accel.RequestDataFromCar();
+            dist_with_MIL.RequestDataFromCar();
+            
+
+
+             
             vin.FormatData();
             speed.FormatData();
             rpm.FormatData();
@@ -202,13 +232,16 @@ namespace vConnect
             oil_temp.FormatData();
             accel.FormatData();
             dist_with_MIL.FormatData();
+             
 
+            
             // Send to cache!
             // Create new cluster containing each of the values read.
             ElementCluster cluster = new ElementCluster(vin.ValueToSend, speed.ValueToSend, rpm.ValueToSend,
                                             run_time_since_start.ValueToSend, fuel.ValueToSend, oil_temp.ValueToSend,
                                             accel.ValueToSend, dist_with_MIL.ValueToSend);
 
+            
             // Add cluster to the list of clusters in the cache.
             cache.AddElementToCache(cluster);
             cache.AddElementToCache(cluster);
@@ -223,8 +256,12 @@ namespace vConnect
 
             // The following function will write the file to disk. It needs to be made MUCH more robust before Alpha.
             // cache.WriteToDisk();
-          
+          */
        }
+           
+
+    
+
 
         /// <summary>
         ///  This handles a simple input dialog box. Taken from 
@@ -276,6 +313,8 @@ namespace vConnect
             return dialogResult;
 
         }
+
+
         /// <summary>
         /// This button will close the setting GUI without applying any changes made.
         /// </summary>
@@ -324,11 +363,15 @@ namespace vConnect
             {
                 server_IP.Text = value;
 
-                /* Should probably validate IP address here... */
+                // Should probably validate IP address here... 
 
-                serverConnection.IPAddress = value;
+    //            serverConnection.IPAddress = value;
             }
-        }
+         }
+        
+
+
+
 
 
         private void apply_button_Click(object sender, EventArgs e)
@@ -410,5 +453,143 @@ namespace vConnect
 
         }
 
+
+        /// <summary>
+        /// Update the Schema from the supplied web site, and store it in schema.json
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void getSchema_Click(object sender, EventArgs e)
+        {
+            string address = "http://vconnect-danieladams456.rhcloud.com/schema";
+            WebClient client = new WebClient();
+            Stream stream = client.OpenRead(address);
+            StreamReader reader = new StreamReader(stream);
+            String json = reader.ReadToEnd();
+            File.WriteAllText("schema.json", json);
+        }
+
+        private void start_Click(object sender, EventArgs e)
+        {
+            string schema = schemaUpdate();          
+            List<DataElement> elemList = new List<DataElement>();
+            Dictionary<string,object> dictionary =  new Dictionary<string,object>();
+            
+            // This will loop through the make, read, add to cache process 10x.
+            for (int a = 0; a < 10; a++)
+            {
+                elemList = createElementsFromSchema(schema);
+                elemList = getElementData(elemList);
+                dictionary = createDictionary(elemList);
+                cache.AddElementToCache(dictionary);
+            }
+
+            cache.SendToServer();
+        }
+
+        private string schemaUpdate()
+        {
+            // GET SCHEMA!
+            try
+            {
+                StreamReader reader = new StreamReader("schema.json");
+                schema = reader.ReadToEnd();
+            }
+            catch (FileNotFoundException exception)
+            {
+                schema = "NOT FOUND";
+                // ERROR GOES HERE WITH EXCEPTION
+            }
+            return schema;
+        }
+
+        private List<DataElement> createElementsFromSchema(string schema)
+        {      
+            JObject jsonObjectList = JObject.Parse(schema);
+            List<DataElement> elementList = new List<DataElement>();
+
+            // Temporary variables to hold data before object creation.
+            string name = "", mode = "", code = "", size = "", type = "", equation = "";
+            
+            foreach (var pair in jsonObjectList)
+            {
+                name = pair.Key;
+
+                if (jsonObjectList[name]["mode"] == null)
+                    mode = "n/a";
+                else
+                    mode = (string)jsonObjectList[name]["mode"];
+
+                if (jsonObjectList[name]["code"] == null)
+                    code = "n/a";
+                else
+                    code = (string)jsonObjectList[name]["code"];
+
+                if (jsonObjectList[name]["size"] == null)
+                    size = "0";
+                else
+                    size = (string)jsonObjectList[name]["size"];
+
+                if (jsonObjectList[name]["type"] == null)
+                    type = "n/a";
+                else 
+                    type = (string)jsonObjectList[name]["type"];
+
+                if (jsonObjectList[name]["equation"] == null)
+                    equation = "n/a";
+                else 
+                    equation = (string)jsonObjectList[name]["equation"];
+
+                // Add a DataElement to the list containing the values of the parsed object.
+                elementList.Add(new DataElement(name, mode, code, type, Int32.Parse(size), equation, getBTConnection()));
+
+            }
+
+            return elementList;
+
+        }
+
+        private List<DataElement> getElementData(List<DataElement> elemList)
+        {
+            // We now have a List of DataElements that matches the schema.
+
+            // For each element in the list, if the element is not for TIME, 
+            //  get data from the car and format it.
+            foreach (DataElement elem in elemList)
+            {
+                if (elem.DataType == "date")
+                {
+                    // Do something here to place the date into this element.
+                }
+                else
+                {
+                    // Get data from the car for the element and format it.
+                    elem.RequestDataFromCar();
+                    elem.FormatData();
+                }
+            }
+
+            return elemList;
+        }
+
+        private Dictionary<string,object> createDictionary(List<DataElement> elemList)
+        {    
+            var elementDictionary = new Dictionary<string, object>();
+            
+            foreach (DataElement elem in elemList)
+            {
+                if (elem.DataType == "number")
+                    elementDictionary.Add(elem.Name, Int32.Parse(elem.ValueToSend));
+                else if (elem.DataType == "date") // Do we need to format 
+                                                  //  the date in a special way?
+                    elementDictionary.Add(elem.Name, elem.ValueToSend);
+                else if (elem.DataType == "string")
+                    elementDictionary.Add(elem.Name, elem.ValueToSend);
+            }
+
+            return elementDictionary;
+        }      
+
     }
+
 }
