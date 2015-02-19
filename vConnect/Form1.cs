@@ -83,6 +83,7 @@ namespace vConnect
 
                         if (BTConnection.EstablishBTConnection())
                         {
+                            MessageBox.Show("Connected via Auto Serach");
                             BT_ID.Text = peers[peerCounter].DeviceName;
                             BTConnection.DeviceID = peers[peerCounter].DeviceName;
                             device_Status_Label.Text = "Connected";
@@ -399,25 +400,31 @@ namespace vConnect
        /// <param name="e"></param>
         private void browse_button_Click(object sender, EventArgs e)
         {
-           
-            var dlg = new SelectBluetoothDeviceDialog();
-            DialogResult result = dlg.ShowDialog(this);
-            if (result != DialogResult.OK)
+            var msg = "Please disconnect current OBDII connection " +
+                "before connecting to a new OBDII device";
+            if (BTConnection.Client.Connected)
+                MessageBox.Show(msg);
+            else
             {
-                return;
-            }
-            BluetoothDeviceInfo device = dlg.SelectedDevice;
-            BluetoothAddress BTaddr = device.DeviceAddress;
-            BTConnection.BluetoothAddress = BTaddr;
-            
-            // Can call this elsewhere, just have it here for now. 
-            if (BTConnection.EstablishBTConnection())
-            {
-                device_Status_Label.Text = "Connected";
-                BTConnection.DeviceID = device.DeviceName;
-                label5.Text = device.DeviceName;
-                myTimer.Change(0, 120000);
-                BT_ID.Text = device.DeviceName;
+                var dlg = new SelectBluetoothDeviceDialog();
+                DialogResult result = dlg.ShowDialog(this);
+                if (result != DialogResult.OK)
+                {
+                    return;
+                }
+                BluetoothDeviceInfo device = dlg.SelectedDevice;
+                BluetoothAddress BTaddr = device.DeviceAddress;
+                BTConnection.BluetoothAddress = BTaddr;
+
+                // Can call this elsewhere, just have it here for now. 
+                if (BTConnection.EstablishBTConnection())
+                {
+                    device_Status_Label.Text = "Connected via browser button.";
+                    BTConnection.DeviceID = device.DeviceName;
+                    label5.Text = device.DeviceName;
+                    myTimer.Change(0, 120000);
+                    BT_ID.Text = device.DeviceName;
+                }
             }
         }
 
@@ -596,7 +603,7 @@ namespace vConnect
     
         private void checkForErrorCodes()
         {
-
+            /*
             if (BTConnection.Client.Connected)
             {
                 // encode message
@@ -618,7 +625,7 @@ namespace vConnect
 
             }
             else
-                MessageBox.Show("Cannot Check for Error Codes, no BT connection.");
+                MessageBox.Show("Cannot Check for Error Codes, no BT connection.");*/
         }
 
         

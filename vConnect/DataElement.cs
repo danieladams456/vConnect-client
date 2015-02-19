@@ -107,7 +107,12 @@ namespace vConnect
                         + "\n vin4: " + System.Text.Encoding.ASCII.GetString(vin4);
 
 
-                    valueToSend = "VIN going here...";
+               // Not formatted     
+                    valueToSend = System.Text.Encoding.ASCII.GetString(vin1)
+                        + System.Text.Encoding.ASCII.GetString(vin2)
+                        + System.Text.Encoding.ASCII.GetString(vin3)
+                        + System.Text.Encoding.ASCII.GetString(vin4);
+                    MessageBox.Show("Unformatted VIN: " + valueToSend);
                     // probably do parsing here and skip format data... 
                 }
 
