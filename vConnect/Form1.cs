@@ -52,15 +52,18 @@ namespace vConnect
                 BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
                 if(BTConnection.EstablishBTConnection())
                 {
+                    MessageBox.Show("Connected From Settings!");
                     BT_ID.Text = Properties.Settings.Default.BTDeviceName;
                     device_Status_Label.Text = "Connected";
-                    byte[] introMessage = new byte[100];
                     deviceDetect = true;
-                    //System.Threading.Thread.Sleep(5000);
                     // Read any intro text from pesky BT modules.
-                    Stream peerStream = BTConnection.Client.GetStream();
-                    peerStream.Read(introMessage, 0, 100);
-                    peerStream.Close();
+                    //System.Threading.Thread.Sleep(5000);
+
+                    //byte[] introMessage = new byte[100];
+
+                    //Stream peerStream = BTConnection.Client.GetStream();
+                    //peerStream.Read(introMessage, 0, 100);
+                    //peerStream.Close();
 
                 }
             }
@@ -70,21 +73,21 @@ namespace vConnect
             {
                
             BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
-            int x = 0;
-            while (x < peers.Length)
+            int peerCounter = 0;
+            while (peerCounter < peers.Length)
             {
  
-                if (peers[x].DeviceName == "CBT." || peers[x].DeviceName == "OBDII")
+                if (peers[peerCounter].DeviceName == "CBT." || peers[peerCounter].DeviceName == "OBDII")
                     {
-                        BTConnection.BluetoothAddress = peers[x].DeviceAddress;
+                        BTConnection.BluetoothAddress = peers[peerCounter].DeviceAddress;
 
                         if (BTConnection.EstablishBTConnection())
                         {
-                            BT_ID.Text = peers[x].DeviceName;
-                            BTConnection.DeviceID = peers[x].DeviceName;
+                            BT_ID.Text = peers[peerCounter].DeviceName;
+                            BTConnection.DeviceID = peers[peerCounter].DeviceName;
                             device_Status_Label.Text = "Connected";
                             byte[] introMessage = new byte[100];
-                            x = peers.Length;
+                            peerCounter = peers.Length;
                             deviceDetect = true;
                             System.Threading.Thread.Sleep(5000);
                             // Read any intro text from pesky BT modules.
@@ -96,21 +99,21 @@ namespace vConnect
                         }
 
                     }
-                    x++;
+                    peerCounter++;
                 }
             }
             // Didn't connect to OBDII module, start GUI, but not polling data. 
            
            if (deviceDetect == false)
-                MessageBox.Show("No OBDII devices were detected.");
+                MessageBox.Show("No OBDII devices were connected to automatically.");
                 // set Cursor to red. 
 
             // Start asychronous timer to poll data from OBDII module. 
             
             
                // make gui element for changing timer time 
-           else 
-                myTimer = new System.Threading.Timer(tcb, null, 0, 120000);
+           //else 
+            //    myTimer = new System.Threading.Timer(tcb, null, 0, 120000);
             
 
             }

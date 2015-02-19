@@ -85,68 +85,88 @@ namespace vConnect
                 // Creates proper string to write to the OBDII module to request data. 
                 if (name == "vin")
                 {
-               //     writeString = "09" + ObdPID + "\r"; 
-                    returnData = new byte[50];
-                }
-
-                else { writeString = "01" + obdPID + "\r"; }
-                writeString = "01" + obdPID + "\r";
-
-
-                try
-                {
-                    // Encode the writeString, then write it to the OBDII module. 
+                    writeString = "09" + ObdPID + "\r";
+                    returnData = new byte[200];
+                    byte[] vin1 = new byte[50];
+                    byte[] vin2 = new byte[50];
+                    byte[] vin3 = new byte[50];
+                    byte[] vin4 = new byte[50]; 
                     byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
                     peerStream.Write(writeCode, 0, writeCode.Length);
+                    System.Threading.Thread.Sleep(7000);
+                    peerStream.Read(vin1, 0, vin1.Length);
+                    System.Threading.Thread.Sleep(7000);
+                    peerStream.Read(vin2, 0, vin2.Length);
+                    System.Threading.Thread.Sleep(7000);
+                    peerStream.Read(vin3, 0, vin3.Length);
+                    System.Threading.Thread.Sleep(7000);
+                    peerStream.Read(vin4, 0, vin4.Length);
+                    var msg = "VIN Codes read: \n vin1: " + System.Text.Encoding.ASCII.GetString(vin1)
+                        + "\n vin2: " + System.Text.Encoding.ASCII.GetString(vin2)
+                        + "\n vin3: " + System.Text.Encoding.ASCII.GetString(vin3)
+                        + "\n vin4: " + System.Text.Encoding.ASCII.GetString(vin4);
 
-                    // Wait 10 seconds for the OBDII module to process the code request
-                    System.Threading.Thread.Sleep(10000);
 
-                    // Read the OBDII code data from the OBDII module.
-                    peerStream.Read(returnData, 0, returnData.Length);
-                }
-               
-
-                // Attempt to reconnect to OBDII device.
-                // If connection is true, recall RequestDataFromCar()
-                catch (Exception ex)
-                {
-                    if (BTConnection.EstablishBTConnection())
-                        RequestDataFromCar();
-                    else
-                    {
-                        var msg = "failed to connect to BT Device. ERROR: " + ex;
-                        MessageBox.Show(msg);
-                        BTConnection.SendWindowsErrorMessage();
-                        return false;
-                    }
-
+                    // probably do parsing here and skip format data... 
                 }
 
-                if (System.Text.Encoding.ASCII.GetString(returnData).Contains("NO DATA"))
-                    noDataCheck = true;    
-
-                // Will insert the vin into valueToSend, therefore we will not call formatData for
-                // VIN data elements.
-                // have to format correctly. 
-                else if (name == "vin")
-                    valueToSend = System.Text.Encoding.ASCII.GetString(returnData, 5, 40);
-                
                 else
                 {
-                    //Skips repeated bytes.
-                    if (returnDataSize == 1)
+                    writeString = "01" + obdPID + "\r";
+
+
+                    try
                     {
-                      hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
-                      equVals[0] = Convert.ToInt32(hexLiteral, 16);
+                        // Encode the writeString, then write it to the OBDII module. 
+                        byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
+                        peerStream.Write(writeCode, 0, writeCode.Length);
+
+                        // Wait 10 seconds for the OBDII module to process the code request
+                        System.Threading.Thread.Sleep(10000);
+
+                        // Read the OBDII code data from the OBDII module.
+                        peerStream.Read(returnData, 0, returnData.Length);
                     }
-                    else if (returnDataSize == 2)
-                   {
-                          hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
-                          hexLiteral2 =  System.Text.Encoding.ASCII.GetString(returnData, 14, 1) + System.Text.Encoding.ASCII.GetString(returnData, 15, 1);
-                          equVals[0] = Convert.ToInt32(hexLiteral, 16);
-                          equVals[1] = Convert.ToInt32(hexLiteral2, 16);
-                   }
+
+
+                    // Attempt to reconnect to OBDII device.
+                    // If connection is true, recall RequestDataFromCar()
+                    catch (Exception ex)
+                    {
+                        if (BTConnection.EstablishBTConnection())
+                            RequestDataFromCar();
+                        else
+                        {
+                            var msg = "failed to connect to BT Device. ERROR: " + ex;
+                            MessageBox.Show(msg);
+                            BTConnection.SendWindowsErrorMessage();
+                            return false;
+                        }
+
+                    }
+
+                    if (System.Text.Encoding.ASCII.GetString(returnData).Contains("NO DATA"))
+                        noDataCheck = true;
+
+                    // Will insert the vin into valueToSend, therefore we will not call formatData for
+                    // VIN data elements.
+                    // have to format correctly. 
+
+                   
+                        //Skips repeated bytes.
+                        if (returnDataSize == 1)
+                        {
+                            hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
+                            equVals[0] = Convert.ToInt32(hexLiteral, 16);
+                        }
+                        else if (returnDataSize == 2)
+                        {
+                            hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
+                            hexLiteral2 = System.Text.Encoding.ASCII.GetString(returnData, 14, 1) + System.Text.Encoding.ASCII.GetString(returnData, 15, 1);
+                            equVals[0] = Convert.ToInt32(hexLiteral, 16);
+                            equVals[1] = Convert.ToInt32(hexLiteral2, 16);
+                        }
+                    
                 }
             }
             else 
