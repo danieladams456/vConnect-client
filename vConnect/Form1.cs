@@ -485,6 +485,7 @@ namespace vConnect
                 elemList = getElementData(elemList);
                 dictionary = createDictionary(elemList);
                 cache.AddElementToCache(dictionary);
+                checkForErrorCodes();
             }
 
             cache.SendToServer();
@@ -591,7 +592,41 @@ namespace vConnect
             }
 
             return elementDictionary;
-        }      
+        }  
+    
+        private void checkForErrorCodes()
+        {
+
+            if (BTConnection.Client.Connected)
+            {
+                // encode message
+                byte[] writeCode = System.Text.Encoding.ASCII.GetBytes("03");
+                Stream peerStream = BTConnection.Client.GetStream();
+                peerStream.Write(writeCode, 0, writeCode.Length);
+
+                bool parse = true;
+
+                // Parser
+                
+                while (!parse)
+                {
+                    System.Threading.Thread.Sleep(10000);
+
+
+
+                }
+
+            }
+            else
+                MessageBox.Show("Cannot Check for Error Codes, no BT connection.");
+        }
+
+        
+        
+        
+        
+
+
 
     }
 

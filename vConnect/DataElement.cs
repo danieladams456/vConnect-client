@@ -107,6 +107,7 @@ namespace vConnect
                         + "\n vin4: " + System.Text.Encoding.ASCII.GetString(vin4);
 
 
+                    valueToSend = "VIN going here...";
                     // probably do parsing here and skip format data... 
                 }
 
