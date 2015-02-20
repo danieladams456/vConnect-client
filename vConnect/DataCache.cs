@@ -18,7 +18,6 @@ namespace vConnect
     {
         //List<ElementCluster> cache = new List<ElementCluster>();
         List<Dictionary<string, object>> cache = new List<Dictionary<string, object>>();
-        string jsonString = "";
         ServerConnectionHandler serverConnection;
 
         // NOTE: These values are used for testing purposes only.
@@ -54,7 +53,6 @@ namespace vConnect
              * Check and make sure the listener received the JSON and that the app received 
              *  a response of 200. The status code should pop up in a message box.
             */
-            JsonString = JsonConvert.SerializeObject(cache);
             MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
         /*    // Create the web address to connect to
             string webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber.ToString() + "/";
@@ -96,7 +94,7 @@ namespace vConnect
         }
 
         // C# Accessor Method
-        public string JsonString { get { return jsonString; } set { jsonString = value; } }
+        public string JsonString { get { return JsonConvert.SerializeObject(cache); } }
         public bool CacheTest { get { return cacheTest; } set { cacheTest = value; } }
         public bool ServerTest { get { return serverTest; } set { serverTest = value; } }
         public bool DataCacheTest { get { return dataCacheTest; } set { dataCacheTest = value; } }
