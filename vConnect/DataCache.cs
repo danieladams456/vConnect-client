@@ -55,7 +55,7 @@ namespace vConnect
              *  a response of 200. The status code should pop up in a message box.
             */
             JsonString = JsonConvert.SerializeObject(cache);
-
+            MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
         /*    // Create the web address to connect to
             string webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber.ToString() + "/";
                 

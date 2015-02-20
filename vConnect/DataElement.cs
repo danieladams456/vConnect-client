@@ -83,7 +83,7 @@ namespace vConnect
                 Stream peerStream = BTConnection.Client.GetStream();
                 
                 // Creates proper string to write to the OBDII module to request data. 
-                if (name == "vin")
+                if (name == "VIN")
                 {
                     writeString = "09" + ObdPID + "\r";
                     returnData = new byte[200];
@@ -99,20 +99,48 @@ namespace vConnect
                     peerStream.Read(vin2, 0, vin2.Length);
                     System.Threading.Thread.Sleep(7000);
                     peerStream.Read(vin3, 0, vin3.Length);
-                    System.Threading.Thread.Sleep(7000);
-                    peerStream.Read(vin4, 0, vin4.Length);
+                    //System.Threading.Thread.Sleep(7000);
+                    //peerStream.Read(vin4, 0, vin4.Length);
                     var msg = "VIN Codes read: \n vin1: " + System.Text.Encoding.ASCII.GetString(vin1)
                         + "\n vin2: " + System.Text.Encoding.ASCII.GetString(vin2)
-                        + "\n vin3: " + System.Text.Encoding.ASCII.GetString(vin3)
-                        + "\n vin4: " + System.Text.Encoding.ASCII.GetString(vin4);
+                        + "\n vin3: " + System.Text.Encoding.ASCII.GetString(vin3);
+                   //     + "\n vin4: " + System.Text.Encoding.ASCII.GetString(vin4);
 
 
                // Not formatted     
                     valueToSend = System.Text.Encoding.ASCII.GetString(vin1)
                         + System.Text.Encoding.ASCII.GetString(vin2)
-                        + System.Text.Encoding.ASCII.GetString(vin3)
-                        + System.Text.Encoding.ASCII.GetString(vin4);
+                        + System.Text.Encoding.ASCII.GetString(vin3);
+                        //+ System.Text.Encoding.ASCII.GetString(vin4);
+                    valueToSend = valueToSend.Substring(4, valueToSend.Length - 4);
                     MessageBox.Show("Unformatted VIN: " + valueToSend);
+                    valueToSend = Regex.Replace(valueToSend, @" ", "");
+                    valueToSend = Regex.Replace(valueToSend, @"\r", "");
+                    valueToSend = Regex.Replace(valueToSend, @">", "");
+
+                    valueToSend = Regex.Replace(valueToSend, @"\0", "");
+
+                    //
+                    string res = String.Empty;
+
+                    for (int a = 0; a < valueToSend.Length; a = a + 2)
+                    {
+                        string Char2Convert = valueToSend.Substring(a, 2);
+                        int n = Convert.ToInt32(Char2Convert, 16);
+                        char c = (char)n;
+
+                        res += c.ToString();
+
+                    }
+
+                        ///
+
+                    res = Regex.Replace(res, @"I", "");
+                    valueToSend = res;
+                    valueToSend = Regex.Replace(valueToSend, @"\0", "");
+                    valueToSend = Regex.Replace(valueToSend, @" ", "");
+                    valueToSend = Regex.Replace(valueToSend, @"[^a-zA-Z0-9]", "");
+                    MessageBox.Show(valueToSend);
                     // probably do parsing here and skip format data... 
                 }
 
@@ -132,6 +160,7 @@ namespace vConnect
 
                         // Read the OBDII code data from the OBDII module.
                         peerStream.Read(returnData, 0, returnData.Length);
+                        MessageBox.Show(System.Text.Encoding.ASCII.GetString(returnData));
                     }
 
 
@@ -152,13 +181,17 @@ namespace vConnect
                     }
 
                     if (System.Text.Encoding.ASCII.GetString(returnData).Contains("NO DATA"))
+                    {
+                        valueToSend = "";
                         noDataCheck = true;
+                    }
+                    else
+                    {
+                        // Will insert the vin into valueToSend, therefore we will not call formatData for
+                        // VIN data elements.
+                        // have to format correctly. 
 
-                    // Will insert the vin into valueToSend, therefore we will not call formatData for
-                    // VIN data elements.
-                    // have to format correctly. 
 
-                   
                         //Skips repeated bytes.
                         if (returnDataSize == 1)
                         {
@@ -172,6 +205,7 @@ namespace vConnect
                             equVals[0] = Convert.ToInt32(hexLiteral, 16);
                             equVals[1] = Convert.ToInt32(hexLiteral2, 16);
                         }
+                    }
                     
                 }
             }
@@ -189,41 +223,45 @@ namespace vConnect
         public void FormatData()
         {
 
-            // Create an expression with the equation specified.
-            Expression expr = new Expression(equation);
-            
-            // Send empty string if no data was read from OBDII device.
-            if (noDataCheck == true)
-                valueToSend = "";
-            
-            // Compute values to store in the data cache.
-            else
+            if (name != "VIN")
             {
-                // If the equation only has an "A"
-                if (returnDataSize == 1)
+                MessageBox.Show(name);
+                // Create an expression with the equation specified.
+                Expression expr = new Expression(equation);
+
+                // Send empty string if no data was read from OBDII device.
+                if (noDataCheck == true)
+                    valueToSend = "";
+
+                // Compute values to store in the data cache.
+                else
                 {
-                    //expr.Parameters["A"] = byteList[1].ToString();
+                    // If the equation only has an "A"
+                    if (returnDataSize == 1)
+                    {
+                        //expr.Parameters["A"] = byteList[1].ToString();
 
-                    expr.Parameters["A"] = equVals[0];
+                        expr.Parameters["A"] = equVals[0];
+                    }
+
+
+                    // If the equation has A and B...
+                    else if (ReturnDataSize == 2)
+                    {
+                        expr.Parameters["A"] = equVals[0];
+                        expr.Parameters["B"] = equVals[1];
+                    }
+
+                    // Should we go further?
+                    // else if...
+
+                    // evaluate the expression with the variables
+                    object answerToExpression = expr.Evaluate();
+
+                    // Store the formatted answer in the valueToSend variable.
+                    ValueToSend = answerToExpression.ToString();
+
                 }
-            
-
-                // If the equation has A and B...
-                else if (ReturnDataSize == 2)
-                {
-                    expr.Parameters["A"] = equVals[0];
-                    expr.Parameters["B"] = equVals[1];
-                }
-
-                // Should we go further?
-                // else if...
-
-                // evaluate the expression with the variables
-                object answerToExpression = expr.Evaluate();
-
-                // Store the formatted answer in the valueToSend variable.
-                ValueToSend = answerToExpression.ToString();
-
             }
             return;
         }

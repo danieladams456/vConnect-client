@@ -67,7 +67,6 @@ namespace vConnect
 
                 }
             }
-               
             // Automatically search for OBDII device, and connect if able. 
             else if (!deviceDetect)
             {
@@ -83,6 +82,10 @@ namespace vConnect
 
                         if (BTConnection.EstablishBTConnection())
                         {
+                            Properties.Settings.Default.BTAddress = BTConnection.BluetoothAddress.ToString();
+                            Properties.Settings.Default.BTDeviceName = peers[peerCounter].DeviceName;
+                            MessageBox.Show(Properties.Settings.Default.BTAddress);
+                            Properties.Settings.Default.Save();
                             MessageBox.Show("Connected via Auto Serach");
                             BT_ID.Text = peers[peerCounter].DeviceName;
                             BTConnection.DeviceID = peers[peerCounter].DeviceName;
@@ -90,7 +93,7 @@ namespace vConnect
                             byte[] introMessage = new byte[100];
                             peerCounter = peers.Length;
                             deviceDetect = true;
-                            System.Threading.Thread.Sleep(5000);
+                           // System.Threading.Thread.Sleep(5000);
                             // Read any intro text from pesky BT modules.
                            // Stream peerStream = BTConnection.Client.GetStream();
                             //peerStream.Read(introMessage, 0, 100);
@@ -488,10 +491,15 @@ namespace vConnect
             // This will loop through the make, read, add to cache process 10x.
             for (int a = 0; a < 10; a++)
             {
+                MessageBox.Show("creating elements from schema");
                 elemList = createElementsFromSchema(schema);
+                MessageBox.Show("getting element data");
                 elemList = getElementData(elemList);
+                MessageBox.Show("creating dictionary");
                 dictionary = createDictionary(elemList);
+                MessageBox.Show("Adding elements to cache");
                 cache.AddElementToCache(dictionary);
+                cache.SendToServer();
                 checkForErrorCodes();
             }
 
@@ -590,7 +598,7 @@ namespace vConnect
             foreach (DataElement elem in elemList)
             {
                 if (elem.DataType == "number")
-                    elementDictionary.Add(elem.Name, Int32.Parse(elem.ValueToSend));
+                    elementDictionary.Add(elem.Name, elem.ValueToSend);
                 else if (elem.DataType == "date") // Do we need to format 
                                                   //  the date in a special way?
                     elementDictionary.Add(elem.Name, elem.ValueToSend);
