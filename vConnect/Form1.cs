@@ -38,6 +38,7 @@ namespace vConnect
         String schema = "";
         bool pollingData = false;
         int POLLTIME = 120000;
+        
         public Form1()
         {
             InitializeComponent();
@@ -48,8 +49,8 @@ namespace vConnect
             bool serverDetect = true;
 
             // TESTING ONLY !!!
-            //serverConnection.PortNumber = 9999;
-            //serverConnection.IPAddress = "192.168.56.101";
+            serverConnection.PortNumber = 80;
+            serverConnection.IPAddress = "127.7.19.130";
             
             // If there is a saved BT Address, attempt to connect with the device with that address.
             if (Properties.Settings.Default.BTAddress != "")
@@ -109,6 +110,11 @@ namespace vConnect
                 string portValue = Properties.Settings.Default.ServerPort;
                 port_number.Text = portValue;
                 serverConnection.PortNumber = Int32.Parse(portValue);
+
+                string IPvalue = Properties.Settings.Default.ServerIP;                
+                server_IP.Text = IPvalue;
+                serverConnection.IPAddress = IPvalue;                
+
                 if (serverConnection.CheckServerConnection())
                     serverDetect = true;
                 //Connect as well? 
