@@ -21,27 +21,27 @@ namespace vConnect
         /// 
         /// </summary>
         /// <returns></returns>
-        bool EstablishServerConnection()
+        public bool EstablishServerConnection()
         {
             return true;
         }
 
-        bool CloseServerConnection()
+        public bool CloseServerConnection()
         {
             return true;
         }
 
-        bool CheckServerConnection()
+        public bool CheckServerConnection()
         {
             return serverConnectionStatus;
         }
 
-        bool SendServerErrorMessage()
+        public bool SendServerErrorMessage()
         {
             return true;
         }
 
-        bool SendClientErrorMessage()
+        public bool SendClientErrorMessage()
         {
             return true;
         }

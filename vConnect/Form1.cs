@@ -28,47 +28,44 @@ namespace vConnect
         BluetoothConnectionHandler BTConnection = new BluetoothConnectionHandler();
         ServerConnectionHandler serverConnection = new ServerConnectionHandler();
         DataCache cache = null;
+        
+        // For asychronous call to read OBDII codes.
         System.Threading.Timer myTimer;
 
+        // List that will used to hold OBDII codes before being inserted into the cache.
         List<Dictionary<string,object>> elementDictionaryList = 
                                                 new List<Dictionary<string,object>>();
         String schema = "";
-
+        bool pollingData = false;
+        int POLLTIME = 120000;
         public Form1()
         {
             InitializeComponent();
             cache = new DataCache(serverConnection);
+            TimerCallback tcb = requestDataForElements;
+
+            bool deviceDetect = false;
+            bool serverDetect = true;
+
             // TESTING ONLY !!!
             //serverConnection.PortNumber = 9999;
             //serverConnection.IPAddress = "192.168.56.101";
-            bool deviceDetect = false;
-            TimerCallback tcb = requestDataForElements;
-            // This will eventauly try to connect to BT device address in a config file first. 
             
-            // Adds all detectable BT devices to peers[], then attempts to connect
-            // to any that are OBDII devices.
+            // If there is a saved BT Address, attempt to connect with the device with that address.
             if (Properties.Settings.Default.BTAddress != "")
             {          
                 BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
                 if(BTConnection.EstablishBTConnection())
                 {
-                    MessageBox.Show("Connected From Settings!");
                     BT_ID.Text = Properties.Settings.Default.BTDeviceName;
                     device_Status_Label.Text = "Connected";
                     deviceDetect = true;
-                    // Read any intro text from pesky BT modules.
-                    //System.Threading.Thread.Sleep(5000);
-
-                    //byte[] introMessage = new byte[100];
-
-                    //Stream peerStream = BTConnection.Client.GetStream();
-                    //peerStream.Read(introMessage, 0, 100);
-                    //peerStream.Close();
-
                 }
             }
-            // Automatically search for OBDII device, and connect if able. 
-            else if (!deviceDetect)
+            // If no connection was established with the device with the saved BT Address, then
+            // check all detectable BT devices with a Device Name corresponding with an OBDII module,
+            // and attempt to connect with them. 
+            else
             {
                
             BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
@@ -80,196 +77,88 @@ namespace vConnect
                     {
                         BTConnection.BluetoothAddress = peers[peerCounter].DeviceAddress;
 
+                        // If connection is established, save the OBDII device's BT Address and Device Name to the 
+                        // settings file, and change details on the GUI accordingly. 
                         if (BTConnection.EstablishBTConnection())
                         {
                             Properties.Settings.Default.BTAddress = BTConnection.BluetoothAddress.ToString();
                             Properties.Settings.Default.BTDeviceName = peers[peerCounter].DeviceName;
-                            MessageBox.Show(Properties.Settings.Default.BTAddress);
                             Properties.Settings.Default.Save();
-                            MessageBox.Show("Connected via Auto Serach");
                             BT_ID.Text = peers[peerCounter].DeviceName;
                             BTConnection.DeviceID = peers[peerCounter].DeviceName;
                             device_Status_Label.Text = "Connected";
-                            byte[] introMessage = new byte[100];
                             peerCounter = peers.Length;
                             deviceDetect = true;
-                           // System.Threading.Thread.Sleep(5000);
-                            // Read any intro text from pesky BT modules.
-                           // Stream peerStream = BTConnection.Client.GetStream();
-                            //peerStream.Read(introMessage, 0, 100);
-                            
-                          //  peerStream.Close();
-
                         }
 
                     }
                     peerCounter++;
                 }
             }
-            // Didn't connect to OBDII module, start GUI, but not polling data. 
-           
+
+           // If no OBDII connection is established, then print to the screen stating this fact, and then
+           // load the GUI. 
            if (deviceDetect == false)
                 MessageBox.Show("No OBDII devices were connected to automatically.");
                 // set Cursor to red. 
 
-            // Start asychronous timer to poll data from OBDII module. 
-            
-            
-               // make gui element for changing timer time 
-           //else 
-            //    myTimer = new System.Threading.Timer(tcb, null, 0, 120000);
+            // Checks if any server connection data is saved in the settings file. If so, attempts to see if connection
+            // can be established.
+            if (Properties.Settings.Default.ServerIP != "" && Properties.Settings.Default.ServerPort != "")
+            {
+                string portValue = Properties.Settings.Default.ServerPort;
+                port_number.Text = portValue;
+                serverConnection.PortNumber = Int32.Parse(portValue);
+                if (serverConnection.CheckServerConnection())
+                    serverDetect = true;
+                //Connect as well? 
+                else
+                {
+                    MessageBox.Show("ERROR: Could not connect to server at saved IP address and port number.");
+                    server_status_label.Text = "Disconnected";
+                }
+            }
+            else
+                MessageBox.Show("No server connection data was found, please add server IP address and port number");
             
 
+            
+           // If connections have been established to the OBDII device and the server, then begin polling for 
+           // vehicle data. 
+            if (deviceDetect && serverDetect)
+            {
+                schema = schemaUpdate();
+                myTimer = new System.Threading.Timer(tcb, null, 0, POLLTIME);
             }
+            else
+                myTimer = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
+        }
         
         
 
         /// <summary>
         /// This function serves as the launching point for requesting data.
-        ///     Note: These objects will not be explicitly named in the future.
         /// </summary>
         public void requestDataForElements(object sender)
         {
-            
-            /*
+            pollingData = true;
 
-            // DataElement(elementName, mode, PID, dataType, numberBytesReturned, eqn, btconnection)
-                   
-            // Obviously, for the final version, we will not explicitly name these and define
-            //  their obdPID and numBytesReturned values. THESE WILL COME FROM THE JSON SCHEMA.
-            //  However, for current testing purposes, it will be simpler to call each object by
-            //  the name of the actual element.
-            // Name, obdPID, numBytes
-            
-            
-            DataElement vin = new DataElement("vin", "02", 1, "A", getBTConnection());
-            DataElement speed = new DataElement("speed", "0D", 1, "A", getBTConnection());
-            DataElement rpm = new DataElement("rpm", "0C", 2, "((A*256)+B)/4", getBTConnection());
-            DataElement run_time_since_start = new DataElement("run_time_since_start", "1F", 2, "(A*256)+B", getBTConnection());
-            DataElement fuel = new DataElement("fuel_level_input", "2F", 1, "A*100/255", getBTConnection());
-            DataElement oil_temp = new DataElement("oil_temp", "5C", 1, "A - 40", getBTConnection());
-            DataElement accel = new DataElement("accel_position", "5A", 1, "A*100/255", getBTConnection());
-            DataElement dist_with_MIL = new DataElement("distance_since_MIL", "21", 2, "(A*256)+B", getBTConnection());
-            
-             
-            // Note that for the final version, we will be running all of this in some form of loop, 
-            // not only one time. But for the purposes of making sure each part of this application is
-            // functional, it will be simplest to call them explicitly, once.
+            List<DataElement> elemList = new List<DataElement>();
+            Dictionary<string, object> dictionary = new Dictionary<string, object>();
 
-            // Requests Data from Car. If BT connection to OBDII module is lost and not 
-            // automatically regained, then the function will end and the loop stop iterating.
-            if (!vin.RequestDataFromCar())
-            {
-                device_Status_Label.Text = "Disconnected";
-                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                return;
-            }
-            if (!speed.RequestDataFromCar())
-            {
-                device_Status_Label.Text = "Disconnected";
-
-                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                return;
-            }
-            if (!rpm.RequestDataFromCar())
-            {
-                device_Status_Label.Text = "Disconnected";
-
-                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                return;
-            }
-            if (!run_time_since_start.RequestDataFromCar())
-            {
-                device_Status_Label.Text = "Disconnected";
-
-                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                return;
-            }
-            if (!fuel.RequestDataFromCar())
-            {
-                device_Status_Label.Text = "Disconnected";
-
-                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                return;
-            }
-            if (!oil_temp.RequestDataFromCar())
-            {
-                device_Status_Label.Text = "Disconnected";
-
-                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                return;
-            }
-            if (!accel.RequestDataFromCar())
-            {
-                device_Status_Label.Text = "Disconnected";
-
-                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                return;
-            }
-            if (!dist_with_MIL.RequestDataFromCar())
-            {
-                device_Status_Label.Text = "Disconnected";
-                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                return;
-            }
-            
-
-            // Format all the data elements in a manner that will be stored in the data cache. 
-            //  not only one time. But for the purposes of making sure each part of this application is
-            //  functional, it will be simplest to call them explicitly, once.
-            
-            
-            vin.RequestDataFromCar();
-            speed.RequestDataFromCar();
-            rpm.RequestDataFromCar();
-            run_time_since_start.RequestDataFromCar();
-            fuel.RequestDataFromCar();
-            oil_temp.RequestDataFromCar();
-            accel.RequestDataFromCar();
-            dist_with_MIL.RequestDataFromCar();
-            
-
-
-             
-            vin.FormatData();
-            speed.FormatData();
-            rpm.FormatData();
-            run_time_since_start.FormatData();
-            fuel.FormatData();
-            oil_temp.FormatData();
-            accel.FormatData();
-            dist_with_MIL.FormatData();
-             
-
-            
-            // Send to cache!
-            // Create new cluster containing each of the values read.
-            ElementCluster cluster = new ElementCluster(vin.ValueToSend, speed.ValueToSend, rpm.ValueToSend,
-                                            run_time_since_start.ValueToSend, fuel.ValueToSend, oil_temp.ValueToSend,
-                                            accel.ValueToSend, dist_with_MIL.ValueToSend);
-
-            
-            // Add cluster to the list of clusters in the cache.
-            cache.AddElementToCache(cluster);
-            cache.AddElementToCache(cluster);
-
-            // Temporarily, SendToServer doesn't actually send it to the server, but it creates a JSON file 
-            //   (stored in a string) from the data currently in the cache.
+           
+            elemList = createElementsFromSchema(schema);
+            elemList = getElementData(elemList);
+            dictionary = createDictionary(elemList);
+            cache.AddElementToCache(dictionary);
             cache.SendToServer();
+            checkForErrorCodes();
+            // cache.WriteToDisk();            
 
-            // Since we aren't sending to server yet, the following message box allows you to view the created JSON.
-            //  With the box in focus, ctrl+c allows for copy'n'paste, even though it doesn't look like it.
-            MessageBox.Show(cache.JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+        //    MessageBox.Show(cache.JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
 
-            // The following function will write the file to disk. It needs to be made MUCH more robust before Alpha.
-            // cache.WriteToDisk();
-          */
        }
            
-
-    
-
-
         /// <summary>
         ///  This handles a simple input dialog box. Taken from 
         ///     http://www.csharp-examples.net/inputbox/
@@ -335,7 +224,25 @@ namespace vConnect
         
         private void help_button_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("");
+            string helpMessage = "This GUI is used to setup and manange vConnect's Windows Aplication. \n " +
+                   "Please note that this GUI cannot manage the server, or search for stored data.\n" +
+                   "Listed here are the details concerning the various attributes of this GUI:\n" +
+                   "BT Device ID: The ID of the OBDII Device that is currently assigned to vConnect.\n" +
+                   "Device Status: Whether the OBDII Device listed above is connected or disconnect. \n" +
+                   "Connect to ODBII Device: Will open up a dialog that shows all detectable BT Devices, " +
+                   "selecting a device will attempt to connect with it. \n" +
+                   "Disconnect BT Device: Will disconnect to the ODBII device (if one is connected).\n" +
+                   "Server IP Address: The IP address that is assigned to vConnect, the edit button will " +
+                   "alter this value.\n" +
+                   "Server Port Number: The port number that is assigned to vConnect, the edit button will " +
+                   "alter this value.\n" +
+                   "Server Status: Whether the vConnect is currently connected with the server with the IP address " +
+                   " and port number assigned to vConnect.\n" +
+                   "Update Schema: Will query the vConnect server, and update the schema if it is out of data.\n" +
+                   "Start: Will begin polling for data. \n" +
+                   "Stop: Will stop polling for data.";
+                   
+                   MessageBox.Show(helpMessage);
            
         }
 
@@ -352,6 +259,8 @@ namespace vConnect
                 // Bounds checking for a valid port number
                 if (Int32.Parse(value) > 0 && Int32.Parse(value) < 65535)
                 {
+                    Properties.Settings.Default.ServerPort = value;
+                    Properties.Settings.Default.Save();
                     port_number.Text = value;
                     serverConnection.PortNumber = Int32.Parse(value);
                 }
@@ -369,16 +278,14 @@ namespace vConnect
             if (InputBox("New IP Address", "New IP Address:", ref value) == DialogResult.OK)
             {
                 server_IP.Text = value;
-
+                Properties.Settings.Default.ServerIP = value;
+                Properties.Settings.Default.Save();
                 // Should probably validate IP address here... 
 
-    //            serverConnection.IPAddress = value;
+                serverConnection.IPAddress = value;
             }
          }
         
-
-
-
 
 
         private void apply_button_Click(object sender, EventArgs e)
@@ -422,11 +329,13 @@ namespace vConnect
                 // Can call this elsewhere, just have it here for now. 
                 if (BTConnection.EstablishBTConnection())
                 {
-                    device_Status_Label.Text = "Connected via browser button.";
+                    device_Status_Label.Text = "Connected";
                     BTConnection.DeviceID = device.DeviceName;
                     label5.Text = device.DeviceName;
-                    myTimer.Change(0, 120000);
                     BT_ID.Text = device.DeviceName;
+                    Properties.Settings.Default.BTDeviceName = device.DeviceName;
+                    Properties.Settings.Default.BTAddress = device.DeviceAddress.ToString();
+                    Properties.Settings.Default.Save();
                 }
             }
         }
@@ -484,27 +393,27 @@ namespace vConnect
 
         private void start_Click(object sender, EventArgs e)
         {
-            string schema = schemaUpdate();          
-            List<DataElement> elemList = new List<DataElement>();
-            Dictionary<string,object> dictionary =  new Dictionary<string,object>();
-            
-            // This will loop through the make, read, add to cache process 10x.
-            for (int a = 0; a < 10; a++)
+            if (pollingData)
+                MessageBox.Show("Already Polling Data");
+            else
             {
-                MessageBox.Show("creating elements from schema");
-                elemList = createElementsFromSchema(schema);
-                MessageBox.Show("getting element data");
-                elemList = getElementData(elemList);
-                MessageBox.Show("creating dictionary");
-                dictionary = createDictionary(elemList);
-                MessageBox.Show("Adding elements to cache");
-                cache.AddElementToCache(dictionary);
-                cache.SendToServer();
-                checkForErrorCodes();
+                schema = schemaUpdate();
+                myTimer.Change(0, POLLTIME);
             }
-
-            cache.SendToServer();
+          
         }
+
+        private void Stop_Polling_Click(object sender, EventArgs e)
+        {
+            if (pollingData == false)
+                MessageBox.Show("Currently not polling Data.");
+            else
+            {
+                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                myTimer.Dispose();
+            }
+        }
+
 
         private string schemaUpdate()
         {
@@ -635,12 +544,6 @@ namespace vConnect
             else
                 MessageBox.Show("Cannot Check for Error Codes, no BT connection.");*/
         }
-
-        
-        
-        
-        
-
 
 
     }

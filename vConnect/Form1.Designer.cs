@@ -58,6 +58,7 @@
             this.Disconnect_BT = new System.Windows.Forms.Button();
             this.getSchema = new System.Windows.Forms.Button();
             this.start = new System.Windows.Forms.Button();
+            this.Stop_Polling = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // trayIcon
@@ -305,6 +306,7 @@
             this.Disconnect_BT.Text = "Disconnect BT Device";
             this.Disconnect_BT.UseVisualStyleBackColor = true;
             this.Disconnect_BT.Click += new System.EventHandler(this.Disconnect_BT_Click);
+            // 
             // getSchema
             // 
             this.getSchema.Location = new System.Drawing.Point(378, 139);
@@ -325,11 +327,22 @@
             this.start.UseVisualStyleBackColor = true;
             this.start.Click += new System.EventHandler(this.start_Click);
             // 
+            // Stop_Polling
+            // 
+            this.Stop_Polling.Location = new System.Drawing.Point(378, 194);
+            this.Stop_Polling.Name = "Stop_Polling";
+            this.Stop_Polling.Size = new System.Drawing.Size(75, 23);
+            this.Stop_Polling.TabIndex = 31;
+            this.Stop_Polling.Text = "Stop";
+            this.Stop_Polling.UseVisualStyleBackColor = true;
+            this.Stop_Polling.Click += new System.EventHandler(this.Stop_Polling_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(543, 334);
+            this.Controls.Add(this.Stop_Polling);
             this.Controls.Add(this.Disconnect_BT);
             this.Controls.Add(this.RemoveTest);
             this.Controls.Add(this.ServerTest);
@@ -394,6 +407,7 @@
         private System.Windows.Forms.Button Disconnect_BT;
         private System.Windows.Forms.Button getSchema;
         private System.Windows.Forms.Button start;
+        private System.Windows.Forms.Button Stop_Polling;
 
     }
 }
