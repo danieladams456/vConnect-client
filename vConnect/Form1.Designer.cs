@@ -16,6 +16,9 @@
             if (disposing && (components != null))
             {
                 components.Dispose();
+
+                // Make icon disappear on close.
+                trayIcon.Icon = null;
             }
             base.Dispose(disposing);
         }
