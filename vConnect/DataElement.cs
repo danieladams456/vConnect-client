@@ -73,7 +73,7 @@ namespace vConnect
         /// </returns>
         public bool RequestDataFromCar()
         {
-            
+/*            
             string writeString;
             string hexLiteral;
             string hexLiteral2;
@@ -215,7 +215,9 @@ namespace vConnect
                  MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
                 return false;
             }
-                     
+ */
+
+            ValueToSend = "50";
             return true;
         }
 

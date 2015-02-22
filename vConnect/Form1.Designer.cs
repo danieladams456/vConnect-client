@@ -16,6 +16,9 @@
             if (disposing && (components != null))
             {
                 components.Dispose();
+
+                // Make tray icon disappear upon close.
+                trayIcon.Icon = null;
             }
             base.Dispose(disposing);
         }
@@ -67,6 +70,7 @@
             this.trayIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("trayIcon.Icon")));
             this.trayIcon.Text = "vConnect";
             this.trayIcon.Visible = true;
+            this.trayIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.trayIcon_MouseDoubleClick);
             // 
             // help_button
             // 

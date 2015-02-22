@@ -53,35 +53,43 @@ namespace vConnect
              * Check and make sure the listener received the JSON and that the app received 
              *  a response of 200. The status code should pop up in a message box.
             */
-            MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
-        /*    // Create the web address to connect to
-            string webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber.ToString() + "/";
-                
+//          MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+            // Create the web address to connect to
+            // string webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber.ToString() + "/";
+            string webAddress = "http://" + "192.168.56.101" + ":" + "9999" + "/";            
+    
             // Create the web request with Json/Post attributes and given address
             var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
             httpWebRequest.ContentType = "text/json";
             httpWebRequest.Method = "POST";
             httpWebRequest.UserAgent = "vConnect";
-            httpWebRequest.KeepAlive = false;
-    
-            // Write the current JSON string to the server
-            using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+            //httpWebRequest.KeepAlive = true;
+
+
+            try
             {
-                streamWriter.Write(JsonString);
-                streamWriter.Flush();
-                streamWriter.Close();
+                // Write the current JSON string to the server
+                using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+                {
+                    streamWriter.Write(JsonString + "\n");
+                    streamWriter.Flush();
+                    streamWriter.Close();
 
-                // Get web response (most importantly, status code)
-                var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                int statusCode = (int)httpResponse.StatusCode;
+                    // Get web response (most importantly, status code)
+                    var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                    int statusCode = (int)httpResponse.StatusCode;
 
-                MessageBox.Show(statusCode.ToString());
-                // If the web response was anything except 200, then problem. Handle it.
-                //if (statusCode!=200)
-                //{
+                    MessageBox.Show(statusCode.ToString());
+                    // If the web response was anything except 200, then problem. Handle it.
+                    //if (statusCode!=200)
+                    //{
                     // Handle Bad Error Request Here!
-                //}
-            }*/
+                    //}
+                }
+            }
+            catch (WebException e) {
+                MessageBox.Show("Could not connect to the server...", "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+            }
         }
 
         /// <summary>

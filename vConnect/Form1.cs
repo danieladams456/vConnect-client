@@ -37,23 +37,28 @@ namespace vConnect
                                                 new List<Dictionary<string,object>>();
         String schema = "";
         bool pollingData = false;
-        int POLLTIME = 120000;
+//        int POLLTIME = 120000;
         
+
+
         public Form1()
         {
+            this.Visible = false;
+            this.ShowInTaskbar = false;
             InitializeComponent();
+            this.WindowState = FormWindowState.Minimized;
             cache = new DataCache(serverConnection);
-            TimerCallback tcb = requestDataForElements;
+//            TimerCallback tcb = requestDataForElements;
 
-            bool deviceDetect = false;
-            bool serverDetect = true;
+//            bool deviceDetect = false;
+//            bool serverDetect = true;
 
             // TESTING ONLY !!!
-            serverConnection.PortNumber = 80;
-            serverConnection.IPAddress = "127.7.19.130";
+//            serverConnection.PortNumber = 80;
+//            serverConnection.IPAddress = "127.7.19.130";
             
             // If there is a saved BT Address, attempt to connect with the device with that address.
-            if (Properties.Settings.Default.BTAddress != "")
+/*            if (Properties.Settings.Default.BTAddress != "")
             {          
                 BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
                 if(BTConnection.EstablishBTConnection())
@@ -133,11 +138,12 @@ namespace vConnect
            // vehicle data. 
             if (deviceDetect && serverDetect)
             {
-                schema = schemaUpdate();
-                myTimer = new System.Threading.Timer(tcb, null, 0, POLLTIME);
+                  schema = schemaUpdate();
+                  myTimer = new System.Threading.Timer(tcb, null, 0, POLLTIME);
             }
             else
                 myTimer = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
+*/
         }
         
         
@@ -161,7 +167,7 @@ namespace vConnect
             checkForErrorCodes();
             // cache.WriteToDisk();            
 
-        //    MessageBox.Show(cache.JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+            //MessageBox.Show(cache.JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
 
        }
            
@@ -316,6 +322,7 @@ namespace vConnect
        /// <param name="e"></param>
         private void browse_button_Click(object sender, EventArgs e)
         {
+/*
             var msg = "Please disconnect current OBDII connection " +
                 "before connecting to a new OBDII device";
             if (BTConnection.Client.Connected)
@@ -344,6 +351,7 @@ namespace vConnect
                     Properties.Settings.Default.Save();
                 }
             }
+ */
         }
 
         public BluetoothConnectionHandler getBTConnection()
@@ -373,7 +381,7 @@ namespace vConnect
 
         private void Disconnect_BT_Click(object sender, EventArgs e)
         {
-            BTConnection.CloseBTConnection();
+//            BTConnection.CloseBTConnection();
         }
 
         private void DataTest_Click(object sender, EventArgs e)
@@ -399,26 +407,29 @@ namespace vConnect
 
         private void start_Click(object sender, EventArgs e)
         {
-            if (pollingData)
+/*            if (pollingData)
                 MessageBox.Show("Already Polling Data");
             else
             {
                 schema = schemaUpdate();
                 myTimer.Change(0, POLLTIME);
             }
-          
+*/
+            schema = schemaUpdate();
+            requestDataForElements(this);  
+      
         }
 
         private void Stop_Polling_Click(object sender, EventArgs e)
         {
-            if (pollingData == false)
+/*            if (pollingData == false)
                 MessageBox.Show("Currently not polling Data.");
             else
             {
                 myTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 myTimer.Dispose();
             }
-        }
+*/      }
 
 
         private string schemaUpdate()
@@ -493,13 +504,13 @@ namespace vConnect
             {
                 if (elem.DataType == "date")
                 {
-                    // Do something here to place the date into this element.
+                    elem.ValueToSend = DateTime.Now.ToString();
                 }
                 else
                 {
                     // Get data from the car for the element and format it.
                     elem.RequestDataFromCar();
-                    elem.FormatData();
+//                    elem.FormatData();
                 }
             }
 
@@ -513,7 +524,7 @@ namespace vConnect
             foreach (DataElement elem in elemList)
             {
                 if (elem.DataType == "number")
-                    elementDictionary.Add(elem.Name, elem.ValueToSend);
+                    elementDictionary.Add(elem.Name, Int32.Parse(elem.ValueToSend));
                 else if (elem.DataType == "date") // Do we need to format 
                                                   //  the date in a special way?
                     elementDictionary.Add(elem.Name, elem.ValueToSend);
@@ -549,6 +560,11 @@ namespace vConnect
             }
             else
                 MessageBox.Show("Cannot Check for Error Codes, no BT connection.");*/
+        }
+
+        private void trayIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            this.WindowState = FormWindowState.Normal;
         }
 
 

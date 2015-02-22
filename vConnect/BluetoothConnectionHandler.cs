@@ -24,7 +24,7 @@ namespace vConnect
         private BluetoothEndPoint endpoint;
         private Guid serviceClass;
         // Declare this later and do exception handling for if no bt card
-        private BluetoothClient client = new BluetoothClient();
+//      private BluetoothClient client = new BluetoothClient();
         private int connectLoop = 0;
 
         // can keep this static for our purposes, but should probably implement 
@@ -34,7 +34,7 @@ namespace vConnect
         // Number of times vConnect with attempt to connect to the application. 
         private int connectionAttempts = 7;
 
-  
+/*
         public bool EstablishBTConnection()
         {
             // Close connection if already established. 
@@ -83,7 +83,7 @@ namespace vConnect
         }
 
 
-
+    
         /// <summary>
         /// Closes the current BT Connection, if one exists. 
         /// </summary>
@@ -107,6 +107,7 @@ namespace vConnect
 
         }
 
+*/
         public bool SendWindowsErrorMessage()
         {
 
@@ -132,7 +133,7 @@ namespace vConnect
         public string ErorrMessageToUI { get { return errorMessageToUI; } set { errorMessageToUI = value; } }
         public BluetoothAddress BluetoothAddress { get { return bluetoothAddress; } set { bluetoothAddress = value; } }
 
-        public BluetoothClient Client { get { return client; } set { client = value; } }
+//        public BluetoothClient Client { get { return client; } set { client = value; } }
 
 
     }
