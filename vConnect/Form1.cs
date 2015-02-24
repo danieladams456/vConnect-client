@@ -33,7 +33,7 @@ namespace vConnect
         DataCache cache = null;
         
         // Asynchronous Timer that handling polling and formatting data from the OBDII module.
-        System.Threading.Timer myTimer;
+        System.Threading.Timer pollData;
         
         // List that will used to hold OBDII codes before being inserted into the cache.
         List<Dictionary<string,object>> elementDictionaryList = 
@@ -81,8 +81,8 @@ namespace vConnect
             // check all detectable BT devices with a Device Name corresponding with an OBDII module,
             // and attempt to connect with them. 
             else
-            {
-               
+            {   
+            // Array of all detected BT devices. 
             BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
             int peerCounter = 0;
             while (peerCounter < peers.Length)
@@ -131,7 +131,7 @@ namespace vConnect
 
                 if (serverConnection.CheckServerConnection())
                     serverDetect = true;
-                //Connect as well? 
+                    //Connect as well? 
                 else
                 {
                     MessageBox.Show("ERROR: Could not connect to server at saved IP address and port number.");
@@ -148,10 +148,10 @@ namespace vConnect
             if (deviceDetect && serverDetect)
             {
                 schema = SchemaUpdate();
-                myTimer = new System.Threading.Timer(tcb, null, 0, POLLTIME);
+                pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
             }
             else
-                myTimer = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
+                pollData = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
         }
 
 
@@ -178,6 +178,11 @@ namespace vConnect
         }
 
 
+        /// <summary>
+        /// This button will display a help box detailing the GUI.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void help_button_Click(object sender, EventArgs e)
         {
             string helpMessage = "This GUI is used to setup and manange vConnect's Windows Aplication. \n " +
@@ -199,7 +204,6 @@ namespace vConnect
                    "Stop: Will stop polling for data.";
 
             MessageBox.Show(helpMessage);
-
         }
 
 
@@ -318,7 +322,7 @@ namespace vConnect
             else
             {
                 schema = SchemaUpdate();
-                myTimer.Change(0, POLLTIME);
+                pollData.Change(0, POLLTIME);
             }
 
         }
@@ -330,8 +334,8 @@ namespace vConnect
                 MessageBox.Show("Currently not polling Data.");
             else
             {
-                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                myTimer.Dispose();
+                pollData.Change(Timeout.Infinite, Timeout.Infinite);
+                pollData.Dispose();
             }
         }
 
