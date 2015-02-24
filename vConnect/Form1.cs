@@ -139,8 +139,235 @@ namespace vConnect
             else
                 myTimer = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
         }
-        
-        
+
+
+        private void ok_button_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+
+        private void apply_button_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
+        /// <summary>
+        /// This button will close the setting GUI without applying any changes made.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void cancel_button_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+
+        private void help_button_Click(object sender, EventArgs e)
+        {
+            string helpMessage = "This GUI is used to setup and manange vConnect's Windows Aplication. \n " +
+                   "Please note that this GUI cannot manage the server, or search for stored data.\n" +
+                   "Listed here are the details concerning the various attributes of this GUI:\n" +
+                   "BT Device ID: The ID of the OBDII Device that is currently assigned to vConnect.\n" +
+                   "Device Status: Whether the OBDII Device listed above is connected or disconnect. \n" +
+                   "Connect to ODBII Device: Will open up a dialog that shows all detectable BT Devices, " +
+                   "selecting a device will attempt to connect with it. \n" +
+                   "Disconnect BT Device: Will disconnect to the ODBII device (if one is connected).\n" +
+                   "Server IP Address: The IP address that is assigned to vConnect, the edit button will " +
+                   "alter this value.\n" +
+                   "Server Port Number: The port number that is assigned to vConnect, the edit button will " +
+                   "alter this value.\n" +
+                   "Server Status: Whether the vConnect is currently connected with the server with the IP address " +
+                   " and port number assigned to vConnect.\n" +
+                   "Update Schema: Will query the vConnect server, and update the schema if it is out of data.\n" +
+                   "Start: Will begin polling for data. \n" +
+                   "Stop: Will stop polling for data.";
+
+            MessageBox.Show(helpMessage);
+
+        }
+
+
+        /// <summary>
+        ///  Allows the user to enter a new IP address using the GUI.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void edit_IP_Click(object sender, EventArgs e)
+        {
+            string value = "IP Address";
+            if (InputBox("New IP Address", "New IP Address:", ref value) == DialogResult.OK)
+            {
+                server_IP.Text = value;
+                Properties.Settings.Default.ServerIP = value;
+                Properties.Settings.Default.Save();
+                // Should probably validate IP address here... 
+
+                serverConnection.IPAddress = value;
+            }
+        }
+
+
+        /// <summary>
+        ///  Allows the user to enter a new port number using the GUI
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void edit_port_Click(object sender, EventArgs e)
+        {
+            string value = "Port Number";
+            if (InputBox("New Port Number", "New Port Number (1-65535):", ref value) == DialogResult.OK)
+            {
+                // Bounds checking for a valid port number
+                if (Int32.Parse(value) > 0 && Int32.Parse(value) < 65535)
+                {
+                    Properties.Settings.Default.ServerPort = value;
+                    Properties.Settings.Default.Save();
+                    port_number.Text = value;
+                    serverConnection.PortNumber = Int32.Parse(value);
+                }
+            }
+        }
+
+
+        private void server_test_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
+        /// <summary>
+        /// Button opens up a Dialog box to select a BT device to attempt to connect to.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void browse_button_Click(object sender, EventArgs e)
+        {
+            var msg = "Please disconnect current OBDII connection " +
+                "before connecting to a new OBDII device";
+            if (BTConnection.Client.Connected)
+                MessageBox.Show(msg);
+            else
+            {
+                var dlg = new SelectBluetoothDeviceDialog();
+                DialogResult result = dlg.ShowDialog(this);
+                if (result != DialogResult.OK)
+                {
+                    return;
+                }
+                BluetoothDeviceInfo device = dlg.SelectedDevice;
+                BluetoothAddress BTaddr = device.DeviceAddress;
+                BTConnection.BluetoothAddress = BTaddr;
+
+                // Can call this elsewhere, just have it here for now. 
+                if (BTConnection.EstablishBTConnection())
+                {
+                    device_Status_Label.Text = "Connected";
+                    BTConnection.DeviceID = device.DeviceName;
+                    label5.Text = device.DeviceName;
+                    BT_ID.Text = device.DeviceName;
+                    Properties.Settings.Default.BTDeviceName = device.DeviceName;
+                    Properties.Settings.Default.BTAddress = device.DeviceAddress.ToString();
+                    Properties.Settings.Default.Save();
+                }
+            }
+        }
+
+
+        private void Disconnect_BT_Click(object sender, EventArgs e)
+        {
+            BTConnection.CloseBTConnection();
+        }
+
+
+        /// <summary>
+        /// Update the Schema from the supplied web site, and store it in schema.json
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void getSchema_Click(object sender, EventArgs e)
+        {
+            string address = "http://vconnect-danieladams456.rhcloud.com/schema";
+            WebClient client = new WebClient();
+            Stream stream = client.OpenRead(address);
+            StreamReader reader = new StreamReader(stream);
+            String json = reader.ReadToEnd();
+            File.WriteAllText("schema.json", json);
+        }
+
+
+        private void start_Click(object sender, EventArgs e)
+        {
+            if (pollingData)
+                MessageBox.Show("Already Polling Data");
+            else
+            {
+                schema = schemaUpdate();
+                myTimer.Change(0, POLLTIME);
+            }
+
+        }
+
+
+        private void Stop_Polling_Click(object sender, EventArgs e)
+        {
+            if (pollingData == false)
+                MessageBox.Show("Currently not polling Data.");
+            else
+            {
+                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                myTimer.Dispose();
+            }
+        }
+
+
+        private void CacheTest_Click(object sender, EventArgs e)
+        {
+            cache.DataCacheTest = true;
+        }
+
+
+        private void OBDIITest_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
+        private void ServerTest_Click(object sender, EventArgs e)
+        {
+            cache.ServerTest = true;
+        }
+
+
+        private void RemoveTest_Click(object sender, EventArgs e)
+        {
+            cache.CacheTest = true;
+        }
+
+
+        private void DataTest_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
+        private string schemaUpdate()
+        {
+            // GET SCHEMA!
+            try
+            {
+                StreamReader reader = new StreamReader("schema.json");
+                schema = reader.ReadToEnd();
+            }
+            catch (FileNotFoundException exception)
+            {
+                schema = "NOT FOUND";
+                // ERROR GOES HERE WITH EXCEPTION
+            }
+            return schema;
+        }
+
 
         /// <summary>
         /// This function serves as the launching point for requesting data.
@@ -164,7 +391,123 @@ namespace vConnect
         //    MessageBox.Show(cache.JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
 
        }
-           
+
+
+        private List<DataElement> createElementsFromSchema(string schema)
+        {
+            JObject jsonObjectList = JObject.Parse(schema);
+            List<DataElement> elementList = new List<DataElement>();
+
+            // Temporary variables to hold data before object creation.
+            string name = "", mode = "", code = "", size = "", type = "", equation = "";
+
+            foreach (var pair in jsonObjectList)
+            {
+                name = pair.Key;
+
+                if (jsonObjectList[name]["mode"] == null)
+                    mode = "n/a";
+                else
+                    mode = (string)jsonObjectList[name]["mode"];
+
+                if (jsonObjectList[name]["code"] == null)
+                    code = "n/a";
+                else
+                    code = (string)jsonObjectList[name]["code"];
+
+                if (jsonObjectList[name]["size"] == null)
+                    size = "0";
+                else
+                    size = (string)jsonObjectList[name]["size"];
+
+                if (jsonObjectList[name]["type"] == null)
+                    type = "n/a";
+                else
+                    type = (string)jsonObjectList[name]["type"];
+
+                if (jsonObjectList[name]["equation"] == null)
+                    equation = "n/a";
+                else
+                    equation = (string)jsonObjectList[name]["equation"];
+
+                // Add a DataElement to the list containing the values of the parsed object.
+                elementList.Add(new DataElement(name, mode, code, type, Int32.Parse(size), equation, getBTConnection()));
+
+            }
+
+            return elementList;
+
+        }
+
+        private List<DataElement> getElementData(List<DataElement> elemList)
+        {
+            // We now have a List of DataElements that matches the schema.
+
+            // For each element in the list, if the element is not for TIME, 
+            //  get data from the car and format it.
+            foreach (DataElement elem in elemList)
+            {
+                if (elem.DataType == "date")
+                {
+                    // Do something here to place the date into this element.
+                }
+                else
+                {
+                    // Get data from the car for the element and format it.
+                    elem.RequestDataFromCar();
+                    elem.FormatData();
+                }
+            }
+
+            return elemList;
+        }
+
+        private Dictionary<string, object> createDictionary(List<DataElement> elemList)
+        {
+            var elementDictionary = new Dictionary<string, object>();
+
+            foreach (DataElement elem in elemList)
+            {
+                if (elem.DataType == "number")
+                    elementDictionary.Add(elem.Name, elem.ValueToSend);
+                else if (elem.DataType == "date") // Do we need to format 
+                    //  the date in a special way?
+                    elementDictionary.Add(elem.Name, elem.ValueToSend);
+                else if (elem.DataType == "string")
+                    elementDictionary.Add(elem.Name, elem.ValueToSend);
+            }
+
+            return elementDictionary;
+        }
+
+        private void checkForErrorCodes()
+        {
+            /*
+            if (BTConnection.Client.Connected)
+            {
+                // encode message
+                byte[] writeCode = System.Text.Encoding.ASCII.GetBytes("03");
+                Stream peerStream = BTConnection.Client.GetStream();
+                peerStream.Write(writeCode, 0, writeCode.Length);
+
+                bool parse = true;
+
+                // Parser
+                
+                while (!parse)
+                {
+                    System.Threading.Thread.Sleep(10000);
+
+
+
+                }
+
+            }
+            else
+                MessageBox.Show("Cannot Check for Error Codes, no BT connection.");*/
+        }
+
+        
         /// <summary>
         ///  This handles a simple input dialog box. Taken from 
         ///     http://www.csharp-examples.net/inputbox/
@@ -216,342 +559,12 @@ namespace vConnect
 
         }
 
-
-        /// <summary>
-        /// This button will close the setting GUI without applying any changes made.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void cancel_button_Click(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
-
         
-        private void help_button_Click(object sender, EventArgs e)
-        {
-            string helpMessage = "This GUI is used to setup and manange vConnect's Windows Aplication. \n " +
-                   "Please note that this GUI cannot manage the server, or search for stored data.\n" +
-                   "Listed here are the details concerning the various attributes of this GUI:\n" +
-                   "BT Device ID: The ID of the OBDII Device that is currently assigned to vConnect.\n" +
-                   "Device Status: Whether the OBDII Device listed above is connected or disconnect. \n" +
-                   "Connect to ODBII Device: Will open up a dialog that shows all detectable BT Devices, " +
-                   "selecting a device will attempt to connect with it. \n" +
-                   "Disconnect BT Device: Will disconnect to the ODBII device (if one is connected).\n" +
-                   "Server IP Address: The IP address that is assigned to vConnect, the edit button will " +
-                   "alter this value.\n" +
-                   "Server Port Number: The port number that is assigned to vConnect, the edit button will " +
-                   "alter this value.\n" +
-                   "Server Status: Whether the vConnect is currently connected with the server with the IP address " +
-                   " and port number assigned to vConnect.\n" +
-                   "Update Schema: Will query the vConnect server, and update the schema if it is out of data.\n" +
-                   "Start: Will begin polling for data. \n" +
-                   "Stop: Will stop polling for data.";
-                   
-                   MessageBox.Show(helpMessage);
-           
-        }
-
-        /// <summary>
-        ///  Allows the user to enter a new port number using the GUI
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void edit_port_Click(object sender, EventArgs e)
-        {
-            string value = "Port Number";
-            if (InputBox("New Port Number", "New Port Number (1-65535):", ref value) == DialogResult.OK)
-            {
-                // Bounds checking for a valid port number
-                if (Int32.Parse(value) > 0 && Int32.Parse(value) < 65535)
-                {
-                    Properties.Settings.Default.ServerPort = value;
-                    Properties.Settings.Default.Save();
-                    port_number.Text = value;
-                    serverConnection.PortNumber = Int32.Parse(value);
-                }
-            }
-        }
-        
-        /// <summary>
-        ///  Allows the user to enter a new IP address using the GUI.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void edit_IP_Click(object sender, EventArgs e)
-        {
-            string value = "IP Address";
-            if (InputBox("New IP Address", "New IP Address:", ref value) == DialogResult.OK)
-            {
-                server_IP.Text = value;
-                Properties.Settings.Default.ServerIP = value;
-                Properties.Settings.Default.Save();
-                // Should probably validate IP address here... 
-
-                serverConnection.IPAddress = value;
-            }
-         }
-        
-
-
-        private void apply_button_Click(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void ok_button_Click(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
-
-        private void server_test_Click(object sender, EventArgs e)
-        {
-
-        }
-
-       /// <summary>
-       /// Button opens up a Dialog box to select a BT device to attempt to connect to.
-       /// </summary>
-       /// <param name="sender"></param>
-       /// <param name="e"></param>
-        private void browse_button_Click(object sender, EventArgs e)
-        {
-            var msg = "Please disconnect current OBDII connection " +
-                "before connecting to a new OBDII device";
-            if (BTConnection.Client.Connected)
-                MessageBox.Show(msg);
-            else
-            {
-                var dlg = new SelectBluetoothDeviceDialog();
-                DialogResult result = dlg.ShowDialog(this);
-                if (result != DialogResult.OK)
-                {
-                    return;
-                }
-                BluetoothDeviceInfo device = dlg.SelectedDevice;
-                BluetoothAddress BTaddr = device.DeviceAddress;
-                BTConnection.BluetoothAddress = BTaddr;
-
-                // Can call this elsewhere, just have it here for now. 
-                if (BTConnection.EstablishBTConnection())
-                {
-                    device_Status_Label.Text = "Connected";
-                    BTConnection.DeviceID = device.DeviceName;
-                    label5.Text = device.DeviceName;
-                    BT_ID.Text = device.DeviceName;
-                    Properties.Settings.Default.BTDeviceName = device.DeviceName;
-                    Properties.Settings.Default.BTAddress = device.DeviceAddress.ToString();
-                    Properties.Settings.Default.Save();
-                }
-            }
-        }
-
         public BluetoothConnectionHandler getBTConnection()
         {
             return BTConnection;
         }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            cache.DataCacheTest = true;
-        }
-
-        private void OBDIITest_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void ServerTest_Click(object sender, EventArgs e)
-        {
-            cache.ServerTest = true;
-        }
-
-        private void RemoveTest_Click(object sender, EventArgs e)
-        {
-            cache.CacheTest = true;
-        }
-
-        private void Disconnect_BT_Click(object sender, EventArgs e)
-        {
-            BTConnection.CloseBTConnection();
-        }
-
-        private void DataTest_Click(object sender, EventArgs e)
-        {
-
-        }
-
-
-        /// <summary>
-        /// Update the Schema from the supplied web site, and store it in schema.json
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void getSchema_Click(object sender, EventArgs e)
-        {
-            string address = "http://vconnect-danieladams456.rhcloud.com/schema";
-            WebClient client = new WebClient();
-            Stream stream = client.OpenRead(address);
-            StreamReader reader = new StreamReader(stream);
-            String json = reader.ReadToEnd();
-            File.WriteAllText("schema.json", json);
-        }
-
-        private void start_Click(object sender, EventArgs e)
-        {
-            if (pollingData)
-                MessageBox.Show("Already Polling Data");
-            else
-            {
-                schema = schemaUpdate();
-                myTimer.Change(0, POLLTIME);
-            }
-          
-        }
-
-        private void Stop_Polling_Click(object sender, EventArgs e)
-        {
-            if (pollingData == false)
-                MessageBox.Show("Currently not polling Data.");
-            else
-            {
-                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                myTimer.Dispose();
-            }
-        }
-
-
-        private string schemaUpdate()
-        {
-            // GET SCHEMA!
-            try
-            {
-                StreamReader reader = new StreamReader("schema.json");
-                schema = reader.ReadToEnd();
-            }
-            catch (FileNotFoundException exception)
-            {
-                schema = "NOT FOUND";
-                // ERROR GOES HERE WITH EXCEPTION
-            }
-            return schema;
-        }
-
-        private List<DataElement> createElementsFromSchema(string schema)
-        {      
-            JObject jsonObjectList = JObject.Parse(schema);
-            List<DataElement> elementList = new List<DataElement>();
-
-            // Temporary variables to hold data before object creation.
-            string name = "", mode = "", code = "", size = "", type = "", equation = "";
-            
-            foreach (var pair in jsonObjectList)
-            {
-                name = pair.Key;
-
-                if (jsonObjectList[name]["mode"] == null)
-                    mode = "n/a";
-                else
-                    mode = (string)jsonObjectList[name]["mode"];
-
-                if (jsonObjectList[name]["code"] == null)
-                    code = "n/a";
-                else
-                    code = (string)jsonObjectList[name]["code"];
-
-                if (jsonObjectList[name]["size"] == null)
-                    size = "0";
-                else
-                    size = (string)jsonObjectList[name]["size"];
-
-                if (jsonObjectList[name]["type"] == null)
-                    type = "n/a";
-                else 
-                    type = (string)jsonObjectList[name]["type"];
-
-                if (jsonObjectList[name]["equation"] == null)
-                    equation = "n/a";
-                else 
-                    equation = (string)jsonObjectList[name]["equation"];
-
-                // Add a DataElement to the list containing the values of the parsed object.
-                elementList.Add(new DataElement(name, mode, code, type, Int32.Parse(size), equation, getBTConnection()));
-
-            }
-
-            return elementList;
-
-        }
-
-        private List<DataElement> getElementData(List<DataElement> elemList)
-        {
-            // We now have a List of DataElements that matches the schema.
-
-            // For each element in the list, if the element is not for TIME, 
-            //  get data from the car and format it.
-            foreach (DataElement elem in elemList)
-            {
-                if (elem.DataType == "date")
-                {
-                    // Do something here to place the date into this element.
-                }
-                else
-                {
-                    // Get data from the car for the element and format it.
-                    elem.RequestDataFromCar();
-                    elem.FormatData();
-                }
-            }
-
-            return elemList;
-        }
-
-        private Dictionary<string,object> createDictionary(List<DataElement> elemList)
-        {    
-            var elementDictionary = new Dictionary<string, object>();
-            
-            foreach (DataElement elem in elemList)
-            {
-                if (elem.DataType == "number")
-                    elementDictionary.Add(elem.Name, elem.ValueToSend);
-                else if (elem.DataType == "date") // Do we need to format 
-                                                  //  the date in a special way?
-                    elementDictionary.Add(elem.Name, elem.ValueToSend);
-                else if (elem.DataType == "string")
-                    elementDictionary.Add(elem.Name, elem.ValueToSend);
-            }
-
-            return elementDictionary;
-        }  
-    
-        private void checkForErrorCodes()
-        {
-            /*
-            if (BTConnection.Client.Connected)
-            {
-                // encode message
-                byte[] writeCode = System.Text.Encoding.ASCII.GetBytes("03");
-                Stream peerStream = BTConnection.Client.GetStream();
-                peerStream.Write(writeCode, 0, writeCode.Length);
-
-                bool parse = true;
-
-                // Parser
-                
-                while (!parse)
-                {
-                    System.Threading.Thread.Sleep(10000);
-
-
-
-                }
-
-            }
-            else
-                MessageBox.Show("Cannot Check for Error Codes, no BT connection.");*/
-        }
-
-
+        
     }
 
 }

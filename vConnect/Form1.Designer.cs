@@ -278,7 +278,7 @@
             this.CacheTest.TabIndex = 27;
             this.CacheTest.Text = "Test Data Cache";
             this.CacheTest.UseVisualStyleBackColor = true;
-            this.CacheTest.Click += new System.EventHandler(this.button3_Click);
+            this.CacheTest.Click += new System.EventHandler(this.CacheTest_Click);
             // 
             // ServerTest
             // 
