@@ -23,32 +23,46 @@ using Newtonsoft.Json.Linq;
 namespace vConnect
 {    
 
+    
     public partial class Form1 : Form
     {
+
+        // Construct Objects to handle BT connection, server connection, and the DataCache upon startup. 
         BluetoothConnectionHandler BTConnection = new BluetoothConnectionHandler();
         ServerConnectionHandler serverConnection = new ServerConnectionHandler();
         DataCache cache = null;
         
-        // For asychronous call to read OBDII codes.
+        // Asynchronous Timer that handling polling and formatting data from the OBDII module.
         System.Threading.Timer myTimer;
-
+        
         // List that will used to hold OBDII codes before being inserted into the cache.
         List<Dictionary<string,object>> elementDictionaryList = 
                                                 new List<Dictionary<string,object>>();
+        
+        // String that will hold the current schema.
         String schema = "";
+        // Bool value specifying whether the data polling asychronous operation is currently
+        // running or not. 
         bool pollingData = false;
-        int POLLTIME = 120000;
+
+        // Constant that determines how often the data polling Timer will run. (In miliseconds)
+        const int POLLTIME = 120000;
         
         public Form1()
         {
             InitializeComponent();
+
+            // Initialize the dataCache.
             cache = new DataCache(serverConnection);
+            // Create a Timer callback method for polling data. 
             TimerCallback tcb = RequestDataForElements;
 
-            bool deviceDetect = false;
-            bool serverDetect = true;
 
-            // TESTING ONLY !!!
+            // Bool variable to record whether an OBDII device and server have been successfully detected and pinged/established connection. 
+            bool deviceDetect = false;
+            bool serverDetect = false;
+
+            // Current server for testing. 
             serverConnection.PortNumber = 80;
             serverConnection.IPAddress = "127.7.19.130";
             
