@@ -43,7 +43,7 @@ namespace vConnect
         {
             InitializeComponent();
             cache = new DataCache(serverConnection);
-            TimerCallback tcb = requestDataForElements;
+            TimerCallback tcb = RequestDataForElements;
 
             bool deviceDetect = false;
             bool serverDetect = true;
@@ -133,7 +133,7 @@ namespace vConnect
            // vehicle data. 
             if (deviceDetect && serverDetect)
             {
-                schema = schemaUpdate();
+                schema = SchemaUpdate();
                 myTimer = new System.Threading.Timer(tcb, null, 0, POLLTIME);
             }
             else
@@ -194,7 +194,7 @@ namespace vConnect
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void edit_IP_Click(object sender, EventArgs e)
+        private void edit_IP_button_Click(object sender, EventArgs e)
         {
             string value = "IP Address";
             if (InputBox("New IP Address", "New IP Address:", ref value) == DialogResult.OK)
@@ -214,7 +214,7 @@ namespace vConnect
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void edit_port_Click(object sender, EventArgs e)
+        private void edit_port_button_Click(object sender, EventArgs e)
         {
             string value = "Port Number";
             if (InputBox("New Port Number", "New Port Number (1-65535):", ref value) == DialogResult.OK)
@@ -231,7 +231,7 @@ namespace vConnect
         }
 
 
-        private void server_test_Click(object sender, EventArgs e)
+        private void server_test_button_Click(object sender, EventArgs e)
         {
 
         }
@@ -275,7 +275,7 @@ namespace vConnect
         }
 
 
-        private void Disconnect_BT_Click(object sender, EventArgs e)
+        private void disconnect_BT_button_Click(object sender, EventArgs e)
         {
             BTConnection.CloseBTConnection();
         }
@@ -286,7 +286,7 @@ namespace vConnect
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void getSchema_Click(object sender, EventArgs e)
+        private void update_schema_button_Click(object sender, EventArgs e)
         {
             string address = "http://vconnect-danieladams456.rhcloud.com/schema";
             WebClient client = new WebClient();
@@ -297,20 +297,20 @@ namespace vConnect
         }
 
 
-        private void start_Click(object sender, EventArgs e)
+        private void start_button_Click(object sender, EventArgs e)
         {
             if (pollingData)
                 MessageBox.Show("Already Polling Data");
             else
             {
-                schema = schemaUpdate();
+                schema = SchemaUpdate();
                 myTimer.Change(0, POLLTIME);
             }
 
         }
 
 
-        private void Stop_Polling_Click(object sender, EventArgs e)
+        private void stop_polling_button_Click(object sender, EventArgs e)
         {
             if (pollingData == false)
                 MessageBox.Show("Currently not polling Data.");
@@ -352,7 +352,7 @@ namespace vConnect
         }
 
 
-        private string schemaUpdate()
+        private string SchemaUpdate()
         {
             // GET SCHEMA!
             try
@@ -372,7 +372,7 @@ namespace vConnect
         /// <summary>
         /// This function serves as the launching point for requesting data.
         /// </summary>
-        public void requestDataForElements(object sender)
+        public void RequestDataForElements(object sender)
         {
             pollingData = true;
 
@@ -380,12 +380,12 @@ namespace vConnect
             Dictionary<string, object> dictionary = new Dictionary<string, object>();
 
            
-            elemList = createElementsFromSchema(schema);
-            elemList = getElementData(elemList);
-            dictionary = createDictionary(elemList);
+            elemList = CreateElementsFromSchema(schema);
+            elemList = GetElementData(elemList);
+            dictionary = CreateDictionary(elemList);
             cache.AddElementToCache(dictionary);
             cache.SendToServer();
-            checkForErrorCodes();
+            CheckForErrorCodes();
             // cache.WriteToDisk();            
 
         //    MessageBox.Show(cache.JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
@@ -393,7 +393,7 @@ namespace vConnect
        }
 
 
-        private List<DataElement> createElementsFromSchema(string schema)
+        private List<DataElement> CreateElementsFromSchema(string schema)
         {
             JObject jsonObjectList = JObject.Parse(schema);
             List<DataElement> elementList = new List<DataElement>();
@@ -439,7 +439,8 @@ namespace vConnect
 
         }
 
-        private List<DataElement> getElementData(List<DataElement> elemList)
+
+        private List<DataElement> GetElementData(List<DataElement> elemList)
         {
             // We now have a List of DataElements that matches the schema.
 
@@ -462,7 +463,8 @@ namespace vConnect
             return elemList;
         }
 
-        private Dictionary<string, object> createDictionary(List<DataElement> elemList)
+
+        private Dictionary<string, object> CreateDictionary(List<DataElement> elemList)
         {
             var elementDictionary = new Dictionary<string, object>();
 
@@ -480,7 +482,8 @@ namespace vConnect
             return elementDictionary;
         }
 
-        private void checkForErrorCodes()
+
+        private void CheckForErrorCodes()
         {
             /*
             if (BTConnection.Client.Connected)
