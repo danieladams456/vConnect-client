@@ -135,7 +135,7 @@ namespace vConnect
                 else
                 {
                     MessageBox.Show("ERROR: Could not connect to server at saved IP address and port number.");
-                    server_status_label.Text = "Disconnected";
+                    //server_status_label.Text = "Disconnected";
                 }
             }
             else
@@ -154,29 +154,15 @@ namespace vConnect
                 pollData = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
         }
 
-        // RENAME TO "CLOSE"???
-        private void ok_button_Click(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
-
-        // GET RID OFF??
-        private void apply_button_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        /// GET RID OFF???
         /// <summary>
-        /// This button will close the setting GUI without applying any changes made.
+        ///     Exits the application
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void cancel_button_Click(object sender, EventArgs e)
+        private void close_button_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
-
 
         /// <summary>
         /// This button will display a help box detailing the GUI.

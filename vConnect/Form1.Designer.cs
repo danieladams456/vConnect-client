@@ -35,19 +35,13 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.trayIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.help_button = new System.Windows.Forms.Button();
-            this.cancel_button = new System.Windows.Forms.Button();
-            this.apply_button = new System.Windows.Forms.Button();
-            this.ok_button = new System.Windows.Forms.Button();
+            this.close_button = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
             this.port_number = new System.Windows.Forms.Label();
             this.server_IP = new System.Windows.Forms.Label();
             this.edit_port_button = new System.Windows.Forms.Button();
             this.edit_IP_button = new System.Windows.Forms.Button();
-            this.label7 = new System.Windows.Forms.Label();
-            this.server_status_label = new System.Windows.Forms.Label();
-            this.server_test_button = new System.Windows.Forms.Button();
             this.BT_ID = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.device_Status_Label = new System.Windows.Forms.Label();
@@ -62,6 +56,8 @@
             this.update_schema_button = new System.Windows.Forms.Button();
             this.start_button = new System.Windows.Forms.Button();
             this.stop_polling_button = new System.Windows.Forms.Button();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // trayIcon
@@ -73,7 +69,7 @@
             // 
             // help_button
             // 
-            this.help_button.Location = new System.Drawing.Point(456, 299);
+            this.help_button.Location = new System.Drawing.Point(331, 299);
             this.help_button.Name = "help_button";
             this.help_button.Size = new System.Drawing.Size(75, 23);
             this.help_button.TabIndex = 0;
@@ -81,35 +77,15 @@
             this.help_button.UseVisualStyleBackColor = true;
             this.help_button.Click += new System.EventHandler(this.help_button_Click);
             // 
-            // cancel_button
+            // close_button
             // 
-            this.cancel_button.Location = new System.Drawing.Point(375, 299);
-            this.cancel_button.Name = "cancel_button";
-            this.cancel_button.Size = new System.Drawing.Size(75, 23);
-            this.cancel_button.TabIndex = 1;
-            this.cancel_button.Text = "Cancel";
-            this.cancel_button.UseVisualStyleBackColor = true;
-            this.cancel_button.Click += new System.EventHandler(this.cancel_button_Click);
-            // 
-            // apply_button
-            // 
-            this.apply_button.Location = new System.Drawing.Point(294, 299);
-            this.apply_button.Name = "apply_button";
-            this.apply_button.Size = new System.Drawing.Size(75, 23);
-            this.apply_button.TabIndex = 2;
-            this.apply_button.Text = "Apply";
-            this.apply_button.UseVisualStyleBackColor = true;
-            this.apply_button.Click += new System.EventHandler(this.apply_button_Click);
-            // 
-            // ok_button
-            // 
-            this.ok_button.Location = new System.Drawing.Point(213, 299);
-            this.ok_button.Name = "ok_button";
-            this.ok_button.Size = new System.Drawing.Size(75, 23);
-            this.ok_button.TabIndex = 3;
-            this.ok_button.Text = "Ok";
-            this.ok_button.UseVisualStyleBackColor = true;
-            this.ok_button.Click += new System.EventHandler(this.ok_button_Click);
+            this.close_button.Location = new System.Drawing.Point(250, 299);
+            this.close_button.Name = "close_button";
+            this.close_button.Size = new System.Drawing.Size(75, 23);
+            this.close_button.TabIndex = 3;
+            this.close_button.Text = "Close";
+            this.close_button.UseVisualStyleBackColor = true;
+            this.close_button.Click += new System.EventHandler(this.close_button_Click);
             // 
             // label2
             // 
@@ -123,25 +99,16 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(375, 32);
+            this.label3.Location = new System.Drawing.Point(213, 110);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(103, 13);
             this.label3.TabIndex = 9;
             this.label3.Text = "Server Port Number:";
             // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(213, 110);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(74, 13);
-            this.label4.TabIndex = 10;
-            this.label4.Text = "Server Status:";
-            // 
             // port_number
             // 
             this.port_number.AutoSize = true;
-            this.port_number.Location = new System.Drawing.Point(375, 45);
+            this.port_number.Location = new System.Drawing.Point(213, 123);
             this.port_number.Name = "port_number";
             this.port_number.Size = new System.Drawing.Size(103, 13);
             this.port_number.TabIndex = 12;
@@ -158,7 +125,7 @@
             // 
             // edit_port_button
             // 
-            this.edit_port_button.Location = new System.Drawing.Point(378, 61);
+            this.edit_port_button.Location = new System.Drawing.Point(216, 139);
             this.edit_port_button.Name = "edit_port_button";
             this.edit_port_button.Size = new System.Drawing.Size(75, 23);
             this.edit_port_button.TabIndex = 14;
@@ -168,41 +135,13 @@
             // 
             // edit_IP_button
             // 
-            this.edit_IP_button.Location = new System.Drawing.Point(213, 61);
+            this.edit_IP_button.Location = new System.Drawing.Point(216, 61);
             this.edit_IP_button.Name = "edit_IP_button";
             this.edit_IP_button.Size = new System.Drawing.Size(75, 23);
             this.edit_IP_button.TabIndex = 15;
             this.edit_IP_button.Text = "Edit";
             this.edit_IP_button.UseVisualStyleBackColor = true;
             this.edit_IP_button.Click += new System.EventHandler(this.edit_IP_button_Click);
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(12, 32);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(75, 13);
-            this.label7.TabIndex = 16;
-            this.label7.Text = "BT Device ID:";
-            // 
-            // server_status_label
-            // 
-            this.server_status_label.AutoSize = true;
-            this.server_status_label.Location = new System.Drawing.Point(213, 123);
-            this.server_status_label.Name = "server_status_label";
-            this.server_status_label.Size = new System.Drawing.Size(130, 13);
-            this.server_status_label.TabIndex = 17;
-            this.server_status_label.Text = "Connected/Disconnected";
-            // 
-            // server_test_button
-            // 
-            this.server_test_button.Location = new System.Drawing.Point(213, 139);
-            this.server_test_button.Name = "server_test_button";
-            this.server_test_button.Size = new System.Drawing.Size(75, 23);
-            this.server_test_button.TabIndex = 18;
-            this.server_test_button.Text = "Test";
-            this.server_test_button.UseVisualStyleBackColor = true;
-            this.server_test_button.Click += new System.EventHandler(this.server_test_button_Click);
             // 
             // BT_ID
             // 
@@ -216,7 +155,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(15, 110);
+            this.label10.Location = new System.Drawing.Point(12, 112);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(77, 13);
             this.label10.TabIndex = 20;
@@ -225,7 +164,7 @@
             // device_Status_Label
             // 
             this.device_Status_Label.AutoSize = true;
-            this.device_Status_Label.Location = new System.Drawing.Point(12, 123);
+            this.device_Status_Label.Location = new System.Drawing.Point(12, 125);
             this.device_Status_Label.Name = "device_Status_Label";
             this.device_Status_Label.Size = new System.Drawing.Size(130, 13);
             this.device_Status_Label.TabIndex = 21;
@@ -233,9 +172,9 @@
             // 
             // browse_button
             // 
-            this.browse_button.Location = new System.Drawing.Point(12, 165);
+            this.browse_button.Location = new System.Drawing.Point(12, 167);
             this.browse_button.Name = "browse_button";
-            this.browse_button.Size = new System.Drawing.Size(75, 23);
+            this.browse_button.Size = new System.Drawing.Size(130, 23);
             this.browse_button.TabIndex = 23;
             this.browse_button.Text = "Browse";
             this.browse_button.UseVisualStyleBackColor = true;
@@ -244,7 +183,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(12, 149);
+            this.label5.Location = new System.Drawing.Point(12, 151);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(131, 13);
             this.label5.TabIndex = 24;
@@ -252,9 +191,9 @@
             // 
             // OBDIITest
             // 
-            this.OBDIITest.Location = new System.Drawing.Point(456, 248);
+            this.OBDIITest.Location = new System.Drawing.Point(425, 248);
             this.OBDIITest.Name = "OBDIITest";
-            this.OBDIITest.Size = new System.Drawing.Size(75, 45);
+            this.OBDIITest.Size = new System.Drawing.Size(97, 45);
             this.OBDIITest.TabIndex = 25;
             this.OBDIITest.Text = "Test OBDII codes";
             this.OBDIITest.UseVisualStyleBackColor = true;
@@ -262,19 +201,19 @@
             // 
             // DataTest
             // 
-            this.DataTest.Location = new System.Drawing.Point(378, 248);
+            this.DataTest.Location = new System.Drawing.Point(425, 197);
             this.DataTest.Name = "DataTest";
-            this.DataTest.Size = new System.Drawing.Size(75, 45);
+            this.DataTest.Size = new System.Drawing.Size(97, 45);
             this.DataTest.TabIndex = 26;
-            this.DataTest.Text = "Test Vehicle Data Elements";
+            this.DataTest.Text = "Test Vehicle Data Element";
             this.DataTest.UseVisualStyleBackColor = true;
             this.DataTest.Click += new System.EventHandler(this.DataTest_Click);
             // 
             // CacheTest
             // 
-            this.CacheTest.Location = new System.Drawing.Point(294, 248);
+            this.CacheTest.Location = new System.Drawing.Point(425, 147);
             this.CacheTest.Name = "CacheTest";
-            this.CacheTest.Size = new System.Drawing.Size(75, 45);
+            this.CacheTest.Size = new System.Drawing.Size(97, 45);
             this.CacheTest.TabIndex = 27;
             this.CacheTest.Text = "Test Data Cache";
             this.CacheTest.UseVisualStyleBackColor = true;
@@ -282,9 +221,9 @@
             // 
             // ServerTest
             // 
-            this.ServerTest.Location = new System.Drawing.Point(213, 248);
+            this.ServerTest.Location = new System.Drawing.Point(425, 96);
             this.ServerTest.Name = "ServerTest";
-            this.ServerTest.Size = new System.Drawing.Size(75, 45);
+            this.ServerTest.Size = new System.Drawing.Size(97, 45);
             this.ServerTest.TabIndex = 28;
             this.ServerTest.Text = "Test Data to Server";
             this.ServerTest.UseVisualStyleBackColor = true;
@@ -292,7 +231,7 @@
             // 
             // RemoveTest
             // 
-            this.RemoveTest.Location = new System.Drawing.Point(110, 248);
+            this.RemoveTest.Location = new System.Drawing.Point(425, 45);
             this.RemoveTest.Name = "RemoveTest";
             this.RemoveTest.Size = new System.Drawing.Size(97, 45);
             this.RemoveTest.TabIndex = 29;
@@ -302,9 +241,9 @@
             // 
             // disconnect_BT
             // 
-            this.disconnect_BT.Location = new System.Drawing.Point(12, 194);
+            this.disconnect_BT.Location = new System.Drawing.Point(12, 196);
             this.disconnect_BT.Name = "disconnect_BT";
-            this.disconnect_BT.Size = new System.Drawing.Size(75, 45);
+            this.disconnect_BT.Size = new System.Drawing.Size(130, 22);
             this.disconnect_BT.TabIndex = 30;
             this.disconnect_BT.Text = "Disconnect BT Device";
             this.disconnect_BT.UseVisualStyleBackColor = true;
@@ -312,39 +251,75 @@
             // 
             // update_schema_button
             // 
-            this.update_schema_button.Location = new System.Drawing.Point(378, 139);
+            this.update_schema_button.BackColor = System.Drawing.Color.Yellow;
+            this.update_schema_button.FlatAppearance.BorderColor = System.Drawing.SystemColors.AppWorkspace;
+            this.update_schema_button.FlatAppearance.BorderSize = 2;
+            this.update_schema_button.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.update_schema_button.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.update_schema_button.Location = new System.Drawing.Point(171, 272);
             this.update_schema_button.Name = "update_schema_button";
-            this.update_schema_button.Size = new System.Drawing.Size(100, 23);
+            this.update_schema_button.Size = new System.Drawing.Size(73, 50);
             this.update_schema_button.TabIndex = 25;
             this.update_schema_button.Text = "Update Schema";
-            this.update_schema_button.UseVisualStyleBackColor = true;
+            this.update_schema_button.UseVisualStyleBackColor = false;
             this.update_schema_button.Click += new System.EventHandler(this.update_schema_button_Click);
             // 
             // start_button
             // 
-            this.start_button.Location = new System.Drawing.Point(378, 164);
+            this.start_button.BackColor = System.Drawing.Color.Lime;
+            this.start_button.FlatAppearance.BorderColor = System.Drawing.Color.DarkGray;
+            this.start_button.FlatAppearance.BorderSize = 2;
+            this.start_button.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.start_button.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.start_button.Location = new System.Drawing.Point(15, 272);
             this.start_button.Name = "start_button";
-            this.start_button.Size = new System.Drawing.Size(75, 23);
+            this.start_button.Size = new System.Drawing.Size(72, 50);
             this.start_button.TabIndex = 26;
             this.start_button.Text = "Start";
-            this.start_button.UseVisualStyleBackColor = true;
+            this.start_button.UseVisualStyleBackColor = false;
             this.start_button.Click += new System.EventHandler(this.start_button_Click);
             // 
             // stop_polling_button
             // 
-            this.stop_polling_button.Location = new System.Drawing.Point(378, 194);
+            this.stop_polling_button.BackColor = System.Drawing.Color.Red;
+            this.stop_polling_button.FlatAppearance.BorderColor = System.Drawing.SystemColors.AppWorkspace;
+            this.stop_polling_button.FlatAppearance.BorderSize = 2;
+            this.stop_polling_button.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.stop_polling_button.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.stop_polling_button.Location = new System.Drawing.Point(95, 272);
             this.stop_polling_button.Name = "stop_polling_button";
-            this.stop_polling_button.Size = new System.Drawing.Size(75, 23);
+            this.stop_polling_button.Size = new System.Drawing.Size(70, 50);
             this.stop_polling_button.TabIndex = 31;
             this.stop_polling_button.Text = "Stop";
-            this.stop_polling_button.UseVisualStyleBackColor = true;
+            this.stop_polling_button.UseVisualStyleBackColor = false;
             this.stop_polling_button.Click += new System.EventHandler(this.stop_polling_button_Click);
+            // 
+            // label7
+            // 
+            this.label7.AutoEllipsis = true;
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.Location = new System.Drawing.Point(12, 32);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(75, 13);
+            this.label7.TabIndex = 16;
+            this.label7.Text = "BT Device ID:";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(431, 29);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(81, 13);
+            this.label1.TabIndex = 32;
+            this.label1.Text = "Testing Buttons";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(543, 334);
+            this.ClientSize = new System.Drawing.Size(534, 336);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.stop_polling_button);
             this.Controls.Add(this.disconnect_BT);
             this.Controls.Add(this.RemoveTest);
@@ -359,19 +334,14 @@
             this.Controls.Add(this.device_Status_Label);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.BT_ID);
-            this.Controls.Add(this.server_test_button);
-            this.Controls.Add(this.server_status_label);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.edit_IP_button);
             this.Controls.Add(this.edit_port_button);
             this.Controls.Add(this.server_IP);
             this.Controls.Add(this.port_number);
-            this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.ok_button);
-            this.Controls.Add(this.apply_button);
-            this.Controls.Add(this.cancel_button);
+            this.Controls.Add(this.close_button);
             this.Controls.Add(this.help_button);
             this.Name = "Form1";
             this.Text = "vConnect";
@@ -384,19 +354,13 @@
 
         private System.Windows.Forms.NotifyIcon trayIcon;
         private System.Windows.Forms.Button help_button;
-        private System.Windows.Forms.Button cancel_button;
-        private System.Windows.Forms.Button apply_button;
-        private System.Windows.Forms.Button ok_button;
+        private System.Windows.Forms.Button close_button;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label port_number;
         private System.Windows.Forms.Label server_IP;
         private System.Windows.Forms.Button edit_port_button;
         private System.Windows.Forms.Button edit_IP_button;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label server_status_label;
-        private System.Windows.Forms.Button server_test_button;
         private System.Windows.Forms.Label BT_ID;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label device_Status_Label;
@@ -411,6 +375,8 @@
         private System.Windows.Forms.Button update_schema_button;
         private System.Windows.Forms.Button start_button;
         private System.Windows.Forms.Button stop_polling_button;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label1;
 
     }
 }
