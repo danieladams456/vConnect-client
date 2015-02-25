@@ -154,19 +154,19 @@ namespace vConnect
                 pollData = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
         }
 
-
+        // RENAME TO CLOSE???
         private void ok_button_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
 
-
+        // GET RID OFF??
         private void apply_button_Click(object sender, EventArgs e)
         {
 
         }
 
-
+        /// GET RID OFF???
         /// <summary>
         /// This button will close the setting GUI without applying any changes made.
         /// </summary>
@@ -248,7 +248,7 @@ namespace vConnect
             }
         }
 
-
+        // GET RID OF ???
         private void server_test_button_Click(object sender, EventArgs e)
         {
 
