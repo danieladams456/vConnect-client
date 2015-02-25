@@ -330,23 +330,39 @@ namespace vConnect
         }
 
 
+        /// <summary>
+        /// Start polling data from the vehicle, if able. 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void start_button_Click(object sender, EventArgs e)
         {
+            // If data is already being polled, then nothing to do. 
             if (pollingData)
                 MessageBox.Show("Already Polling Data");
+
+            // If no data is currently being polled, update the schema, then
+            // begin polling data.
             else
             {
                 schema = SchemaUpdate();
                 pollData.Change(0, POLLTIME);
             }
-
         }
 
 
+        /// <summary>
+        /// Stop polling vehicle data. 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void stop_polling_button_Click(object sender, EventArgs e)
         {
+            // If no data is currently being polled, do nothing. 
             if (pollingData == false)
                 MessageBox.Show("Currently not polling Data.");
+            
+            // If data is still being polled, stop the process.  
             else
             {
                 pollData.Change(Timeout.Infinite, Timeout.Infinite);
