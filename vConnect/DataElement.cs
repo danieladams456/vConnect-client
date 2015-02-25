@@ -112,8 +112,8 @@ namespace vConnect
                     valueToSend = System.Text.Encoding.ASCII.GetString(vin1)
                         + System.Text.Encoding.ASCII.GetString(vin2)
                         + System.Text.Encoding.ASCII.GetString(vin3);
-                    valueToSend = valueToSend.Substring(4, valueToSend.Length - 4);
-                    MessageBox.Show("Unformatted VIN: " + valueToSend);
+                   // valueToSend = valueToSend.Substring(4, valueToSend.Length - 4);
+                    valueToSend = Regex.Replace(valueToSend, @"0902", "");
                     valueToSend = Regex.Replace(valueToSend, @" ", "");
                     valueToSend = Regex.Replace(valueToSend, @"\r", "");
                     valueToSend = Regex.Replace(valueToSend, @">", "");

@@ -54,7 +54,8 @@ namespace vConnect
 
             // Initialize the dataCache.
             cache = new DataCache(serverConnection);
-            // Create a Timer callback method for polling data. 
+            
+// Create a Timer callback method for polling data. 
             TimerCallback tcb = RequestDataForElements;
 
 
@@ -641,15 +642,7 @@ namespace vConnect
 
                 bool parse = true;
 
-                // Parser
-                
-                while (!parse)
-                {
-                    System.Threading.Thread.Sleep(10000);
-
-
-
-                }
+               
 
             }
             else
