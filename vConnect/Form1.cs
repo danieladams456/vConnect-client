@@ -176,9 +176,9 @@ namespace vConnect
                    "Listed here are the details concerning the various attributes of this GUI:\n" +
                    "BT Device ID: The ID of the OBDII Device that is currently assigned to vConnect.\n" +
                    "Device Status: Whether the OBDII Device listed above is connected or disconnect. \n" +
-                   "Connect to ODBII Device: Will open up a dialog that shows all detectable BT Devices, " +
+                   "Connect to OBDII Device: Will open up a dialog that shows all detectable BT Devices, " +
                    "selecting a device will attempt to connect with it. \n" +
-                   "Disconnect BT Device: Will disconnect to the ODBII device (if one is connected).\n" +
+                   "Disconnect BT Device: Will disconnect to the OBDII device (if one is connected).\n" +
                    "Server IP Address: The IP address that is assigned to vConnect, the edit button will " +
                    "alter this value.\n" +
                    "Server Port Number: The port number that is assigned to vConnect, the edit button will " +
@@ -235,12 +235,6 @@ namespace vConnect
                     serverConnection.PortNumber = Int32.Parse(value);
                 }
             }
-        }
-
-        // GET RID OF ???
-        private void server_test_button_Click(object sender, EventArgs e)
-        {
-
         }
 
 
@@ -420,7 +414,7 @@ namespace vConnect
         /// <returns></returns>
         private string SchemaUpdate()
         {
-            // GET SCHEMA!
+            // Read the schema from the file.
             try
             {
                 StreamReader reader = new StreamReader("schema.json");
@@ -429,7 +423,7 @@ namespace vConnect
             catch (FileNotFoundException exception)
             {
                 schema = "NOT FOUND";
-                // ERROR GOES HERE WITH EXCEPTION
+                MessageBox.Show("Did not find the schema");
             }
             return schema;
         }
@@ -437,20 +431,52 @@ namespace vConnect
 
         /// <summary>
         /// This function serves as the launching point for requesting data.
+        /// 
+        /// The format method of retrieving and sending data is as follows:
+        ///     
+        ///     1. Create a list of DataElement objects.
+        ///     
+        ///     2. For each element in the list, request the car for the associated data,
+        ///         to be stored in the DataElement.valueToSend variable.
+        ///         
+        ///     3. Create a dictionary of string-object pairs containing the DataElement.name 
+        ///         (as the string) and its associated DataElement.valueToSend value.
+        ///         The object value will be a string, integer, or other depending on the
+        ///         DataElement.type value.
+        ///     
+        ///     4. Add the dictionary to the List of Dictionaries in the cache. Eventually, the
+        ///         cache will convert the List of Dictionaries (each containing name,value of
+        ///         data elements) to an array of JSON objects the JsonConvert.SerializeObject()
+        ///         method from Json.net library. 
+        ///         
         /// </summary>
         public void RequestDataForElements(object sender)
         {
             pollingData = true;
 
+            // Create a list of DataElements.
             List<DataElement> elemList = new List<DataElement>();
+            
+            // Create a dictionary of string-object pairs. This will contain the key-value pairs
+            //  to be sent to the server.
             Dictionary<string, object> dictionary = new Dictionary<string, object>();
 
-           
+            // Create the "shell" of empty elements from the schema.
             elemList = CreateElementsFromSchema(schema);
+
+            // Fill the contents of the elements with the data from the car
             elemList = GetElementData(elemList);
+
+            // Create a dictionary out of the list of elements.
             dictionary = CreateDictionary(elemList);
+
+            // Add the dictionary containing the data points to the cache.
             cache.AddElementToCache(dictionary);
+
+            // Send the contents of the cache to the server.
             cache.SendToServer();
+
+            // Check for OBDII error codes.
             CheckForErrorCodes();
             // cache.WriteToDisk();            
 
@@ -460,42 +486,68 @@ namespace vConnect
 
 
         /// <summary>
-        /// 
+        /// This function creates a list of DataElement objects from the schema.
         /// </summary>
-        /// <param name="schema"></param>
-        /// <returns></returns>
+        /// <param name="schema">string containing the JSON schema</param>
+        /// <returns>List of DataElement objects</returns>
         private List<DataElement> CreateElementsFromSchema(string schema)
         {
+            // Create a list of the objects contained in the JSON file, and parse it
+            //  using JSON.NET
             JObject jsonObjectList = JObject.Parse(schema);
+            
+            // Create empty list of DataElement objects
             List<DataElement> elementList = new List<DataElement>();
 
             // Temporary variables to hold data before object creation.
             string name = "", mode = "", code = "", size = "", type = "", equation = "";
 
+            // For each item in the schema (e.g. VIN, timestamp, speed, etc.),
+            //  get all of the values associated with it.
             foreach (var pair in jsonObjectList)
             {
+                // The name of the element is the key (by definition)
+                // Use it as the key for the JsonObject list.
                 name = pair.Key;
 
+                // Get the "mode" from the schema.
+                // This refers to the MODE on which the OBDII module will ask
+                //  the car for data. Usually 01 or 09.
                 if (jsonObjectList[name]["mode"] == null)
                     mode = "n/a";
                 else
                     mode = (string)jsonObjectList[name]["mode"];
 
+                // Get the "code" from the schema.
+                // This refers to the OBD PID with which the element can retrieve
+                //  its information from the car. 
                 if (jsonObjectList[name]["code"] == null)
                     code = "n/a";
                 else
                     code = (string)jsonObjectList[name]["code"];
 
+                // Get the "size" of the associated data element.
+                // This refers to the number of bytes the car will return when 
+                //  polled for data. (Usually 1-4)
                 if (jsonObjectList[name]["size"] == null)
                     size = "0";
                 else
                     size = (string)jsonObjectList[name]["size"];
 
+                // Get the "datatype" for the data element.
+                // This is used for knowing which format to send the data to 
+                //  the server (string, int, etc.)
                 if (jsonObjectList[name]["type"] == null)
                     type = "n/a";
                 else
                     type = (string)jsonObjectList[name]["type"];
 
+                // Get the "equation" for the data element.
+                // This is used to parse the return value from the car into 
+                //  human-readable data. (For example, equation="2A+B" would
+                //  signal the FormatData function to take the first byte (A),
+                //  multiply it by two, and add the second byte (B) to it. This
+                //  will transform the car-returned HEX values into its real value.
                 if (jsonObjectList[name]["equation"] == null)
                     equation = "n/a";
                 else
@@ -506,26 +558,26 @@ namespace vConnect
 
             }
 
+            // Return the list of DataElements
             return elementList;
 
         }
 
         /// <summary>
-        /// 
+        /// This function gets the associated datapoints for each of the DataElements
+        ///     in the list. It should be passed the list of Data Elements returned from CreateElementsFromSchema
         /// </summary>
-        /// <param name="elemList"></param>
-        /// <returns></returns>
+        /// <param name="elemList">List of DataElement objects that have their size, equation, type, etc. filled in.</param>
+        /// <returns>Returns the same list of DataElement objects but with the valueToReturn variable filled.</returns>
         private List<DataElement> GetElementData(List<DataElement> elemList)
         {
-            // We now have a List of DataElements that matches the schema.
-
             // For each element in the list, if the element is not for TIME, 
             //  get data from the car and format it.
             foreach (DataElement elem in elemList)
             {
                 if (elem.DataType == "date")
                 {
-                    // Do something here to place the date into this element.
+                    elem.ValueToSend = DateTime.Now.ToString();
                 }
                 else
                 {
@@ -535,30 +587,41 @@ namespace vConnect
                 }
             }
 
+            // Return the same list of DataElement objects.
             return elemList;
         }
 
 
         /// <summary>
-        /// 
+        /// This function creates a dictionary out of the list of DataElement objects passsed to it.
+        ///     It uses objects for the value since the datatype will vary based on the type of the
+        ///     element (string, integer, etc.)
         /// </summary>
-        /// <param name="elemList"></param>
-        /// <returns></returns>
+        /// <param name="elemList">List of DataElement objects returned from GetElementData()</param>
+        /// <returns>Dictionary containing the data points to send to the server.</returns>
         private Dictionary<string, object> CreateDictionary(List<DataElement> elemList)
         {
+            // Create an empty dictionary with a string-object key-value pair.
             var elementDictionary = new Dictionary<string, object>();
 
+            // Loop through each element in the list, and 
             foreach (DataElement elem in elemList)
             {
+                // If the datatype is a number, send the value as an integer
                 if (elem.DataType == "number")
+                    elementDictionary.Add(elem.Name, Int32.Parse(elem.ValueToSend));
+
+                // If the datatype is a date, send it as a String?
+                else if (elem.DataType == "date")
                     elementDictionary.Add(elem.Name, elem.ValueToSend);
-                else if (elem.DataType == "date") // Do we need to format 
-                    //  the date in a special way?
-                    elementDictionary.Add(elem.Name, elem.ValueToSend);
+
+                // IF the datatype is a date, just send it as a string.
                 else if (elem.DataType == "string")
                     elementDictionary.Add(elem.Name, elem.ValueToSend);
             }
 
+            // Return the dictionary containing the name of each element and its
+            //  associated value (be it a string, integer, etc.)
             return elementDictionary;
         }
 
