@@ -154,7 +154,7 @@ namespace vConnect
                 pollData = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
         }
 
-        // RENAME TO CLOSE???
+        // RENAME TO "CLOSE"???
         private void ok_button_Click(object sender, EventArgs e)
         {
             Application.Exit();
@@ -215,6 +215,8 @@ namespace vConnect
         private void edit_IP_button_Click(object sender, EventArgs e)
         {
             string value = "IP Address";
+
+            // Saves IP address to the settings file, as well as the server connection handler. 
             if (InputBox("New IP Address", "New IP Address:", ref value) == DialogResult.OK)
             {
                 server_IP.Text = value;
@@ -238,6 +240,7 @@ namespace vConnect
             if (InputBox("New Port Number", "New Port Number (1-65535):", ref value) == DialogResult.OK)
             {
                 // Bounds checking for a valid port number
+                // Saves Port Number to the settings file, as well as the server connection handler.
                 if (Int32.Parse(value) > 0 && Int32.Parse(value) < 65535)
                 {
                     Properties.Settings.Default.ServerPort = value;
@@ -264,8 +267,14 @@ namespace vConnect
         {
             var msg = "Please disconnect current OBDII connection " +
                 "before connecting to a new OBDII device";
+            
+            // If there is already an established connection with an OBDII device, then
+            // prompt the user to disconnect with it before attempting to browse for a new device.
             if (BTConnection.Client.Connected)
                 MessageBox.Show(msg);
+
+            // Open a dialog box that will show all detectable BT Devices. Selecting a device 
+            // will save its name and address. 
             else
             {
                 var dlg = new SelectBluetoothDeviceDialog();
@@ -278,7 +287,8 @@ namespace vConnect
                 BluetoothAddress BTaddr = device.DeviceAddress;
                 BTConnection.BluetoothAddress = BTaddr;
 
-                // Can call this elsewhere, just have it here for now. 
+                // If connection is successfully esablished, save the device's name and address to ther 
+                // settings file, and update the device status on the GUI to "connected.
                 if (BTConnection.EstablishBTConnection())
                 {
                     device_Status_Label.Text = "Connected";
@@ -293,6 +303,11 @@ namespace vConnect
         }
 
 
+        /// <summary>
+        /// Button that will attempt to close the BT connection with an OBDII device, if one exists. 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void disconnect_BT_button_Click(object sender, EventArgs e)
         {
             BTConnection.CloseBTConnection();
@@ -300,7 +315,7 @@ namespace vConnect
 
 
         /// <summary>
-        /// Update the Schema from the supplied web site, and store it in schema.json
+        /// Update the Schema from the supplied web site, and store it in schema.json.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
