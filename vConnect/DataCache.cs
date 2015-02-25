@@ -25,22 +25,43 @@ namespace vConnect
         private bool serverTest = false;
         private bool dataCacheTest = false;
         
+
+        /// <summary>
+        /// Constructor for initializing the server connection.
+        /// </summary>
+        /// <param name="serverConn"></param>
         public DataCache(ServerConnectionHandler serverConn)
         {
             serverConnection = serverConn;
         }
 
+        /// <summary>
+        /// Empty constructor.
+        /// </summary>
         public DataCache()
         {
             // Empty
         }
 
+        /// <summary>
+        ///  Adds an element to the data Cache.
+        /// </summary>
+        /// <param name="dictionary"></param>
         public void AddElementToCache(Dictionary<string,object> dictionary)
         {
             cache.Add(dictionary);
         }
 
-        public void SendToServer()
+        /// <summary>
+        /// Sends data cache element to the server.
+        /// </summary>
+        /// <returns>
+        /// True - Data cache element was sent to the server, the server sent confirmation that it received the elements,
+        /// and the element was successfully removed from the cache.
+        /// False - the data was not successfully sent to the server, or the server didn't send confirmation that it recieved
+        /// the element, or the element was not successfully removed from the cache.
+        /// </returns>
+        public bool SendToServer()
         {
             /*
              * In order to test this without needing the actual server runnning, turn on
@@ -82,6 +103,7 @@ namespace vConnect
                     // Handle Bad Error Request Here!
                 //}
             }*/
+            return true;
         }
 
         /// <summary>

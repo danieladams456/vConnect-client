@@ -310,7 +310,9 @@ namespace vConnect
         /// <param name="e"></param>
         private void disconnect_BT_button_Click(object sender, EventArgs e)
         {
-            BTConnection.CloseBTConnection();
+            if (BTConnection.CloseBTConnection())
+                device_Status_Label.Text = "Disconnected";
+
         }
 
 
@@ -471,6 +473,11 @@ namespace vConnect
        }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <returns></returns>
         private List<DataElement> CreateElementsFromSchema(string schema)
         {
             JObject jsonObjectList = JObject.Parse(schema);
@@ -517,7 +524,11 @@ namespace vConnect
 
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="elemList"></param>
+        /// <returns></returns>
         private List<DataElement> GetElementData(List<DataElement> elemList)
         {
             // We now have a List of DataElements that matches the schema.
@@ -542,6 +553,11 @@ namespace vConnect
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="elemList"></param>
+        /// <returns></returns>
         private Dictionary<string, object> CreateDictionary(List<DataElement> elemList)
         {
             var elementDictionary = new Dictionary<string, object>();
@@ -560,7 +576,10 @@ namespace vConnect
             return elementDictionary;
         }
 
-
+        /// <summary>
+        /// Check for any error codes, and immediately send them to the
+        /// server if detected. 
+        /// </summary>
         private void CheckForErrorCodes()
         {
             /*
@@ -640,9 +659,13 @@ namespace vConnect
 
         }
 
-        
+        /// <summary>
+        /// Returns the BT Connection.
+        /// </summary>
+        /// <returns></returns>
         public BluetoothConnectionHandler getBTConnection()
         {
+            // Do we need this?
             return BTConnection;
         }
         

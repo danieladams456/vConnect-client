@@ -34,8 +34,8 @@ namespace vConnect
         public BluetoothConnectionHandler BTConnection;
 
         // This defines the largest potential size of return data from the car. It should never
-        //  really even get close to this value
-        private int MAX_DATA_SIZE= 30;
+        //  really even get close to this value.
+        private const int MAX_DATA_SIZE= 30;
 
         /// <summary>
         /// Constructor that defines name and PID and number of bytes explicitly 
@@ -82,7 +82,8 @@ namespace vConnect
             {
                 Stream peerStream = BTConnection.Client.GetStream();
                 
-                // Creates proper string to write to the OBDII module to request data. 
+                // If this is the vin data element, then do the following reads in order to get all 
+                // of the bytes relating to the VIN.
                 if (name == "VIN")
                 {
                     writeString = "09" + ObdPID + "\r";
@@ -91,27 +92,26 @@ namespace vConnect
                     byte[] vin2 = new byte[50];
                     byte[] vin3 = new byte[50];
                     byte[] vin4 = new byte[50]; 
+
+                    // Create the code to request VIN.
                     byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
+
+                    // Write the code to the OBDII module.
                     peerStream.Write(writeCode, 0, writeCode.Length);
+
+                    // Must retrieve the VIN in three different reads. 
                     System.Threading.Thread.Sleep(7000);
                     peerStream.Read(vin1, 0, vin1.Length);
                     System.Threading.Thread.Sleep(7000);
                     peerStream.Read(vin2, 0, vin2.Length);
                     System.Threading.Thread.Sleep(7000);
                     peerStream.Read(vin3, 0, vin3.Length);
-                    //System.Threading.Thread.Sleep(7000);
-                    //peerStream.Read(vin4, 0, vin4.Length);
-                    var msg = "VIN Codes read: \n vin1: " + System.Text.Encoding.ASCII.GetString(vin1)
-                        + "\n vin2: " + System.Text.Encoding.ASCII.GetString(vin2)
-                        + "\n vin3: " + System.Text.Encoding.ASCII.GetString(vin3);
-                   //     + "\n vin4: " + System.Text.Encoding.ASCII.GetString(vin4);
-
-
-               // Not formatted     
+                  
+                 
+                    // Format the raw data read from the OBDII module.
                     valueToSend = System.Text.Encoding.ASCII.GetString(vin1)
                         + System.Text.Encoding.ASCII.GetString(vin2)
                         + System.Text.Encoding.ASCII.GetString(vin3);
-                        //+ System.Text.Encoding.ASCII.GetString(vin4);
                     valueToSend = valueToSend.Substring(4, valueToSend.Length - 4);
                     MessageBox.Show("Unformatted VIN: " + valueToSend);
                     valueToSend = Regex.Replace(valueToSend, @" ", "");
@@ -120,7 +120,7 @@ namespace vConnect
 
                     valueToSend = Regex.Replace(valueToSend, @"\0", "");
 
-                    //
+                   
                     string res = String.Empty;
 
                     for (int a = 0; a < valueToSend.Length; a = a + 2)
@@ -133,17 +133,17 @@ namespace vConnect
 
                     }
 
-                        ///
+                        
 
                     res = Regex.Replace(res, @"I", "");
                     valueToSend = res;
                     valueToSend = Regex.Replace(valueToSend, @"\0", "");
                     valueToSend = Regex.Replace(valueToSend, @" ", "");
                     valueToSend = Regex.Replace(valueToSend, @"[^a-zA-Z0-9]", "");
-                    MessageBox.Show(valueToSend);
-                    // probably do parsing here and skip format data... 
                 }
-
+                
+                // If the data element is for something other than the VIN, then use the following code
+                // to poll for data.
                 else
                 {
                     writeString = "01" + obdPID + "\r";
@@ -165,7 +165,7 @@ namespace vConnect
 
 
                     // Attempt to reconnect to OBDII device.
-                    // If connection is true, recall RequestDataFromCar()
+                    // If connection is true, recall RequestDataFromCar(), starting the process over.
                     catch (Exception ex)
                     {
                         if (BTConnection.EstablishBTConnection())
@@ -180,6 +180,8 @@ namespace vConnect
 
                     }
 
+                    // If the vehicle doesn't support this particular vehicle code, it will return "NO DATA",
+                    // which we are handling by sending an empty string to the server.
                     if (System.Text.Encoding.ASCII.GetString(returnData).Contains("NO DATA"))
                     {
                         valueToSend = "";
@@ -187,12 +189,8 @@ namespace vConnect
                     }
                     else
                     {
-                        // Will insert the vin into valueToSend, therefore we will not call formatData for
-                        // VIN data elements.
-                        // have to format correctly. 
 
-
-                        //Skips repeated bytes.
+                        // Parse the actual vehicle data from the bytes returned.
                         if (returnDataSize == 1)
                         {
                             hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
@@ -209,6 +207,8 @@ namespace vConnect
                     
                 }
             }
+
+            // If connection is lost, print to screen.
             else 
             {
                 MessageBox.Show("Lost BT Connection", "My Application",
@@ -220,9 +220,12 @@ namespace vConnect
         }
 
 
+        /// <summary>
+        /// Format the data correctly, using the specified equations for each type of data element.
+        /// </summary>
         public void FormatData()
         {
-
+            // If the data element is for the VIN, then its already formatted, proceed if otherwise.
             if (name != "VIN")
             {
                 MessageBox.Show(name);
@@ -252,9 +255,6 @@ namespace vConnect
                         expr.Parameters["B"] = equVals[1];
                     }
 
-                    // Should we go further?
-                    // else if...
-
                     // evaluate the expression with the variables
                     object answerToExpression = expr.Evaluate();
 
@@ -266,6 +266,7 @@ namespace vConnect
             return;
         }
 
+        // Still use??
         public bool SendEmergencyCode()
         {
             return true;

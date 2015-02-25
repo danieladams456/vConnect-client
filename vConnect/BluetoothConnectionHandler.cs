@@ -23,18 +23,25 @@ namespace vConnect
         private BluetoothAddress bluetoothAddress;
         private BluetoothEndPoint endpoint;
         private Guid serviceClass;
-        // Declare this later and do exception handling for if no bt card
         private BluetoothClient client = new BluetoothClient();
         private int connectLoop = 0;
 
         // can keep this static for our purposes, but should probably implement 
         // a method for user specified PIN just in case.
-        private string PIN = "1234";
+        private const string PIN = "1234";
 
         // Number of times vConnect with attempt to connect to the application. 
         private int connectionAttempts = 7;
 
   
+        /// <summary>
+        /// Function that attempts to connect to the BT device with address bluetoothAddress. 
+        /// will close any current BT connection. 
+        /// </summary>
+        /// <returns>
+        /// True - If connection is successfully established.
+        /// False - If connection is not established. 
+        /// </returns>
         public bool EstablishBTConnection()
         {
             // Close connection if already established. 
@@ -49,7 +56,7 @@ namespace vConnect
              client.SetPin(PIN);
             
             // Tries to connect, catches exception is connection fails,
-            // and then will try to connect 5 more times before giving it up.
+            // and then will try to connect seven more times before giving it up.
              try { client.Connect(endpoint); }
 
              catch ( Exception ex)
@@ -59,6 +66,8 @@ namespace vConnect
                      connectLoop++;
                      EstablishBTConnection();
                  }
+                 // If connection cannot be established after seven attempts, send Windows Error Message,
+                 // and print message to the screen.
                  else
                  {
                      var msg = "failed to connect to BT Device. ERROR: " + ex;
@@ -67,9 +76,11 @@ namespace vConnect
                      return false;
 
                  }
+                 return true;
 
              }
-            
+            // If connection is established, set the check  bool value to true, and save the OBDII device's
+            // Name and BT address. 
             if (client.Connected)
             {
                 bTConnectionStatus = true;
@@ -87,17 +98,21 @@ namespace vConnect
         /// <summary>
         /// Closes the current BT Connection, if one exists. 
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// True - The BT Connection was successfully closed.
+        /// False - No BT Connection was closed.
+        /// </returns>
         public bool CloseBTConnection()
         {
+            // If connected to a BT device, close the connection and clear saved BT device name and address.
             if (client.Connected)
-            
             {
                 Properties.Settings.Default.BTAddress = "";
                 Properties.Settings.Default.BTDeviceName = "";
                 client.Close(); 
                 return true; 
             }
+            // If there is no connection to close, print to the screen, and print to screen.
             else
             {
                 MessageBox.Show("No connection to close.", "My Application",
@@ -107,6 +122,13 @@ namespace vConnect
 
         }
 
+        /// <summary>
+        /// Send an error message to the Windows Event Log.
+        /// </summary>
+        /// <returns>
+        /// True - A Error message was sucessfully logged to the Windows Event Log
+        /// False - The error message was not logged to the Windows Event Log.
+        /// </returns>
         public bool SendWindowsErrorMessage()
         {
 
