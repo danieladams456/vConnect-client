@@ -371,36 +371,65 @@ namespace vConnect
         }
 
 
+        /// <summary>
+        /// Test that data is successfully moved from vehicle data elements to
+        /// the data cache.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CacheTest_Click(object sender, EventArgs e)
         {
             cache.DataCacheTest = true;
         }
 
-
+        /// <summary>
+        /// Test that the list of codes given to the testing team is the same
+        /// as the codes being polled to the OBDII module.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OBDIITest_Click(object sender, EventArgs e)
         {
 
         }
 
-
+        /// <summary>
+        /// Test to check if vehicle data was successfully transmitted
+        /// to the server.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ServerTest_Click(object sender, EventArgs e)
         {
             cache.ServerTest = true;
         }
 
-
+        /// <summary>
+        /// Test to see if data is successfully removed from the cache
+        /// after it has been sent to the server. 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RemoveTest_Click(object sender, EventArgs e)
         {
             cache.CacheTest = true;
         }
 
-
+        /// <summary>
+        /// Test that the raw data polled from the OBDII module is equivalent
+        /// to the data stored in the vehicle data elements.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DataTest_Click(object sender, EventArgs e)
         {
 
         }
 
-
+        /// <summary>
+        /// Read the schema from the json file to the schema string for use. 
+        /// </summary>
+        /// <returns></returns>
         private string SchemaUpdate()
         {
             // GET SCHEMA!
