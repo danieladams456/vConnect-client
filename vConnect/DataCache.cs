@@ -1,4 +1,17 @@
-﻿using System;
+﻿
+
+/* DataCache.cs - vConnect (Liberty University CSCI Capstone Project)
+ * Written by Troy Cosner and Charlie Snyder in February-March, 2015. 
+ * 
+ * 
+ * 
+ * 
+ * This class allows for the creation and maintenance of data elements and their 
+ *  values to be sent to a server. It implements this using Json.Net in order to 
+ *  store the data points in a list of dictionaries that are converted to a JSON
+ *  string before being sent to the server. 
+ */
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

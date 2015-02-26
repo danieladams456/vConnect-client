@@ -1,4 +1,13 @@
-﻿using System;
+﻿/* DataElement.cs - vConnect (Liberty University CSCI Capstone Project)
+ * Written by Troy Cosner and Charlie Snyder in February-March, 2015. 
+ * 
+ * This class embodies an element of data to be read from a car using OBDII codes
+ *  sent over a Bluetooth (BT) connection. At instantiation, an object will hold
+ *  the information necessary for retrieving its associated data point from the car.
+ *  After reading the data from the car, the associated element's data will be ready
+ *  to be added to a cache (refer to the DataCache class), then sent to the server. * 
+ */
+using System;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
@@ -15,16 +24,17 @@ namespace vConnect
     /// </summary>
     public class DataElement
     {
-        private string obdPID = "";
-        private string obdMode = "";
-        private string name = "";
-        private string dataType = "";
-        private int returnDataSize = 0;
-        private byte[] returnData;
-        private string valueToSend = "";
-        private string equation = "";
-        private int[] equVals = new int[10];
-        private bool noDataCheck = false;
+        private string  obdPID      = "";       // PID to be sent to the car to retrive data
+        private string  obdMode     = "";       // Mode on which to send the PID.
+        private string  name        = "";       // Name of the data element
+        private string  dataType    = "";       // Data type of the element (string, number, etc.)
+        private int     returnDataSize = 0;     // Number of bytes that the element will receive from car
+        private byte[]  returnData;             // Holds the data returned from the car
+        private string  valueToSend = "";       // Holds the value to send to the server for the element
+        private string  equation    = "";       // The equation to calculate a human-readable value from 
+                                                //  the bytes returned by the car.
+        private int[]   equVals     = new int[10];
+        private bool    noDataCheck = false;
 
         // NOTE: These are only used for testing purposes.
         private bool testOBDII = false;

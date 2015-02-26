@@ -1,4 +1,13 @@
-﻿using System;
+﻿/* Form1.cs - vConnect (Liberty University CSCI Capstone Project)
+ * Written by Troy Cosner and Charlie Snyder in February-March, 2015. 
+ * 
+ * This class creates the Windows Form that can be accessed by clicking the
+ *  tray icon. It also contains the code that will be running "in the background"
+ *  for the duration of the program's running-time. It requires interaction with the 
+ *  DataCache, DataElement, and BluetoothConnectionHandler classes. It also relies heavily
+ *  on 32feet (open-source Bluetooth library) and Json.net (open-source .NET-JSON library)
+ */
+using System;
 using System.Timers;
 using System.IO;
 using System.Collections.Generic;
@@ -55,9 +64,8 @@ namespace vConnect
             // Initialize the dataCache.
             cache = new DataCache(serverConnection);
             
-// Create a Timer callback method for polling data. 
+            // Create a Timer callback method for polling data. 
             TimerCallback tcb = RequestDataForElements;
-
 
             // Bool variable to record whether an OBDII device and server have been successfully detected and pinged/established connection. 
             bool deviceDetect = false;
@@ -78,11 +86,13 @@ namespace vConnect
                     deviceDetect = true;
                 }
             }
+
             // If no connection was established with the device with the saved BT Address, then
             // check all detectable BT devices with a Device Name corresponding with an OBDII module,
             // and attempt to connect with them. 
             else
             {   
+
             // Array of all detected BT devices. 
             BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
             int peerCounter = 0;

@@ -1,4 +1,10 @@
-﻿using System;
+﻿/* BluetoothConnectionHandler.cs - vConnect (Liberty University CSCI Capstone Project)
+ * Written by Troy Cosner and Charlie Snyder in February-March, 2015. 
+ * 
+ * 
+ * 
+ */ 
+using System;
 using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
