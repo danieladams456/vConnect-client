@@ -36,12 +36,13 @@ namespace vConnect
     public partial class Form1 : Form
     {
 
-        // Construct Objects to handle BT connection, server connection, and the DataCache upon startup. 
-        BluetoothConnectionHandler BTConnection = new BluetoothConnectionHandler();
+        // Instantiates objects from the classes BluetoothConnectionHandler, ServerConnectionHandler,
+        // and a null object of DataCache.
+        BluetoothConnectionHandler BTConnection = new BluetoothConnectionHandler(); 
         ServerConnectionHandler serverConnection = new ServerConnectionHandler();
         DataCache cache = null;
         
-        // Asynchronous Timer that handling polling and formatting data from the OBDII module.
+        // Instantiates a timer used to to poll data from the OBDII module.
         System.Threading.Timer pollData;
         
         // List that will used to hold OBDII codes before being inserted into the cache.
@@ -50,6 +51,7 @@ namespace vConnect
         
         // String that will hold the current schema.
         String schema = "";
+      
         // Bool value specifying whether the data polling asychronous operation is currently
         // running or not. 
         bool pollingData = false;
@@ -78,7 +80,10 @@ namespace vConnect
             // If there is a saved BT Address, attempt to connect with the device with that address.
             if (Properties.Settings.Default.BTAddress != "")
             {          
+                // Grabs the saved BT address from the settings file.
                 BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
+                // If connection is established with the device with the specified BT address above,
+                // save the Device's ID, indicated connection status on the GUI.
                 if(BTConnection.EstablishBTConnection())
                 {
                     BT_ID.Text = Properties.Settings.Default.BTDeviceName;
@@ -93,14 +98,20 @@ namespace vConnect
             else
             {   
 
-            // Array of all detected BT devices. 
-            BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
-            int peerCounter = 0;
-            while (peerCounter < peers.Length)
-            {
+                // Array of all detected BT devices. 
+                BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
+            
+                int peerCounter = 0;
+            
+                // Loops through all of the BT Devices detected, and attempt to connect with any one who's device ID
+                // indicates that it is an OBDII module.
+                while (peerCounter < peers.Length)
+                {
  
-                if (peers[peerCounter].DeviceName == "CBT." || peers[peerCounter].DeviceName == "OBDII")
+                    if (peers[peerCounter].DeviceName == "CBT." || peers[peerCounter].DeviceName == "OBDII")
                     {
+                        // Retrieve the BT adress from the BT device whose device name indicates that it is 
+                        // as OBDII module.
                         BTConnection.BluetoothAddress = peers[peerCounter].DeviceAddress;
 
                         // If connection is established, save the OBDII device's BT Address and Device Name to the 
@@ -116,8 +127,7 @@ namespace vConnect
                             peerCounter = peers.Length;
                             deviceDetect = true;
                         }
-
-                    }
+                    }      
                     peerCounter++;
                 }
             }
@@ -126,7 +136,6 @@ namespace vConnect
            // load the GUI. 
            if (deviceDetect == false)
                 MessageBox.Show("No OBDII devices were connected to automatically.");
-                // set Cursor to red. 
 
             // Checks if any server connection data is saved in the settings file. If so, attempts to see if connection
             // can be established.
@@ -140,33 +149,30 @@ namespace vConnect
                 server_IP.Text = IPvalue;
                 serverConnection.IPAddress = IPvalue;                
 
+                // If the server is available, switch the bool value to save that info. 
                 if (serverConnection.CheckServerConnection())
                     serverDetect = true;
-                    //Connect as well? 
                 else
-                {
                     MessageBox.Show("ERROR: Could not connect to server at saved IP address and port number.");
-                    //server_status_label.Text = "Disconnected";
-                }
             }
             else
                 MessageBox.Show("No server connection data was found, please add server IP address and port number");
             
-
-            
            // If connections have been established to the OBDII device and the server, then begin polling for 
            // vehicle data. 
-            if (deviceDetect && serverDetect)
-            {
+           if (deviceDetect && serverDetect)
+           {
                 schema = SchemaUpdate();
                 pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
-            }
-            else
+           }
+           // If connections have not been established to the OBDII device and server, then initialize the loop to 
+           // poll data, but do not start it. 
+           else
                 pollData = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
         }
 
         /// <summary>
-        ///     Exits the application
+        /// Closes the Application GUI.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
