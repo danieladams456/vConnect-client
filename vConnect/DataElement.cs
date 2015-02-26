@@ -33,8 +33,12 @@ namespace vConnect
         private string  valueToSend = "";       // Holds the value to send to the server for the element
         private string  equation    = "";       // The equation to calculate a human-readable value from 
                                                 //  the bytes returned by the car.
-        private int[]   equVals     = new int[10];
-        private bool    noDataCheck = false;
+        private int[]   equVals     = new int[10]; // Array that will contain raw values from the OBDII module 
+                                                   // to be used in calculating formatted data values. 
+        
+        private bool    noDataCheck = false; // Bool that will be switched to true if a data element
+                                             // doesn't need to be formatted. 
+
 
         // NOTE: These are only used for testing purposes.
         private bool testOBDII = false;
@@ -84,24 +88,25 @@ namespace vConnect
         public bool RequestDataFromCar()
         {
             
-            string writeString;
-            string hexLiteral;
-            string hexLiteral2;
+            string writeString; // String that will contain the request to be send to the OBDII module.
+            string hexLiteral; // String that will contain a raw hex value returned from the OBDII module.
+            string hexLiteral2; // String that will contain a raw hex value returned from the OBDII module. 
             
+            // If BT device is connected. 
             if (BTConnection.Client.Connected)
             {
+                // Initialize the read/write stream.
                 Stream peerStream = BTConnection.Client.GetStream();
                 
                 // If this is the vin data element, then do the following reads in order to get all 
                 // of the bytes relating to the VIN.
                 if (name == "VIN")
                 {
-                    writeString = "09" + ObdPID + "\r";
-                    returnData = new byte[200];
-                    byte[] vin1 = new byte[50];
+                    writeString = "09" + ObdPID + "\r"; // Write string for VIN.
+                    byte[] vin1 = new byte[50]; // Byte arrays to read in VIN.
                     byte[] vin2 = new byte[50];
                     byte[] vin3 = new byte[50];
-                    byte[] vin4 = new byte[50]; 
+                    
 
                     // Create the code to request VIN.
                     byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);

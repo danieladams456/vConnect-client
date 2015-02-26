@@ -1,6 +1,7 @@
 ﻿/* BluetoothConnectionHandler.cs - vConnect (Liberty University CSCI Capstone Project)
  * Written by Troy Cosner and Charlie Snyder in February-March, 2015. 
- * 
+ * Contains methods that manage BT connections with OBDII devices, including connecting,
+ * disconnecting, and automatic reconnection attempts.
  * 
  * 
  */ 
@@ -23,14 +24,15 @@ namespace vConnect
     /// </summary>
     public class BluetoothConnectionHandler
     {
-        private string deviceID = "";
-        private bool bTConnectionStatus = false;
-        private string errorMessageToUI = "";
-        private BluetoothAddress bluetoothAddress;
-        private BluetoothEndPoint endpoint;
-        private Guid serviceClass;
-        private BluetoothClient client = new BluetoothClient();
-        private int connectLoop = 0;
+
+        private string deviceID = ""; // Name of the BT device that is connected. 
+        private bool bTConnectionStatus = false; // Keeps track of whether or not any Bt connection is currently ongoing.
+        private string errorMessageToUI = ""; // Error Message to be used.
+        private BluetoothAddress bluetoothAddress; // Class object that contains formatted BT address.
+        private BluetoothEndPoint endpoint; // Class object that contains data for BT endpoint.
+        private Guid serviceClass; // Process ID used for BT connection.
+        private BluetoothClient client = new BluetoothClient(); // Class object that contains client info.
+        private int connectLoop = 0; // Integer used to keep track of automatic reconnect attempts. 
 
         // can keep this static for our purposes, but should probably implement 
         // a method for user specified PIN just in case.
@@ -55,10 +57,11 @@ namespace vConnect
             if (client.Connected)
                 client.Close();
 
+            // Initialize serviceClass and endpoint.
             serviceClass = BluetoothService.SerialPort;
             endpoint = new BluetoothEndPoint(bluetoothAddress, serviceClass);
          
-            
+            // Set the PIN to be used in the connection attempt.
              client.SetPin(PIN);
             
             // Tries to connect, catches exception is connection fails,

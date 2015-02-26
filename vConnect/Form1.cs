@@ -225,7 +225,6 @@ namespace vConnect
                 server_IP.Text = value;
                 Properties.Settings.Default.ServerIP = value;
                 Properties.Settings.Default.Save();
-                // Should probably validate IP address here... 
 
                 serverConnection.IPAddress = value;
             }
@@ -284,7 +283,7 @@ namespace vConnect
                 BluetoothAddress BTaddr = device.DeviceAddress;
                 BTConnection.BluetoothAddress = BTaddr;
 
-                // If connection is successfully esablished, save the device's name and address to ther 
+                // If connection is successfully esablished, save the device's name and address to the 
                 // settings file, and update the device status on the GUI to "connected.
                 if (BTConnection.EstablishBTConnection())
                 {
@@ -309,7 +308,6 @@ namespace vConnect
         {
             if (BTConnection.CloseBTConnection())
                 device_Status_Label.Text = "Disconnected";
-
         }
 
 
@@ -320,7 +318,9 @@ namespace vConnect
         /// <param name="e"></param>
         private void update_schema_button_Click(object sender, EventArgs e)
         {
+            // Address to request schema from.
             string address = "http://vconnect-danieladams456.rhcloud.com/schema";
+            // Initialize the connection the address above.
             WebClient client = new WebClient();
             Stream stream = client.OpenRead(address);
             StreamReader reader = new StreamReader(stream);
@@ -723,7 +723,6 @@ namespace vConnect
         /// <returns></returns>
         public BluetoothConnectionHandler getBTConnection()
         {
-            // Do we need this?
             return BTConnection;
         }
         
