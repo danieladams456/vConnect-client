@@ -725,6 +725,11 @@ namespace vConnect
         {
             return BTConnection;
         }
+
+        private void trayIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            this.WindowState = FormWindowState.Normal;
+        }
         
     }
 
