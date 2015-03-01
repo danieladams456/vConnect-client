@@ -312,6 +312,42 @@ namespace vConnect
 
         private void server_test_Click(object sender, EventArgs e)
         {
+            //string webAddress = "http://vconnect-danieladams456.rhcloud.com/status";
+
+            // Create the address of the server to connect to from the IP And port number supplied in the GUI.
+            string webAddress = this.server_IP.Text +  ":" + this.port_number.Text + "/status";
+
+            // HttpWebRequest must begin with http://, so if the supplied IP or 
+            //  web address does not begin with it, add it.
+            if (webAddress.Substring(0, 7).ToLower() != "http://")
+                webAddress = "http://" + webAddress;
+
+            // Create a variable to hold the response
+            HttpWebResponse response = null;
+            try
+            {
+                // Create the Web request
+                HttpWebRequest request = WebRequest.Create(webAddress) as HttpWebRequest;
+
+                // Instruct the server to return headers only
+                request.Method = "HEAD";
+                
+                // Attempt to make the connection
+                response = request.GetResponse() as HttpWebResponse;
+
+                // If a successful connection was made, then there will be at least 1 header received.
+                if (response.Headers.Count >= 1)
+                {
+                    MessageBox.Show(response.Headers.ToString());
+
+                    // Place code here to do when server was successfully connected to.
+
+                }
+            }
+            catch (WebException error)
+            {
+                MessageBox.Show("Could not connect to the server...", "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+            }
 
         }
 
@@ -566,6 +602,8 @@ namespace vConnect
         {
             this.WindowState = FormWindowState.Normal;
         }
+
+
 
 
     }
