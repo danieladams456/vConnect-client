@@ -21,24 +21,24 @@ using Newtonsoft.Json.Linq;
 
 
 namespace vConnect
-{    
+{
 
     public partial class Form1 : Form
     {
         BluetoothConnectionHandler BTConnection = new BluetoothConnectionHandler();
         ServerConnectionHandler serverConnection = new ServerConnectionHandler();
         DataCache cache = null;
-        
+
         // For asychronous call to read OBDII codes.
         System.Threading.Timer myTimer;
 
         // List that will used to hold OBDII codes before being inserted into the cache.
-        List<Dictionary<string,object>> elementDictionaryList = 
-                                                new List<Dictionary<string,object>>();
+        List<Dictionary<string, object>> elementDictionaryList =
+                                                new List<Dictionary<string, object>>();
         String schema = "";
         bool pollingData = false;
-//        int POLLTIME = 120000;
-        
+        //        int POLLTIME = 120000;
+
 
 
         public Form1()
@@ -48,105 +48,105 @@ namespace vConnect
             InitializeComponent();
             this.WindowState = FormWindowState.Minimized;
             cache = new DataCache(serverConnection);
-//            TimerCallback tcb = requestDataForElements;
+            //            TimerCallback tcb = requestDataForElements;
 
-//            bool deviceDetect = false;
-//            bool serverDetect = true;
+            //            bool deviceDetect = false;
+            //            bool serverDetect = true;
 
             // TESTING ONLY !!!
-//            serverConnection.PortNumber = 80;
-//            serverConnection.IPAddress = "127.7.19.130";
-            
-            // If there is a saved BT Address, attempt to connect with the device with that address.
-/*            if (Properties.Settings.Default.BTAddress != "")
-            {          
-                BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
-                if(BTConnection.EstablishBTConnection())
-                {
-                    BT_ID.Text = Properties.Settings.Default.BTDeviceName;
-                    device_Status_Label.Text = "Connected";
-                    deviceDetect = true;
-                }
-            }
-            // If no connection was established with the device with the saved BT Address, then
-            // check all detectable BT devices with a Device Name corresponding with an OBDII module,
-            // and attempt to connect with them. 
-            else
-            {
-               
-            BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
-            int peerCounter = 0;
-            while (peerCounter < peers.Length)
-            {
- 
-                if (peers[peerCounter].DeviceName == "CBT." || peers[peerCounter].DeviceName == "OBDII")
-                    {
-                        BTConnection.BluetoothAddress = peers[peerCounter].DeviceAddress;
+            //            serverConnection.PortNumber = 80;
+            //            serverConnection.IPAddress = "127.7.19.130";
 
-                        // If connection is established, save the OBDII device's BT Address and Device Name to the 
-                        // settings file, and change details on the GUI accordingly. 
-                        if (BTConnection.EstablishBTConnection())
+            // If there is a saved BT Address, attempt to connect with the device with that address.
+            /*            if (Properties.Settings.Default.BTAddress != "")
+                        {          
+                            BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
+                            if(BTConnection.EstablishBTConnection())
+                            {
+                                BT_ID.Text = Properties.Settings.Default.BTDeviceName;
+                                device_Status_Label.Text = "Connected";
+                                deviceDetect = true;
+                            }
+                        }
+                        // If no connection was established with the device with the saved BT Address, then
+                        // check all detectable BT devices with a Device Name corresponding with an OBDII module,
+                        // and attempt to connect with them. 
+                        else
                         {
-                            Properties.Settings.Default.BTAddress = BTConnection.BluetoothAddress.ToString();
-                            Properties.Settings.Default.BTDeviceName = peers[peerCounter].DeviceName;
-                            Properties.Settings.Default.Save();
-                            BT_ID.Text = peers[peerCounter].DeviceName;
-                            BTConnection.DeviceID = peers[peerCounter].DeviceName;
-                            device_Status_Label.Text = "Connected";
-                            peerCounter = peers.Length;
-                            deviceDetect = true;
+               
+                        BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
+                        int peerCounter = 0;
+                        while (peerCounter < peers.Length)
+                        {
+ 
+                            if (peers[peerCounter].DeviceName == "CBT." || peers[peerCounter].DeviceName == "OBDII")
+                                {
+                                    BTConnection.BluetoothAddress = peers[peerCounter].DeviceAddress;
+
+                                    // If connection is established, save the OBDII device's BT Address and Device Name to the 
+                                    // settings file, and change details on the GUI accordingly. 
+                                    if (BTConnection.EstablishBTConnection())
+                                    {
+                                        Properties.Settings.Default.BTAddress = BTConnection.BluetoothAddress.ToString();
+                                        Properties.Settings.Default.BTDeviceName = peers[peerCounter].DeviceName;
+                                        Properties.Settings.Default.Save();
+                                        BT_ID.Text = peers[peerCounter].DeviceName;
+                                        BTConnection.DeviceID = peers[peerCounter].DeviceName;
+                                        device_Status_Label.Text = "Connected";
+                                        peerCounter = peers.Length;
+                                        deviceDetect = true;
+                                    }
+
+                                }
+                                peerCounter++;
+                            }
                         }
 
-                    }
-                    peerCounter++;
-                }
-            }
+                       // If no OBDII connection is established, then print to the screen stating this fact, and then
+                       // load the GUI. 
+                       if (deviceDetect == false)
+                            MessageBox.Show("No OBDII devices were connected to automatically.");
+                            // set Cursor to red. 
 
-           // If no OBDII connection is established, then print to the screen stating this fact, and then
-           // load the GUI. 
-           if (deviceDetect == false)
-                MessageBox.Show("No OBDII devices were connected to automatically.");
-                // set Cursor to red. 
+                        // Checks if any server connection data is saved in the settings file. If so, attempts to see if connection
+                        // can be established.
+                        if (Properties.Settings.Default.ServerIP != "" && Properties.Settings.Default.ServerPort != "")
+                        {
+                            string portValue = Properties.Settings.Default.ServerPort;
+                            port_number.Text = portValue;
+                            serverConnection.PortNumber = Int32.Parse(portValue);
 
-            // Checks if any server connection data is saved in the settings file. If so, attempts to see if connection
-            // can be established.
-            if (Properties.Settings.Default.ServerIP != "" && Properties.Settings.Default.ServerPort != "")
-            {
-                string portValue = Properties.Settings.Default.ServerPort;
-                port_number.Text = portValue;
-                serverConnection.PortNumber = Int32.Parse(portValue);
+                            string IPvalue = Properties.Settings.Default.ServerIP;                
+                            server_IP.Text = IPvalue;
+                            serverConnection.IPAddress = IPvalue;                
 
-                string IPvalue = Properties.Settings.Default.ServerIP;                
-                server_IP.Text = IPvalue;
-                serverConnection.IPAddress = IPvalue;                
-
-                if (serverConnection.CheckServerConnection())
-                    serverDetect = true;
-                //Connect as well? 
-                else
-                {
-                    MessageBox.Show("ERROR: Could not connect to server at saved IP address and port number.");
-                    server_status_label.Text = "Disconnected";
-                }
-            }
-            else
-                MessageBox.Show("No server connection data was found, please add server IP address and port number");
+                            if (serverConnection.CheckServerConnection())
+                                serverDetect = true;
+                            //Connect as well? 
+                            else
+                            {
+                                MessageBox.Show("ERROR: Could not connect to server at saved IP address and port number.");
+                                server_status_label.Text = "Disconnected";
+                            }
+                        }
+                        else
+                            MessageBox.Show("No server connection data was found, please add server IP address and port number");
             
 
             
-           // If connections have been established to the OBDII device and the server, then begin polling for 
-           // vehicle data. 
-            if (deviceDetect && serverDetect)
-            {
-                  schema = schemaUpdate();
-                  myTimer = new System.Threading.Timer(tcb, null, 0, POLLTIME);
-            }
-            else
-                myTimer = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
-*/
+                       // If connections have been established to the OBDII device and the server, then begin polling for 
+                       // vehicle data. 
+                        if (deviceDetect && serverDetect)
+                        {
+                              schema = schemaUpdate();
+                              myTimer = new System.Threading.Timer(tcb, null, 0, POLLTIME);
+                        }
+                        else
+                            myTimer = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
+            */
         }
-        
-        
+
+
 
         /// <summary>
         /// This function serves as the launching point for requesting data.
@@ -158,7 +158,7 @@ namespace vConnect
             List<DataElement> elemList = new List<DataElement>();
             Dictionary<string, object> dictionary = new Dictionary<string, object>();
 
-           
+
             elemList = createElementsFromSchema(schema);
             elemList = getElementData(elemList);
             dictionary = createDictionary(elemList);
@@ -169,8 +169,8 @@ namespace vConnect
 
             //MessageBox.Show(cache.JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
 
-       }
-           
+        }
+
         /// <summary>
         ///  This handles a simple input dialog box. Taken from 
         ///     http://www.csharp-examples.net/inputbox/
@@ -233,7 +233,7 @@ namespace vConnect
             Application.Exit();
         }
 
-        
+
         private void help_button_Click(object sender, EventArgs e)
         {
             string helpMessage = "This GUI is used to setup and manange vConnect's Windows Aplication. \n " +
@@ -253,9 +253,9 @@ namespace vConnect
                    "Update Schema: Will query the vConnect server, and update the schema if it is out of data.\n" +
                    "Start: Will begin polling for data. \n" +
                    "Stop: Will stop polling for data.";
-                   
-                   MessageBox.Show(helpMessage);
-           
+
+            MessageBox.Show(helpMessage);
+
         }
 
         /// <summary>
@@ -278,7 +278,7 @@ namespace vConnect
                 }
             }
         }
-        
+
         /// <summary>
         ///  Allows the user to enter a new IP address using the GUI.
         /// </summary>
@@ -296,13 +296,13 @@ namespace vConnect
 
                 serverConnection.IPAddress = value;
             }
-         }
-        
+        }
+
 
 
         private void apply_button_Click(object sender, EventArgs e)
         {
-            
+
         }
 
         private void ok_button_Click(object sender, EventArgs e)
@@ -315,7 +315,7 @@ namespace vConnect
             //string webAddress = "http://vconnect-danieladams456.rhcloud.com/status";
 
             // Create the address of the server to connect to from the IP And port number supplied in the GUI.
-            string webAddress = this.server_IP.Text +  ":" + this.port_number.Text + "/status";
+            string webAddress = this.server_IP.Text + ":" + this.port_number.Text + "/status";
 
             // HttpWebRequest must begin with http://, so if the supplied IP or 
             //  web address does not begin with it, add it.
@@ -331,7 +331,7 @@ namespace vConnect
 
                 // Instruct the server to return headers only
                 request.Method = "HEAD";
-                
+
                 // Attempt to make the connection
                 response = request.GetResponse() as HttpWebResponse;
 
@@ -341,53 +341,53 @@ namespace vConnect
                     MessageBox.Show(response.Headers.ToString());
 
                     // Place code here to do when server was successfully connected to.
-
+                    
                 }
             }
             catch (WebException error)
             {
-                MessageBox.Show("Could not connect to the server...", "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                Form1.LogMessageToFile("Server Button", error.Message.ToString());    
             }
 
         }
 
-       /// <summary>
-       /// Button opens up a Dialog box to select a BT device to attempt to connect to.
-       /// </summary>
-       /// <param name="sender"></param>
-       /// <param name="e"></param>
+        /// <summary>
+        /// Button opens up a Dialog box to select a BT device to attempt to connect to.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void browse_button_Click(object sender, EventArgs e)
         {
-/*
-            var msg = "Please disconnect current OBDII connection " +
-                "before connecting to a new OBDII device";
-            if (BTConnection.Client.Connected)
-                MessageBox.Show(msg);
-            else
-            {
-                var dlg = new SelectBluetoothDeviceDialog();
-                DialogResult result = dlg.ShowDialog(this);
-                if (result != DialogResult.OK)
-                {
-                    return;
-                }
-                BluetoothDeviceInfo device = dlg.SelectedDevice;
-                BluetoothAddress BTaddr = device.DeviceAddress;
-                BTConnection.BluetoothAddress = BTaddr;
+            /*
+                        var msg = "Please disconnect current OBDII connection " +
+                            "before connecting to a new OBDII device";
+                        if (BTConnection.Client.Connected)
+                            MessageBox.Show(msg);
+                        else
+                        {
+                            var dlg = new SelectBluetoothDeviceDialog();
+                            DialogResult result = dlg.ShowDialog(this);
+                            if (result != DialogResult.OK)
+                            {
+                                return;
+                            }
+                            BluetoothDeviceInfo device = dlg.SelectedDevice;
+                            BluetoothAddress BTaddr = device.DeviceAddress;
+                            BTConnection.BluetoothAddress = BTaddr;
 
-                // Can call this elsewhere, just have it here for now. 
-                if (BTConnection.EstablishBTConnection())
-                {
-                    device_Status_Label.Text = "Connected";
-                    BTConnection.DeviceID = device.DeviceName;
-                    label5.Text = device.DeviceName;
-                    BT_ID.Text = device.DeviceName;
-                    Properties.Settings.Default.BTDeviceName = device.DeviceName;
-                    Properties.Settings.Default.BTAddress = device.DeviceAddress.ToString();
-                    Properties.Settings.Default.Save();
-                }
-            }
- */
+                            // Can call this elsewhere, just have it here for now. 
+                            if (BTConnection.EstablishBTConnection())
+                            {
+                                device_Status_Label.Text = "Connected";
+                                BTConnection.DeviceID = device.DeviceName;
+                                label5.Text = device.DeviceName;
+                                BT_ID.Text = device.DeviceName;
+                                Properties.Settings.Default.BTDeviceName = device.DeviceName;
+                                Properties.Settings.Default.BTAddress = device.DeviceAddress.ToString();
+                                Properties.Settings.Default.Save();
+                            }
+                        }
+             */
         }
 
         public BluetoothConnectionHandler getBTConnection()
@@ -417,7 +417,7 @@ namespace vConnect
 
         private void Disconnect_BT_Click(object sender, EventArgs e)
         {
-//            BTConnection.CloseBTConnection();
+            //            BTConnection.CloseBTConnection();
         }
 
         private void DataTest_Click(object sender, EventArgs e)
@@ -443,29 +443,30 @@ namespace vConnect
 
         private void start_Click(object sender, EventArgs e)
         {
-/*            if (pollingData)
-                MessageBox.Show("Already Polling Data");
-            else
-            {
-                schema = schemaUpdate();
-                myTimer.Change(0, POLLTIME);
-            }
-*/
+            /*            if (pollingData)
+                            MessageBox.Show("Already Polling Data");
+                        else
+                        {
+                            schema = schemaUpdate();
+                            myTimer.Change(0, POLLTIME);
+                        }
+            */
             schema = schemaUpdate();
-            requestDataForElements(this);  
-      
+            requestDataForElements(this);
+
         }
 
         private void Stop_Polling_Click(object sender, EventArgs e)
         {
-/*            if (pollingData == false)
-                MessageBox.Show("Currently not polling Data.");
-            else
-            {
-                myTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                myTimer.Dispose();
-            }
-*/      }
+            /*            if (pollingData == false)
+                            MessageBox.Show("Currently not polling Data.");
+                        else
+                        {
+                            myTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                            myTimer.Dispose();
+                        }
+            */
+        }
 
 
         private string schemaUpdate()
@@ -485,13 +486,13 @@ namespace vConnect
         }
 
         private List<DataElement> createElementsFromSchema(string schema)
-        {      
+        {
             JObject jsonObjectList = JObject.Parse(schema);
             List<DataElement> elementList = new List<DataElement>();
 
             // Temporary variables to hold data before object creation.
             string name = "", mode = "", code = "", size = "", type = "", equation = "";
-            
+
             foreach (var pair in jsonObjectList)
             {
                 name = pair.Key;
@@ -513,12 +514,12 @@ namespace vConnect
 
                 if (jsonObjectList[name]["type"] == null)
                     type = "n/a";
-                else 
+                else
                     type = (string)jsonObjectList[name]["type"];
 
                 if (jsonObjectList[name]["equation"] == null)
                     equation = "n/a";
-                else 
+                else
                     equation = (string)jsonObjectList[name]["equation"];
 
                 // Add a DataElement to the list containing the values of the parsed object.
@@ -546,31 +547,31 @@ namespace vConnect
                 {
                     // Get data from the car for the element and format it.
                     elem.RequestDataFromCar();
-//                    elem.FormatData();
+                    //                    elem.FormatData();
                 }
             }
 
             return elemList;
         }
 
-        private Dictionary<string,object> createDictionary(List<DataElement> elemList)
-        {    
+        private Dictionary<string, object> createDictionary(List<DataElement> elemList)
+        {
             var elementDictionary = new Dictionary<string, object>();
-            
+
             foreach (DataElement elem in elemList)
             {
                 if (elem.DataType == "number")
                     elementDictionary.Add(elem.Name, Int32.Parse(elem.ValueToSend));
                 else if (elem.DataType == "date") // Do we need to format 
-                                                  //  the date in a special way?
+                    //  the date in a special way?
                     elementDictionary.Add(elem.Name, elem.ValueToSend);
                 else if (elem.DataType == "string")
                     elementDictionary.Add(elem.Name, elem.ValueToSend);
             }
 
             return elementDictionary;
-        }  
-    
+        }
+
         private void checkForErrorCodes()
         {
             /*
@@ -601,11 +602,42 @@ namespace vConnect
         private void trayIcon_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             this.WindowState = FormWindowState.Normal;
+            Form1.LogMessageToFile("Tray Click", "This is an error message");//error.Message.ToString());
         }
 
+        /// <summary>
+        /// This static function allows for writing errors to a standard log file
+        ///     from any of the classes. It writes the error in the format:
+        ///     
+        ///     3/1/2015 6:27:22 PM: [caller] message.
+        ///     
+        ///     where   caller  ->  where the error occurred and 
+        ///             message ->  the error message to write.
+        ///     
+        /// </summary>
+        /// <param name="caller">This term gives anyone reading the log file
+        ///                         a way to know from where the error came. </param>
+        /// <param name="message">The error message to write to the file</param>
+        public static void LogMessageToFile(string caller, string message)
+        {
+            // File name of the error log
+            string ERROR_FILE = "error.log";
 
+            // Append to the feil.
+            StreamWriter writer = File.AppendText(ERROR_FILE);
 
-
+            try
+            {
+                // Write according to "3/1/2015 6:27:22 PM: [caller] message." format
+                string logLine = String.Format(
+                    "{0:G}: [{1}] {2}.", System.DateTime.Now, caller, message);
+                writer.WriteLine(logLine);
+            }
+            finally
+            {
+                // Close the stream
+                writer.Close();
+            }
+        }
     }
-
 }

@@ -89,6 +89,7 @@ namespace vConnect
             }
             catch (WebException e) {
                 MessageBox.Show("Could not connect to the server...", "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                Form1.LogMessageToFile("Server Button", e.Message.ToString());    
             }
         }
 
