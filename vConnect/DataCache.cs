@@ -36,7 +36,6 @@ namespace vConnect
         // NOTE: These values are used for testing purposes only.
         private bool cacheTest = false;
         private bool serverTest = false;
-        private bool dataCacheTest = false;
 
 
         /// <summary>
@@ -74,7 +73,7 @@ namespace vConnect
         /// False - the data was not successfully sent to the server, or the server didn't send confirmation that it recieved
         /// the element, or the element was not successfully removed from the cache.
         /// </returns>
-        public bool SendToServer()
+        public bool SendToServer(string jsonString, string type)
         {
             /*
              * In order to test this without needing the actual server runnning, turn on
@@ -87,44 +86,70 @@ namespace vConnect
              * Check and make sure the listener received the JSON and that the app received 
              *  a response of 200. The status code should pop up in a message box.
             */
-            MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+            string webAddress = null;
 
-            /*
-                   // Create the web address to connect to
-                   string webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber.ToString() + "/";
-                
-                   // Create the web request with Json/Post attributes and given address
-                   var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
-                   httpWebRequest.ContentType = "text/json";
-                   httpWebRequest.Method = "POST";
-                   httpWebRequest.UserAgent = "vConnect";
-                   httpWebRequest.KeepAlive = false;
-            
-                   try
-                   {
-                       // Write the current JSON string to the server
-                       using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-                       {
-                           streamWriter.Write(JsonString);
-                           streamWriter.Flush();
-                           streamWriter.Close();
-    
-                           // Get web response (most importantly, status code)
-                           var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                           int statusCode = (int)httpResponse.StatusCode;
-    
-                           MessageBox.Show(statusCode.ToString());
-                           // If the web response was anything except 200, then problem. Handle it.
-                           //if (statusCode!=200)
-                           //{
-                               // Handle Bad Error Request Here!
-                           //}
-                       }
-                   }
-                   catch (WebException e) {
-                       MessageBox.Show("Could not connect to the server...", "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
-                   }
-           */
+
+
+            // Create the web address to connect to
+            if (serverTest)
+            {
+                webAddress = "http://" + "0.0.0.0" + ":" + "1" + "/";
+                serverTest = false;
+            }
+            else
+                webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber + "/" + type;
+
+            // Create the web request with Json/Post attributes and given address
+            var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
+            httpWebRequest.ContentType = "text/json";
+            httpWebRequest.Method = "POST";
+            httpWebRequest.UserAgent = "vConnect";
+            //httpWebRequest.KeepAlive = false;
+
+            try
+            {
+                // Write the current JSON string to the server
+                using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+                {
+                    streamWriter.Write(jsonString + "\n");
+                    streamWriter.Flush();
+                    streamWriter.Close();
+
+                    // Get web response (most importantly, status code)
+                    var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                    int statusCode = (int)httpResponse.StatusCode;
+
+                    MessageBox.Show(statusCode.ToString());
+                    if (serverTest)
+                    {
+                        if (statusCode == 200)
+                            MessageBox.Show("SERVER TEST: Server successfully received data cache data.");
+
+                    }
+                    if (statusCode == 200)
+                        cache.Clear();
+                    if (cacheTest)
+                    {
+                        var msg = "REMOVE CACHE DATA TEST \nThere should be nothing printed underneath\n" + cache.ToString();
+                        MessageBox.Show(msg);
+                    }
+                    // If the web response was anything except 200, then problem. Handle it.
+                    //if (statusCode!=200)
+                    //{
+                    // Handle Bad Error Request Here!
+                    //}
+                }
+            }
+            catch (WebException e)
+            {
+                MessageBox.Show("Could not connect to the server...", "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                Form1.LogMessageToFile("Server Connect Error", e.ToString());
+            }
+
+
+
+            MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+            // MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             return true;
         }
 
@@ -141,7 +166,6 @@ namespace vConnect
         public string JsonString { get { return JsonConvert.SerializeObject(cache); } }
         public bool CacheTest { get { return cacheTest; } set { cacheTest = value; } }
         public bool ServerTest { get { return serverTest; } set { serverTest = value; } }
-        public bool DataCacheTest { get { return dataCacheTest; } set { dataCacheTest = value; } }
 
     }
 }

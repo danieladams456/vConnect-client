@@ -33,6 +33,7 @@ namespace vConnect
 
         public bool CheckServerConnection()
         {
+
             return serverConnectionStatus;
         }
 

@@ -4,7 +4,7 @@
  * disconnecting, and automatic reconnection attempts.
  * 
  * 
- */ 
+ */
 using System;
 using System.IO;
 using System.Diagnostics;
@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 using InTheHand.Net;
 using InTheHand.Net.Bluetooth;
 using InTheHand.Net.Sockets;
+
+
 
 namespace vConnect
 {
@@ -33,15 +35,19 @@ namespace vConnect
         private Guid serviceClass; // Process ID used for BT connection.
         private BluetoothClient client = new BluetoothClient(); // Class object that contains client info.
         private int connectLoop = 0; // Integer used to keep track of automatic reconnect attempts. 
+        private BluetoothDeviceInfo deviceInfo = null;
 
         // can keep this static for our purposes, but should probably implement 
         // a method for user specified PIN just in case.
         private const string PIN = "1234";
 
         // Number of times vConnect with attempt to connect to the application. 
-        private int connectionAttempts = 7;
+        private int connectionAttempts = 1;
 
-  
+        // Testing values
+        private bool bT_Test = false;
+
+
         /// <summary>
         /// Function that attempts to connect to the BT device with address bluetoothAddress. 
         /// will close any current BT connection. 
@@ -51,52 +57,70 @@ namespace vConnect
         /// False - If connection is not established. 
         /// </returns>
         public bool EstablishBTConnection()
-        {
+        { /// CHECK THAT ITS A OBDII MODULE BREH
             // Close connection if already established. 
             // Not sure if we want to try and auto-connect to previous. 
+            bool catchBool = false;
             if (client.Connected)
                 client.Close();
 
             // Initialize serviceClass and endpoint.
             serviceClass = BluetoothService.SerialPort;
             endpoint = new BluetoothEndPoint(bluetoothAddress, serviceClass);
-         
+
             // Set the PIN to be used in the connection attempt.
-             client.SetPin(PIN);
-            
+            client.SetPin(PIN);
+
             // Tries to connect, catches exception is connection fails,
             // and then will try to connect seven more times before giving it up.
-             try { client.Connect(endpoint); }
+            try { client.Connect(endpoint); }
 
-             catch ( Exception ex)
-             {
-                 if (connectLoop < connectionAttempts)
-                 {
-                     connectLoop++;
-                     EstablishBTConnection();
-                 }
-                 // If connection cannot be established after seven attempts, send Windows Error Message,
-                 // and print message to the screen.
-                 else
-                 {
-                     var msg = "failed to connect to BT Device. ERROR: " + ex;
-                     MessageBox.Show(msg);
-                     SendWindowsErrorMessage();
-                     return false;
+            catch (Exception ex)
+            {
+                if (connectLoop < connectionAttempts)
+                {
+                    connectLoop++;
+                    EstablishBTConnection();
+                }
+                // If connection cannot be established after seven attempts, send Windows Error Message,
+                // and print message to the screen.
+                else
+                {
+                    var msg = "failed to connect to BT Device. ERROR:\n\n " + ex;
+                    MessageBox.Show(msg);
+                    Form1.LogMessageToFile("BT Connection ERROR", msg);
+                    catchBool = true;
+                }
+            }
+           
 
-                 }
-                 return true;
+          /*  if (deviceInfo.DeviceName != "CBT." || deviceInfo.DeviceName != "OBDII")
+            {
+                MessageBox.Show("ERROR: attempted to connect to a non-OBDII device");
+                return false;
 
-             }
+
+            }*/
+
+
+            if (bT_Test)
+            {
+                MessageBox.Show("BT Connection Reestablished, Test successful.");
+                connectionAttempts = 0;
+                bTConnectionStatus = true;
+            }
+
             // If connection is established, set the check  bool value to true, and save the OBDII device's
             // Name and BT address. 
             if (client.Connected)
             {
                 bTConnectionStatus = true;
-                Properties.Settings.Default.BTDeviceName = deviceID;
-                Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
+                // Properties.Settings.Default.BTDeviceName = deviceID;
+                //Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
                 connectLoop = 0;
                 return true;
+
+                
             }
 
             return false;
@@ -118,8 +142,8 @@ namespace vConnect
             {
                 Properties.Settings.Default.BTAddress = "";
                 Properties.Settings.Default.BTDeviceName = "";
-                client.Close(); 
-                return true; 
+                client.Close();
+                return true;
             }
             // If there is no connection to close, print to the screen, and print to screen.
             else
@@ -141,18 +165,18 @@ namespace vConnect
         public bool SendWindowsErrorMessage()
         {
 
-        // Code should work for sending error message to event log. However, admin must either run this program
-        // or, more simply, have the admin privileges during installation and register a event log source 
-        // for this program. Answer from 
+            // Code should work for sending error message to event log. However, admin must either run this program
+            // or, more simply, have the admin privileges during installation and register a event log source 
+            // for this program. Answer from 
             // http://stackoverflow.com/questions/9564420/the-source-was-not-found-but-some-or-all-event-logs-could-not-be-searched
-        /*
-            string msg = "vConnect failed to connect to the BT device with address" + bluetoothAddress;
-            EventLog vConnectLog = new EventLog();
-            EventLog.CreateEventSource("vConnect", "vConnect");
-            vConnectLog.Source = "vConnect";
-            vConnectLog.WriteEntry(msg);
+            /*
+                string msg = "vConnect failed to connect to the BT device with address" + bluetoothAddress;
+                EventLog vConnectLog = new EventLog();
+                EventLog.CreateEventSource("vConnect", "vConnect");
+                vConnectLog.Source = "vConnect";
+                vConnectLog.WriteEntry(msg);
 
-          */  
+              */
             return true;
         }
 
@@ -162,8 +186,9 @@ namespace vConnect
         public bool BTConnectionStatus { get { return bTConnectionStatus; } set { bTConnectionStatus = value; } }
         public string ErorrMessageToUI { get { return errorMessageToUI; } set { errorMessageToUI = value; } }
         public BluetoothAddress BluetoothAddress { get { return bluetoothAddress; } set { bluetoothAddress = value; } }
-
+        public bool BT_Test { get { return bT_Test; } set { bT_Test = value; } }
         public BluetoothClient Client { get { return client; } set { client = value; } }
+        public BluetoothDeviceInfo DeviceInfo { get { return deviceInfo; } set { deviceInfo = value; } }
 
 
     }

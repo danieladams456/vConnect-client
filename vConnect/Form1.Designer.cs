@@ -58,6 +58,8 @@
             this.stop_polling_button = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.BT_Test = new System.Windows.Forms.Button();
+            this.Server_Test = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // trayIcon
@@ -309,17 +311,39 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(431, 29);
+            this.label1.Location = new System.Drawing.Point(432, 29);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(81, 13);
             this.label1.TabIndex = 32;
             this.label1.Text = "Testing Buttons";
+            // 
+            // BT_Test
+            // 
+            this.BT_Test.Location = new System.Drawing.Point(322, 248);
+            this.BT_Test.Name = "BT_Test";
+            this.BT_Test.Size = new System.Drawing.Size(97, 45);
+            this.BT_Test.TabIndex = 33;
+            this.BT_Test.Text = "BT Test";
+            this.BT_Test.UseVisualStyleBackColor = true;
+            this.BT_Test.Click += new System.EventHandler(this.BT_Test_Click);
+            // 
+            // Server_Test
+            // 
+            this.Server_Test.Location = new System.Drawing.Point(322, 197);
+            this.Server_Test.Name = "Server_Test";
+            this.Server_Test.Size = new System.Drawing.Size(97, 46);
+            this.Server_Test.TabIndex = 34;
+            this.Server_Test.Text = "Server Test";
+            this.Server_Test.UseVisualStyleBackColor = true;
+            this.Server_Test.Click += new System.EventHandler(this.Server_Test_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(534, 336);
+            this.Controls.Add(this.Server_Test);
+            this.Controls.Add(this.BT_Test);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.stop_polling_button);
             this.Controls.Add(this.disconnect_BT);
@@ -378,6 +402,8 @@
         private System.Windows.Forms.Button stop_polling_button;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button BT_Test;
+        private System.Windows.Forms.Button Server_Test;
 
     }
 }

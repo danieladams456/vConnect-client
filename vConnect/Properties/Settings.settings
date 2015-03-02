@@ -3,16 +3,16 @@
   <Profiles />
   <Settings>
     <Setting Name="BTAddress" Type="System.String" Scope="User">
-      <Value Profile="(Default)">""</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="BTDeviceName" Type="System.String" Scope="User">
-      <Value Profile="(Default)">""</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="ServerIP" Type="System.String" Scope="User">
-      <Value Profile="(Default)">""</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="ServerPort" Type="System.String" Scope="User">
-      <Value Profile="(Default)">""</Value>
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

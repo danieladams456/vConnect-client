@@ -41,8 +41,8 @@ namespace vConnect
 
 
         // NOTE: These are only used for testing purposes.
-        private bool testOBDII = false;
-        private bool testVehicleData = false;
+        private static bool testOBDII = false;
+        private static bool testVehicleData = false;
 
         // This connection gets passed from the caller. It is the current connection.
         public BluetoothConnectionHandler BTConnection;
@@ -89,7 +89,7 @@ namespace vConnect
         {
             
             string writeString; // String that will contain the request to be send to the OBDII module.
-            string hexLiteral; // String that will contain a raw hex value returned from the OBDII module.
+            string hexLiteral;  // String that will contain a raw hex value returned from the OBDII module.
             string hexLiteral2; // String that will contain a raw hex value returned from the OBDII module. 
             
             // If BT device is connected. 
@@ -97,12 +97,19 @@ namespace vConnect
             {
                 // Initialize the read/write stream.
                 Stream peerStream = BTConnection.Client.GetStream();
+                // Flush out any intro message.
+               // peerStream.Flush();
                 
                 // If this is the vin data element, then do the following reads in order to get all 
                 // of the bytes relating to the VIN.
                 if (name == "VIN")
                 {
                     writeString = "09" + ObdPID + "\r"; // Write string for VIN.
+                    if(testOBDII)
+                    {
+                        var msg = "TEST OBDII ID: " + name + "\nTest OBDII CODE: " + writeString;
+                        MessageBox.Show(msg);
+                    }
                     byte[] vin1 = new byte[50]; // Byte arrays to read in VIN.
                     byte[] vin2 = new byte[50];
                     byte[] vin3 = new byte[50];
@@ -110,19 +117,33 @@ namespace vConnect
 
                     // Create the code to request VIN.
                     byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
+                    try
+                    {
+                        // Write the code to the OBDII module.
+                        peerStream.Write(writeCode, 0, writeCode.Length);
 
-                    // Write the code to the OBDII module.
-                    peerStream.Write(writeCode, 0, writeCode.Length);
+                        // Must retrieve the VIN in three different reads. 
+                        System.Threading.Thread.Sleep(7000);
+                        peerStream.Read(vin1, 0, vin1.Length);
+                        System.Threading.Thread.Sleep(7000);
+                        peerStream.Read(vin2, 0, vin2.Length);
+                        System.Threading.Thread.Sleep(7000);
+                        peerStream.Read(vin3, 0, vin3.Length);
+                 //       peerStream.Close();
+                    }
 
-                    // Must retrieve the VIN in three different reads. 
-                    System.Threading.Thread.Sleep(7000);
-                    peerStream.Read(vin1, 0, vin1.Length);
-                    System.Threading.Thread.Sleep(7000);
-                    peerStream.Read(vin2, 0, vin2.Length);
-                    System.Threading.Thread.Sleep(7000);
-                    peerStream.Read(vin3, 0, vin3.Length);
-                  
-                 
+                    catch (Exception ex)
+                    {
+                        if (BTConnection.EstablishBTConnection())
+                            RequestDataFromCar();
+                        else
+                        {
+                            var msg = "Lost BT connection to Device. ERROR: " + ex;
+                            MessageBox.Show(msg);
+                            Form1.LogMessageToFile("Bt Connection Error", msg);
+                            return false;
+                        }
+                    }
                     // Format the raw data read from the OBDII module.
                     valueToSend = System.Text.Encoding.ASCII.GetString(vin1)
                         + System.Text.Encoding.ASCII.GetString(vin2)
@@ -132,6 +153,7 @@ namespace vConnect
                     valueToSend = Regex.Replace(valueToSend, @" ", "");
                     valueToSend = Regex.Replace(valueToSend, @"\r", "");
                     valueToSend = Regex.Replace(valueToSend, @">", "");
+                    valueToSend = Regex.Replace(valueToSend, @"\?", "");
 
                     valueToSend = Regex.Replace(valueToSend, @"\0", "");
 
@@ -162,20 +184,24 @@ namespace vConnect
                 else
                 {
                     writeString = "01" + obdPID + "\r";
-
+                    if (testOBDII)
+                    {
+                        var msg = "TEST OBDII ID: " + name + "\nTest OBDII CODE: " + writeString;
+                        MessageBox.Show(msg);
+                    }
 
                     try
                     {
                         // Encode the writeString, then write it to the OBDII module. 
                         byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
                         peerStream.Write(writeCode, 0, writeCode.Length);
-
                         // Wait 10 seconds for the OBDII module to process the code request
-                        System.Threading.Thread.Sleep(10000);
+                        System.Threading.Thread.Sleep(7000);
 
                         // Read the OBDII code data from the OBDII module.
                         peerStream.Read(returnData, 0, returnData.Length);
-                        MessageBox.Show(System.Text.Encoding.ASCII.GetString(returnData));
+                   //     peerStream.Close();
+                       // MessageBox.Show(System.Text.Encoding.ASCII.GetString(returnData));
                     }
 
 
@@ -187,9 +213,9 @@ namespace vConnect
                             RequestDataFromCar();
                         else
                         {
-                            var msg = "failed to connect to BT Device. ERROR: " + ex;
+                            var msg = "Lost BT connection with Device. ERROR: " + ex;
                             MessageBox.Show(msg);
-                            BTConnection.SendWindowsErrorMessage();
+                            Form1.LogMessageToFile("BT Connection Error", msg);
                             return false;
                         }
 
@@ -210,6 +236,13 @@ namespace vConnect
                         {
                             hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
                             equVals[0] = Convert.ToInt32(hexLiteral, 16);
+                            if(testVehicleData)
+                            {
+                                var msg = "OBDII Code TEST: \n" + "Literal hex value from OBDII device: " + hexLiteral + 
+                                    "\n Integer value from OBDII device: " + Convert.ToInt32(hexLiteral, 16).ToString()
+                                    + "\n Integer value stored in file: " + equVals[0].ToString();
+                                MessageBox.Show(msg);
+                            }
                         }
                         else if (returnDataSize == 2)
                         {
@@ -217,18 +250,34 @@ namespace vConnect
                             hexLiteral2 = System.Text.Encoding.ASCII.GetString(returnData, 14, 1) + System.Text.Encoding.ASCII.GetString(returnData, 15, 1);
                             equVals[0] = Convert.ToInt32(hexLiteral, 16);
                             equVals[1] = Convert.ToInt32(hexLiteral2, 16);
+                            if (testVehicleData)
+                            {
+                                var msg = "OBDII Code TEST: \n" + "Literal hex value 1 from OBDII device: " + hexLiteral +
+                                    "\nInteger value 1 from OBDII device: " + Convert.ToInt32(hexLiteral, 16).ToString()
+                                    + "\nInteger value 1 stored in file: " + equVals[0].ToString()
+                                    + "\nLiteral hex value 2 from OBDII device: " + hexLiteral2 +
+                                    "\nInteger value 2 from OBDII device: " + Convert.ToInt32(hexLiteral, 16).ToString()
+                                    + "\nInteger value 1 stored in file: " + equVals[0].ToString();
+                                MessageBox.Show(msg);
+                            }
                         }
                     }
                     
                 }
+                
             }
 
             // If connection is lost, print to screen.
             else 
             {
-                MessageBox.Show("Lost BT Connection", "My Application",
-                 MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
-                return false;
+                if (BTConnection.EstablishBTConnection())
+                    RequestDataFromCar();
+                else
+                {
+                    MessageBox.Show("Lost BT Connection", "My Application",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                    return false;
+                }
             }
                      
             return true;
@@ -281,8 +330,8 @@ namespace vConnect
             return;
         }
 
-        // Still use??
-        public bool SendEmergencyCode()
+        
+        public bool CheckEmergencyCode()
         {
             return true;
         }
@@ -309,9 +358,9 @@ namespace vConnect
 
         public string Equation { get { return equation; } set { equation = value; } }
 
-        public bool TestOBDII { get { return testOBDII; } set { testOBDII = value; } }
+        static public bool TestOBDII { get { return testOBDII; } set { testOBDII = value; } }
 
-        public bool TestVehicleData { get { return testVehicleData; } set { testVehicleData = value; } }
+        static public bool TestVehicleData { get { return testVehicleData; } set { testVehicleData = value; } }
 
     }
 }

@@ -25,7 +25,7 @@ namespace vConnect.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\"\"")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string BTAddress {
             get {
                 return ((string)(this["BTAddress"]));
@@ -37,7 +37,7 @@ namespace vConnect.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\"\"")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string BTDeviceName {
             get {
                 return ((string)(this["BTDeviceName"]));
@@ -49,7 +49,7 @@ namespace vConnect.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\"\"")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string ServerIP {
             get {
                 return ((string)(this["ServerIP"]));
@@ -61,7 +61,7 @@ namespace vConnect.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\"\"")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string ServerPort {
             get {
                 return ((string)(this["ServerPort"]));
