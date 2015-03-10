@@ -33,9 +33,9 @@ namespace vConnect
         private BluetoothAddress bluetoothAddress; // Class object that contains formatted BT address.
         private BluetoothEndPoint endpoint; // Class object that contains data for BT endpoint.
         private Guid serviceClass; // Process ID used for BT connection.
-        private BluetoothClient client = new BluetoothClient(); // Class object that contains client info.
         private int connectLoop = 0; // Integer used to keep track of automatic reconnect attempts. 
         private BluetoothDeviceInfo deviceInfo = null;
+        private BluetoothClient client = null;
 
         // can keep this static for our purposes, but should probably implement 
         // a method for user specified PIN just in case.
@@ -46,6 +46,22 @@ namespace vConnect
 
         // Testing values
         private bool bT_Test = false;
+ 
+                
+        public BluetoothConnectionHandler()
+        {
+            try
+            {
+                BluetoothClient client = new BluetoothClient(); /* Class object that contains client info. */
+            }
+            catch (PlatformNotSupportedException error)
+            {
+                Form1.LogMessageToFile("Bluetooth Failure", "The application does not support the client's Bluetooth Stack.");
+                MessageBox.Show("vConnect does not support the client's Bluetooth Stack.\n\nConsult the documentation for supported ones.","Quitting");
+                Environment.Exit(1);
+            }
+        }
+            
 
 
         /// <summary>
