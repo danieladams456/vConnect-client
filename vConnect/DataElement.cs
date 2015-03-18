@@ -91,14 +91,13 @@ namespace vConnect
             string writeString; // String that will contain the request to be send to the OBDII module.
             string hexLiteral;  // String that will contain a raw hex value returned from the OBDII module.
             string hexLiteral2; // String that will contain a raw hex value returned from the OBDII module. 
-            
             // If BT device is connected. 
             if (BTConnection.Client.Connected)
             {
                 // Initialize the read/write stream.
                 Stream peerStream = BTConnection.Client.GetStream();
                 // Flush out any intro message.
-               // peerStream.Flush();
+                peerStream.Flush();
                 
                 // If this is the vin data element, then do the following reads in order to get all 
                 // of the bytes relating to the VIN.
@@ -149,6 +148,8 @@ namespace vConnect
                         + System.Text.Encoding.ASCII.GetString(vin2)
                         + System.Text.Encoding.ASCII.GetString(vin3);
                    // valueToSend = valueToSend.Substring(4, valueToSend.Length - 4);
+                    valueToSend = Regex.Replace(valueToSend, @"ELM327v1.4", "");
+
                     valueToSend = Regex.Replace(valueToSend, @"0902", "");
                     valueToSend = Regex.Replace(valueToSend, @" ", "");
                     valueToSend = Regex.Replace(valueToSend, @"\r", "");
@@ -298,7 +299,7 @@ namespace vConnect
 
                 // Send empty string if no data was read from OBDII device.
                 if (noDataCheck == true)
-                    valueToSend = "";
+                    valueToSend = "Not Supported";
 
                 // Compute values to store in the data cache.
                 else
@@ -327,6 +328,7 @@ namespace vConnect
 
                 }
             }
+            MessageBox.Show("Value to send: " + ValueToSend);
             return;
         }
 

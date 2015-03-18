@@ -42,7 +42,7 @@ namespace vConnect
         private const string PIN = "1234";
 
         // Number of times vConnect with attempt to connect to the application. 
-        private int connectionAttempts = 1;
+        private int connectionAttempts = 2;
 
         // Testing values
         private bool bT_Test = false;
@@ -57,13 +57,23 @@ namespace vConnect
         /// False - If connection is not established. 
         /// </returns>
         public bool EstablishBTConnection()
-        { /// CHECK THAT ITS A OBDII MODULE BREH
+        { 
             // Close connection if already established. 
             // Not sure if we want to try and auto-connect to previous. 
-            bool catchBool = false;
             if (client.Connected)
-                client.Close();
+            {
+                MessageBox.Show("Close current BT connection before selecting another device.");
+                return false;
+            }
 
+           /* if (deviceID != "CBT." || deviceID != "OBDII")
+            {
+                MessageBox.Show("ERROR: attempted to connect to a non-OBDII device");
+                deviceID = null;
+                return false;
+            }*/
+
+            client = new BluetoothClient();
             // Initialize serviceClass and endpoint.
             serviceClass = BluetoothService.SerialPort;
             endpoint = new BluetoothEndPoint(bluetoothAddress, serviceClass);
@@ -89,18 +99,11 @@ namespace vConnect
                     var msg = "failed to connect to BT Device. ERROR:\n\n " + ex;
                     MessageBox.Show(msg);
                     Form1.LogMessageToFile("BT Connection ERROR", msg);
-                    catchBool = true;
                 }
             }
            
 
-          /*  if (deviceInfo.DeviceName != "CBT." || deviceInfo.DeviceName != "OBDII")
-            {
-                MessageBox.Show("ERROR: attempted to connect to a non-OBDII device");
-                return false;
-
-
-            }*/
+           
 
 
             if (bT_Test)
@@ -115,8 +118,9 @@ namespace vConnect
             if (client.Connected)
             {
                 bTConnectionStatus = true;
-                // Properties.Settings.Default.BTDeviceName = deviceID;
-                //Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
+                Properties.Settings.Default.BTDeviceName = deviceID;
+                Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
+                Properties.Settings.Default.Save();
                 connectLoop = 0;
                 return true;
 
@@ -140,9 +144,9 @@ namespace vConnect
             // If connected to a BT device, close the connection and clear saved BT device name and address.
             if (client.Connected)
             {
-                Properties.Settings.Default.BTAddress = "";
-                Properties.Settings.Default.BTDeviceName = "";
-                client.Close();
+                Properties.Settings.Default.BTAddress = null;
+                Properties.Settings.Default.BTDeviceName = null;
+                client.Dispose();
                 return true;
             }
             // If there is no connection to close, print to the screen, and print to screen.

@@ -104,7 +104,6 @@ namespace vConnect
             httpWebRequest.ContentType = "text/json";
             httpWebRequest.Method = "POST";
             httpWebRequest.UserAgent = "vConnect";
-            //httpWebRequest.KeepAlive = false;
 
             try
             {
@@ -122,11 +121,11 @@ namespace vConnect
                     MessageBox.Show(statusCode.ToString());
                     if (serverTest)
                     {
-                        if (statusCode == 200)
+                        if (statusCode == 204)
                             MessageBox.Show("SERVER TEST: Server successfully received data cache data.");
 
                     }
-                    if (statusCode == 200)
+                    if (statusCode == 204)
                         cache.Clear();
                     if (cacheTest)
                     {
