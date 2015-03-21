@@ -101,6 +101,7 @@ namespace vConnect
                 // save the Device's ID, indicated connection status on the GUI.
                 if (BTConnection.EstablishBTConnection())
                 {
+                    BTConnection.DeviceID = Properties.Settings.Default.BTDeviceName;
                     BT_ID.Text = Properties.Settings.Default.BTDeviceName;
                     device_Status_Label.Text = "Connected";
                     deviceDetect = true;
