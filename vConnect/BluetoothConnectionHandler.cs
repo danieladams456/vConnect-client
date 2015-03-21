@@ -61,7 +61,7 @@ namespace vConnect
             try
             {
                 //  Class object that contains client info.
-                BluetoothClient client = new BluetoothClient();
+                client = new BluetoothClient();
             }
             catch (PlatformNotSupportedException)
             {

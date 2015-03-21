@@ -47,19 +47,11 @@
             this.device_Status_Label = new System.Windows.Forms.Label();
             this.browse_button = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
-            this.OBDIITest = new System.Windows.Forms.Button();
-            this.DataTest = new System.Windows.Forms.Button();
-            this.CacheTest = new System.Windows.Forms.Button();
-            this.ServerTest = new System.Windows.Forms.Button();
-            this.RemoveTest = new System.Windows.Forms.Button();
             this.disconnect_BT = new System.Windows.Forms.Button();
             this.update_schema_button = new System.Windows.Forms.Button();
             this.start_button = new System.Windows.Forms.Button();
             this.stop_polling_button = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.BT_Test = new System.Windows.Forms.Button();
-            this.Server_Test = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // trayIcon
@@ -192,56 +184,6 @@
             this.label5.TabIndex = 24;
             this.label5.Text = "Connect to ODBII Device:";
             // 
-            // OBDIITest
-            // 
-            this.OBDIITest.Location = new System.Drawing.Point(425, 248);
-            this.OBDIITest.Name = "OBDIITest";
-            this.OBDIITest.Size = new System.Drawing.Size(97, 45);
-            this.OBDIITest.TabIndex = 25;
-            this.OBDIITest.Text = "Test OBDII codes";
-            this.OBDIITest.UseVisualStyleBackColor = true;
-            this.OBDIITest.Click += new System.EventHandler(this.OBDIITest_Click);
-            // 
-            // DataTest
-            // 
-            this.DataTest.Location = new System.Drawing.Point(425, 197);
-            this.DataTest.Name = "DataTest";
-            this.DataTest.Size = new System.Drawing.Size(97, 45);
-            this.DataTest.TabIndex = 26;
-            this.DataTest.Text = "Test Vehicle Data Element";
-            this.DataTest.UseVisualStyleBackColor = true;
-            this.DataTest.Click += new System.EventHandler(this.DataTest_Click);
-            // 
-            // CacheTest
-            // 
-            this.CacheTest.Location = new System.Drawing.Point(425, 147);
-            this.CacheTest.Name = "CacheTest";
-            this.CacheTest.Size = new System.Drawing.Size(97, 45);
-            this.CacheTest.TabIndex = 27;
-            this.CacheTest.Text = "Test Data Cache";
-            this.CacheTest.UseVisualStyleBackColor = true;
-            this.CacheTest.Click += new System.EventHandler(this.CacheTest_Click);
-            // 
-            // ServerTest
-            // 
-            this.ServerTest.Location = new System.Drawing.Point(425, 96);
-            this.ServerTest.Name = "ServerTest";
-            this.ServerTest.Size = new System.Drawing.Size(97, 45);
-            this.ServerTest.TabIndex = 28;
-            this.ServerTest.Text = "Test Data to Server";
-            this.ServerTest.UseVisualStyleBackColor = true;
-            this.ServerTest.Click += new System.EventHandler(this.ServerTest_Click);
-            // 
-            // RemoveTest
-            // 
-            this.RemoveTest.Location = new System.Drawing.Point(425, 45);
-            this.RemoveTest.Name = "RemoveTest";
-            this.RemoveTest.Size = new System.Drawing.Size(97, 45);
-            this.RemoveTest.TabIndex = 29;
-            this.RemoveTest.Text = "Test Removing data from cache";
-            this.RemoveTest.UseVisualStyleBackColor = true;
-            this.RemoveTest.Click += new System.EventHandler(this.RemoveTest_Click);
-            // 
             // disconnect_BT
             // 
             this.disconnect_BT.Location = new System.Drawing.Point(12, 196);
@@ -308,50 +250,13 @@
             this.label7.TabIndex = 16;
             this.label7.Text = "BT Device ID:";
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(432, 29);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(81, 13);
-            this.label1.TabIndex = 32;
-            this.label1.Text = "Testing Buttons";
-            // 
-            // BT_Test
-            // 
-            this.BT_Test.Location = new System.Drawing.Point(322, 248);
-            this.BT_Test.Name = "BT_Test";
-            this.BT_Test.Size = new System.Drawing.Size(97, 45);
-            this.BT_Test.TabIndex = 33;
-            this.BT_Test.Text = "BT Test";
-            this.BT_Test.UseVisualStyleBackColor = true;
-            this.BT_Test.Click += new System.EventHandler(this.BT_Test_Click);
-            // 
-            // Server_Test
-            // 
-            this.Server_Test.Location = new System.Drawing.Point(322, 197);
-            this.Server_Test.Name = "Server_Test";
-            this.Server_Test.Size = new System.Drawing.Size(97, 46);
-            this.Server_Test.TabIndex = 34;
-            this.Server_Test.Text = "Server Test";
-            this.Server_Test.UseVisualStyleBackColor = true;
-            this.Server_Test.Click += new System.EventHandler(this.Server_Test_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(534, 336);
-            this.Controls.Add(this.Server_Test);
-            this.Controls.Add(this.BT_Test);
-            this.Controls.Add(this.label1);
+            this.ClientSize = new System.Drawing.Size(423, 336);
             this.Controls.Add(this.stop_polling_button);
             this.Controls.Add(this.disconnect_BT);
-            this.Controls.Add(this.RemoveTest);
-            this.Controls.Add(this.ServerTest);
-            this.Controls.Add(this.CacheTest);
-            this.Controls.Add(this.DataTest);
-            this.Controls.Add(this.OBDIITest);
             this.Controls.Add(this.start_button);
             this.Controls.Add(this.update_schema_button);
             this.Controls.Add(this.label5);
@@ -391,19 +296,11 @@
         private System.Windows.Forms.Label device_Status_Label;
         private System.Windows.Forms.Button browse_button;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Button OBDIITest;
-        private System.Windows.Forms.Button DataTest;
-        private System.Windows.Forms.Button CacheTest;
-        private System.Windows.Forms.Button ServerTest;
-        private System.Windows.Forms.Button RemoveTest;
         private System.Windows.Forms.Button disconnect_BT;
         private System.Windows.Forms.Button update_schema_button;
         private System.Windows.Forms.Button start_button;
         private System.Windows.Forms.Button stop_polling_button;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button BT_Test;
-        private System.Windows.Forms.Button Server_Test;
 
     }
 }

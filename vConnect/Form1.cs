@@ -60,10 +60,8 @@ namespace vConnect
         // Constant that determines how often the data polling Timer will run. (In miliseconds)
         const int POLLTIME = 120000;
 
-        // TESTING VARIABLES
-        private bool serverTest = false;
-        private int serverTestLoop = 0;
-        private bool dataCacheTest = false;
+
+        // Timer CallBack to be used for polling data.
         TimerCallback tcb;
 
         public Form1()
@@ -88,11 +86,12 @@ namespace vConnect
             server_IP.Text = "vconnect-danieladams456.rhcloud.com";
             port_number.Text = "80";
             serverConnection.ServerConnectionStatus = true;
+
+
             // If there is a saved BT Address, attempt to connect with the device with that address.
             if (Properties.Settings.Default.BTAddress != "")
             {
                 // Grabs the saved BT address from the settings file.
-
                 BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
                 // If connection is established with the device with the specified BT address above,
                 // save the Device's ID, indicated connection status on the GUI.
@@ -116,39 +115,42 @@ namespace vConnect
             // and attempt to connect with them. 
             else
             {
-                // Array of all detected BT devices. 
-                BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
-
+                // Array of all detected BT devices.
+                BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices(); 
+                
+                
                 int peerCounter = 0;
 
                 // Loops through all of the BT Devices detected, and attempt to connect with any one who's device ID
                 // indicates that it is an OBDII module.
-                while (peerCounter < peers.Length)
-                {
-
-                    if (peers[peerCounter].DeviceName == "CBT." || peers[peerCounter].DeviceName == "OBDII")
+              
+                    while (peerCounter < peers.Length)
                     {
-                        // Retrieve the BT adress from the BT device whose device name indicates that it is 
-                        // as OBDII module.
-                        BTConnection.BluetoothAddress = peers[peerCounter].DeviceAddress;
 
-                        // If connection is established, save the OBDII device's BT Address and Device Name to the 
-                        // settings file, and change details on the GUI accordingly. 
-                        if (BTConnection.EstablishBTConnection())
+                        if (peers[peerCounter].DeviceName == "CBT." || peers[peerCounter].DeviceName == "OBDII")
                         {
-                            BTConnection.DeviceInfo = peers[peerCounter];
-                            BT_ID.Text = peers[peerCounter].DeviceName;
-                            BTConnection.DeviceID = peers[peerCounter].DeviceName;
-                            Properties.Settings.Default.BTAddress = peers[peerCounter].DeviceAddress.ToString();
-                            Properties.Settings.Default.BTDeviceName = peers[peerCounter].DeviceName;
-                            Properties.Settings.Default.Save();
-                            device_Status_Label.Text = "Connected";
-                            peerCounter = peers.Length;
-                            deviceDetect = true;
+                            // Retrieve the BT adress from the BT device whose device name indicates that it is 
+                            // as OBDII module.
+                            BTConnection.BluetoothAddress = peers[peerCounter].DeviceAddress;
+
+                            // If connection is established, save the OBDII device's BT Address and Device Name to the 
+                            // settings file, and change details on the GUI accordingly. 
+                            if (BTConnection.EstablishBTConnection())
+                            {
+                                BTConnection.DeviceInfo = peers[peerCounter];
+                                BT_ID.Text = peers[peerCounter].DeviceName;
+                                BTConnection.DeviceID = peers[peerCounter].DeviceName;
+                                Properties.Settings.Default.BTAddress = peers[peerCounter].DeviceAddress.ToString();
+                                Properties.Settings.Default.BTDeviceName = peers[peerCounter].DeviceName;
+                                Properties.Settings.Default.Save();
+                                device_Status_Label.Text = "Connected";
+                                peerCounter = peers.Length;
+                                deviceDetect = true;
+                            }
                         }
+                        peerCounter++;
                     }
-                    peerCounter++;
-                }
+                
             }
 
             // If no OBDII connection is established, then print to the screen stating this fact, and then
@@ -439,61 +441,6 @@ namespace vConnect
 
 
         /// <summary>
-        /// Test that data is successfully moved from vehicle data elements to
-        /// the data cache.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CacheTest_Click(object sender, EventArgs e)
-        {
-            dataCacheTest = true;
-        }
-
-        /// <summary>
-        /// Test that the list of codes given to the testing team is the same
-        /// as the codes being polled to the OBDII module.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OBDIITest_Click(object sender, EventArgs e)
-        {
-            DataElement.TestOBDII = true;
-        }
-
-        /// <summary>
-        /// Test to check if vehicle data was successfully transmitted
-        /// to the server.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ServerTest_Click(object sender, EventArgs e)
-        {
-            cache.ServerTest = true;
-        }
-
-        /// <summary>
-        /// Test to see if data is successfully removed from the cache
-        /// after it has been sent to the server. 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void RemoveTest_Click(object sender, EventArgs e)
-        {
-            cache.CacheTest = true;
-        }
-
-        /// <summary>
-        /// Test that the raw data polled from the OBDII module is equivalent
-        /// to the data stored in the vehicle data elements.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void DataTest_Click(object sender, EventArgs e)
-        {
-            DataElement.TestVehicleData = true;
-        }
-
-        /// <summary>
         /// Read the schema from the json file to the schema string for use. 
         /// </summary>
         /// <returns></returns>
@@ -555,15 +502,7 @@ namespace vConnect
             // Add the dictionary containing the data points to the cache.
             cache.AddElementToCache(dictionary);
 
-            if (dataCacheTest)
-            {
-                string dictString = " ";
-                foreach (var entry in dictionary)
-                    dictString = dictString + " " + entry;
-                var msg = "Data Cache Test: \n Values in Data Element: " + dictString +
-                "\nValues in the cache: " + cache.JsonString;
-                MessageBox.Show(msg);
-            }
+            
             //CheckForErrorCodes(elemList);
             cache.SendToServer(cache.JsonString, "data");
         }
@@ -876,16 +815,7 @@ namespace vConnect
             this.WindowState = FormWindowState.Normal;
         }
 
-        private void Server_Test_Click(object sender, EventArgs e)
-        {
-            cache.ServerTest = true;
-        }
-
-        private void BT_Test_Click(object sender, EventArgs e)
-        {
-            BTConnection.CloseBTConnection();
-            BTConnection.BT_Test = true;
-        }
+        
 
         /// <summary>
         /// This static function allows for writing errors to a standard log file
@@ -921,6 +851,8 @@ namespace vConnect
                 writer.Close();
             }
         }
+
+        
 
 
     }
