@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
+using System.IO;
+using System.Windows.Forms;
 
 namespace vConnect
 {
@@ -33,8 +36,27 @@ namespace vConnect
 
         public bool CheckServerConnection()
         {
+            string webAddress = "http://" + ipAddress + ":" + portNumber + "/status";
 
-            return serverConnectionStatus;
+            // Create the web request with Json/Post attributes and given address
+            var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
+            httpWebRequest.ContentType = "text/plain";
+            httpWebRequest.Method = "HEAD";
+            httpWebRequest.UserAgent = "vConnect";
+
+            bool check = false;
+            
+
+                // Get web response (most importantly, status code)
+                var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                int statusCode = (int)httpResponse.StatusCode;
+
+                MessageBox.Show("Status Code: " + statusCode.ToString());
+                if (statusCode.ToString() == "204")
+                    check = true;
+            
+
+            return check;
         }
 
         public bool SendServerErrorMessage()

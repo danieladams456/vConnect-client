@@ -88,7 +88,7 @@ namespace vConnect
             */
             string webAddress = null;
 
-
+            MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             // Create the web address to connect to
             if (serverTest)
             {
