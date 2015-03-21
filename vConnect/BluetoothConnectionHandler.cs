@@ -27,15 +27,17 @@ namespace vConnect
     public class BluetoothConnectionHandler
     {
 
-        private string deviceID = ""; // Name of the BT device that is connected. 
-        private bool bTConnectionStatus = false; // Keeps track of whether or not any Bt connection is currently ongoing.
-        private string errorMessageToUI = ""; // Error Message to be used.
-        private BluetoothAddress bluetoothAddress; // Class object that contains formatted BT address.
-        private BluetoothEndPoint endpoint; // Class object that contains data for BT endpoint.
-        private Guid serviceClass; // Process ID used for BT connection.
-        private BluetoothClient client = new BluetoothClient(); // Class object that contains client info.
-        private int connectLoop = 0; // Integer used to keep track of automatic reconnect attempts. 
+        private string deviceID = "";                   // Name of the BT device that is connected. 
+        private bool bTConnectionStatus = false;        // Keeps track of whether or not any BT 
+                                                        //      connection is currently ongoing.
+        private string errorMessageToUI = "";           // Error Message to be used.
+        private BluetoothAddress bluetoothAddress;      // Class object that contains formatted BT address.
+        private BluetoothEndPoint endpoint;             // Class object that contains data for BT endpoint.
+        private Guid serviceClass;                      // Process ID used for BT connection.
+        private int connectLoop = 0;                    // Integer used to keep track of automatic 
+                                                        //      reconnect attempts. 
         private BluetoothDeviceInfo deviceInfo = null;
+        private BluetoothClient client = null;          // Class object that contains client info.
 
         // can keep this static for our purposes, but should probably implement 
         // a method for user specified PIN just in case.
@@ -46,6 +48,34 @@ namespace vConnect
 
         // Testing values
         private bool bT_Test = false;
+ 
+        /// <summary>
+        /// This constructor exists to ensure that the application is running on a computer with a Bluetooth stack
+        ///     supported by 32Feet, the Bluetooth Library used by this application. If a supported stack is not found,
+        ///     this constructor presents the error, logs it, then quietly exits.
+        ///     
+        ///     Note: If the client's Bluetooth Stack is not supported, the application will never proceed.
+        /// </summary>
+        public BluetoothConnectionHandler()
+        {
+            try
+            {
+                //  Class object that contains client info.
+                BluetoothClient client = new BluetoothClient();
+            }
+            catch (PlatformNotSupportedException)
+            {
+                // Write the error to the log.
+                Form1.LogMessageToFile("Bluetooth Failure", "The application does not support the client's Bluetooth Stack.");
+                
+                // Inform the user why the application will not run
+                MessageBox.Show("vConnect does not support the client's Bluetooth Stack.\n\nConsult the documentation for supported ones.","Quitting");
+
+                // Exit the application with a (1) for error.
+                Environment.Exit(1);
+            }
+        }
+            
 
 
         /// <summary>
