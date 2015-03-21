@@ -36,6 +36,8 @@ namespace vConnect
 
         public bool CheckServerConnection()
         {
+            bool serverConnection = false;
+
             string webAddress = "http://" + ipAddress + ":" + portNumber + "/status";
 
             // Create the web request with Json/Post attributes and given address
@@ -44,19 +46,18 @@ namespace vConnect
             httpWebRequest.Method = "HEAD";
             httpWebRequest.UserAgent = "vConnect";
 
-            bool check = false;
-            
 
-                // Get web response (most importantly, status code)
-                var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                int statusCode = (int)httpResponse.StatusCode;
 
-                MessageBox.Show("Status Code: " + statusCode.ToString());
-                if (statusCode.ToString() == "204")
-                    check = true;
-            
+            // Get web response (most importantly, status code)
+            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+            int statusCode = (int)httpResponse.StatusCode;
 
-            return check;
+            MessageBox.Show("Status Code: " + statusCode.ToString());
+            if (statusCode.ToString() == "204")
+                serverConnection = true;
+
+
+            return serverConnection;
         }
 
         public bool SendServerErrorMessage()
