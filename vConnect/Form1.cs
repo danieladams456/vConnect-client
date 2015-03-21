@@ -88,8 +88,6 @@ namespace vConnect
             server_IP.Text = "vconnect-danieladams456.rhcloud.com";
             port_number.Text = "80";
             serverConnection.ServerConnectionStatus = true;
-            
-
             // If there is a saved BT Address, attempt to connect with the device with that address.
             if (Properties.Settings.Default.BTAddress != "")
             {
@@ -100,6 +98,7 @@ namespace vConnect
                 // save the Device's ID, indicated connection status on the GUI.
                 if (BTConnection.EstablishBTConnection())
                 {
+
                     BT_ID.Text = Properties.Settings.Default.BTDeviceName;
                     device_Status_Label.Text = "Connected";
                     deviceDetect = true;
@@ -195,7 +194,7 @@ namespace vConnect
                 }
             }
             else
-                MessageBox.Show("No server connection data was found, please add server IP address and port number");
+                ;//MessageBox.Show("No server connection data was found, please add server IP address and port number");
 
             // If connections have been established to the OBDII device and the server, then begin polling for 
             // vehicle data. 
@@ -547,26 +546,25 @@ namespace vConnect
             // Create a dictionary of string-object pairs. This will contain the key-value pairs
             //  to be sent to the server.
             Dictionary<string, object> dictionary = new Dictionary<string, object>();
-
             // Create the "shell" of empty elements from the schema.
             elemList = CreateElementsFromSchema(schema);
-
             // Fill the contents of the elements with the data from the car
             elemList = GetElementData(elemList);
-
             // Create a dictionary out of the list of elements.
             dictionary = CreateDictionary(elemList);
-
             // Add the dictionary containing the data points to the cache.
             cache.AddElementToCache(dictionary);
 
             if (dataCacheTest)
             {
-                var msg = "Data Cache Test: \n Values in Data Element: " + dictionary.ToString() +
+                string dictString = " ";
+                foreach (var entry in dictionary)
+                    dictString = dictString + " " + entry;
+                var msg = "Data Cache Test: \n Values in Data Element: " + dictString +
                 "\nValues in the cache: " + cache.JsonString;
                 MessageBox.Show(msg);
             }
-            CheckForErrorCodes(elemList);
+            //CheckForErrorCodes(elemList);
             cache.SendToServer(cache.JsonString, "data");
         }
 
@@ -692,8 +690,12 @@ namespace vConnect
             // Loop through each element in the list, and 
             foreach (DataElement elem in elemList)
             {
+                // THIS IS NEW, THEY DONT GOT IT 
+                if (elem.ValueToSend == "Not supported")
+                ;
+
                 // If the datatype is a number, send the value as an integer
-                if (elem.DataType == "number")
+                else if (elem.DataType == "number")
                     elementDictionary.Add(elem.Name, elem.ValueToSend);
 
                 // If the datatype is a date, send it as a String?

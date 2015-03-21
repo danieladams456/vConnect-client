@@ -89,7 +89,6 @@ namespace vConnect
             string webAddress = null;
 
 
-
             // Create the web address to connect to
             if (serverTest)
             {
@@ -101,7 +100,7 @@ namespace vConnect
 
             // Create the web request with Json/Post attributes and given address
             var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
-            httpWebRequest.ContentType = "text/json";
+            httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
             httpWebRequest.UserAgent = "vConnect";
 
@@ -118,7 +117,7 @@ namespace vConnect
                     var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
                     int statusCode = (int)httpResponse.StatusCode;
 
-                    MessageBox.Show(statusCode.ToString());
+                    MessageBox.Show("Status Code: " + statusCode.ToString());
                     if (serverTest)
                     {
                         if (statusCode == 204)
@@ -129,7 +128,7 @@ namespace vConnect
                         cache.Clear();
                     if (cacheTest)
                     {
-                        var msg = "REMOVE CACHE DATA TEST \nThere should be nothing printed underneath\n" + cache.ToString();
+                        var msg = "REMOVE CACHE DATA TEST \nWhat should be printed underneath: []\n\n" + JsonString;
                         MessageBox.Show(msg);
                     }
                     // If the web response was anything except 200, then problem. Handle it.
@@ -141,13 +140,12 @@ namespace vConnect
             }
             catch (WebException e)
             {
-                MessageBox.Show("Could not connect to the server...", "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                MessageBox.Show("Could not connect to the server..."+ e.Message, "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
                 Form1.LogMessageToFile("Server Connect Error", e.ToString());
             }
 
 
 
-            MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             // MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             return true;
         }

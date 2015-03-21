@@ -149,7 +149,8 @@ namespace vConnect
                         + System.Text.Encoding.ASCII.GetString(vin3);
                    // valueToSend = valueToSend.Substring(4, valueToSend.Length - 4);
                     valueToSend = Regex.Replace(valueToSend, @"ELM327v1.4", "");
-
+                    valueToSend = Regex.Replace(valueToSend, @"CONNECTED", ""); 
+                    valueToSend = Regex.Replace(valueToSend, @"SEARCHING\.\.", "");
                     valueToSend = Regex.Replace(valueToSend, @"0902", "");
                     valueToSend = Regex.Replace(valueToSend, @" ", "");
                     valueToSend = Regex.Replace(valueToSend, @"\r", "");
@@ -226,7 +227,7 @@ namespace vConnect
                     // which we are handling by sending an empty string to the server.
                     if (System.Text.Encoding.ASCII.GetString(returnData).Contains("NO DATA"))
                     {
-                        valueToSend = "";
+                        valueToSend = "Not supported";
                         noDataCheck = true;
                     }
                     else
@@ -293,13 +294,13 @@ namespace vConnect
             // If the data element is for the VIN, then its already formatted, proceed if otherwise.
             if (name != "VIN")
             {
-                MessageBox.Show(name);
+              //  MessageBox.Show(name);
                 // Create an expression with the equation specified.
                 Expression expr = new Expression(equation);
 
                 // Send empty string if no data was read from OBDII device.
                 if (noDataCheck == true)
-                    valueToSend = "Not Supported";
+                    valueToSend = "Not supported";
 
                 // Compute values to store in the data cache.
                 else
@@ -325,10 +326,12 @@ namespace vConnect
 
                     // Store the formatted answer in the valueToSend variable.
                     ValueToSend = answerToExpression.ToString();
+                    valueToSend = Regex.Replace(valueToSend, @"\.[1-9]", "");
+
 
                 }
             }
-            MessageBox.Show("Value to send: " + ValueToSend);
+         //   MessageBox.Show("Value to send: " + ValueToSend);
             return;
         }
 
