@@ -98,13 +98,13 @@ namespace vConnect
                 Stream peerStream = BTConnection.Client.GetStream();
                 // Flush out any intro message.
                 peerStream.Flush();
-                
+                MessageBox.Show(name);
                 // If this is the vin data element, then do the following reads in order to get all 
                 // of the bytes relating to the VIN.
-                if (name == "VIN")
+                if (name == "VIN" )
                 {
                     writeString = "09" + ObdPID + "\r"; // Write string for VIN.
-                    if(testOBDII)
+                    if (testOBDII)
                     {
                         var msg = "TEST OBDII ID: " + name + "\nTest OBDII CODE: " + writeString;
                         MessageBox.Show(msg);
@@ -112,7 +112,7 @@ namespace vConnect
                     byte[] vin1 = new byte[50]; // Byte arrays to read in VIN.
                     byte[] vin2 = new byte[50];
                     byte[] vin3 = new byte[50];
-                    
+
 
                     // Create the code to request VIN.
                     byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
@@ -124,11 +124,14 @@ namespace vConnect
                         // Must retrieve the VIN in three different reads. 
                         System.Threading.Thread.Sleep(7000);
                         peerStream.Read(vin1, 0, vin1.Length);
+                        MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin1));
                         System.Threading.Thread.Sleep(7000);
                         peerStream.Read(vin2, 0, vin2.Length);
+                        MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin2));
+
                         System.Threading.Thread.Sleep(7000);
                         peerStream.Read(vin3, 0, vin3.Length);
-                 //       peerStream.Close();
+                        peerStream.Close();
                     }
 
                     catch (Exception ex)
@@ -147,9 +150,9 @@ namespace vConnect
                     valueToSend = System.Text.Encoding.ASCII.GetString(vin1)
                         + System.Text.Encoding.ASCII.GetString(vin2)
                         + System.Text.Encoding.ASCII.GetString(vin3);
-                   // valueToSend = valueToSend.Substring(4, valueToSend.Length - 4);
+                    // valueToSend = valueToSend.Substring(4, valueToSend.Length - 4);
                     valueToSend = Regex.Replace(valueToSend, @"ELM327v1.4", "");
-                    valueToSend = Regex.Replace(valueToSend, @"CONNECTED", ""); 
+                    valueToSend = Regex.Replace(valueToSend, @"CONNECTED", "");
                     valueToSend = Regex.Replace(valueToSend, @"SEARCHING\.\.", "");
                     valueToSend = Regex.Replace(valueToSend, @"0902", "");
                     valueToSend = Regex.Replace(valueToSend, @" ", "");
@@ -159,7 +162,7 @@ namespace vConnect
 
                     valueToSend = Regex.Replace(valueToSend, @"\0", "");
 
-                   
+
                     string res = String.Empty;
 
                     for (int a = 0; a < valueToSend.Length; a = a + 2)
@@ -172,7 +175,7 @@ namespace vConnect
 
                     }
 
-                        
+
 
                     res = Regex.Replace(res, @"I", "");
                     valueToSend = res;
@@ -180,9 +183,11 @@ namespace vConnect
                     valueToSend = Regex.Replace(valueToSend, @" ", "");
                     valueToSend = Regex.Replace(valueToSend, @"[^a-zA-Z0-9]", "");
                 }
-                
+
                 // If the data element is for something other than the VIN, then use the following code
                 // to poll for data.
+                else if (name == "VIN")
+                    valueToSend = "Not supported";
                 else
                 {
                     writeString = "01" + obdPID + "\r";
@@ -202,8 +207,8 @@ namespace vConnect
 
                         // Read the OBDII code data from the OBDII module.
                         peerStream.Read(returnData, 0, returnData.Length);
-                   //     peerStream.Close();
-                       // MessageBox.Show(System.Text.Encoding.ASCII.GetString(returnData));
+                             peerStream.Close();
+                         MessageBox.Show(System.Text.Encoding.ASCII.GetString(returnData));
                     }
 
 
@@ -238,9 +243,9 @@ namespace vConnect
                         {
                             hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
                             equVals[0] = Convert.ToInt32(hexLiteral, 16);
-                            if(testVehicleData)
+                            if (testVehicleData)
                             {
-                                var msg = "OBDII Code TEST: \n" + "Literal hex value from OBDII device: " + hexLiteral + 
+                                var msg = "OBDII Code TEST: \n" + "Literal hex value from OBDII device: " + hexLiteral +
                                     "\n Integer value from OBDII device: " + Convert.ToInt32(hexLiteral, 16).ToString()
                                     + "\n Integer value stored in file: " + equVals[0].ToString();
                                 MessageBox.Show(msg);
@@ -264,7 +269,7 @@ namespace vConnect
                             }
                         }
                     }
-                    
+
                 }
                 
             }

@@ -70,6 +70,7 @@ namespace vConnect
             this.ShowInTaskbar = false;
             InitializeComponent();
             this.WindowState = FormWindowState.Minimized;
+            
             // Initialize the dataCache.
             cache = new DataCache(serverConnection);
 
@@ -84,6 +85,8 @@ namespace vConnect
             serverConnection.PortNumber = 80;
             serverConnection.IPAddress = "vconnect-danieladams456.rhcloud.com";
             server_IP.Text = "vconnect-danieladams456.rhcloud.com";
+            Properties.Settings.Default.ServerIP = "vconnect-danieladams456.rhcloud.com";
+            Properties.Settings.Default.ServerPort = "80";
             port_number.Text = "80";
             serverConnection.ServerConnectionStatus = true;
 
@@ -93,11 +96,11 @@ namespace vConnect
             {
                 // Grabs the saved BT address from the settings file.
                 BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
+             
                 // If connection is established with the device with the specified BT address above,
                 // save the Device's ID, indicated connection status on the GUI.
                 if (BTConnection.EstablishBTConnection())
                 {
-
                     BT_ID.Text = Properties.Settings.Default.BTDeviceName;
                     device_Status_Label.Text = "Connected";
                     deviceDetect = true;
@@ -169,7 +172,7 @@ namespace vConnect
 
             // Checks if any server connection data is saved in the settings file. If so, attempts to see if connection
             // can be established.
-            if (Properties.Settings.Default.ServerIP != "" && Properties.Settings.Default.ServerPort != "" && true == false)
+            if (Properties.Settings.Default.ServerIP != "" && Properties.Settings.Default.ServerPort != "")
             {
                 serverConnection.PortNumber = Convert.ToInt32(Properties.Settings.Default.ServerPort);
 
@@ -178,6 +181,7 @@ namespace vConnect
                 // If the server is available, switch the bool value to save that info. 
                 if (serverConnection.CheckServerConnection())
                 {
+                    MessageBox.Show("Server Connection Check Worked!");
                     serverDetect = true;
                     port_number.Text = serverConnection.PortNumber.ToString();
                     server_IP.Text = serverConnection.IPAddress;
@@ -196,7 +200,7 @@ namespace vConnect
                 }
             }
             else
-                ;//MessageBox.Show("No server connection data was found, please add server IP address and port number");
+                MessageBox.Show("No server connection data was found, please add server IP address and port number");
 
             // If connections have been established to the OBDII device and the server, then begin polling for 
             // vehicle data. 
@@ -228,22 +232,22 @@ namespace vConnect
         /// <param name="e"></param>
         private void help_button_Click(object sender, EventArgs e)
         {
-            string helpMessage = "This GUI is used to setup and manange vConnect's Windows Aplication. \n " +
-                   "Please note that this GUI cannot manage the server, or search for stored data.\n" +
-                   "Listed here are the details concerning the various attributes of this GUI:\n" +
-                   "BT Device ID: The ID of the OBDII Device that is currently assigned to vConnect.\n" +
-                   "Device Status: Whether the OBDII Device listed above is connected or disconnect. \n" +
+            string helpMessage = "This GUI is used to setup and manange vConnect's Windows Aplication. \n\n " +
+                   "Please note that this GUI cannot manage the server, or search for stored data.\n\n" +
+                   "Listed here are the details concerning the various attributes of this GUI:\n\n" +
+                   "BT Device ID: The ID of the OBDII Device that is currently assigned to vConnect.\n\n" +
+                   "Device Status: Whether the OBDII Device listed above is connected or disconnect. \n\n" +
                    "Connect to OBDII Device: Will open up a dialog that shows all detectable BT Devices, " +
-                   "selecting a device will attempt to connect with it. \n" +
-                   "Disconnect BT Device: Will disconnect to the OBDII device (if one is connected).\n" +
+                   "selecting a device will attempt to connect with it. \n\n" +
+                   "Disconnect BT Device: Will disconnect to the OBDII device (if one is connected).\n\n" +
                    "Server IP Address: The IP address that is assigned to vConnect, the edit button will " +
-                   "alter this value.\n" +
+                   "alter this value.\n\n" +
                    "Server Port Number: The port number that is assigned to vConnect, the edit button will " +
-                   "alter this value.\n" +
+                   "alter this value.\n\n" +
                    "Server Status: Whether the vConnect is currently connected with the server with the IP address " +
-                   " and port number assigned to vConnect.\n" +
-                   "Update Schema: Will query the vConnect server, and update the schema if it is out of data.\n" +
-                   "Start: Will begin polling for data. \n" +
+                   " and port number assigned to vConnect.\n\n" +
+                   "Update Schema: Will query the vConnect server, and update the schema if it is out of data.\n\n" +
+                   "Start: Will begin polling for data. \n\n" +
                    "Stop: Will stop polling for data.";
 
             MessageBox.Show(helpMessage);
@@ -331,7 +335,6 @@ namespace vConnect
                     device_Status_Label.Text = "Connected";
                     BTConnection.DeviceID = device.DeviceName;
                     BTConnection.DeviceInfo = device;
-                    label5.Text = device.DeviceName;
                     BT_ID.Text = device.DeviceName;
                     Properties.Settings.Default.BTDeviceName = device.DeviceName;
                     Properties.Settings.Default.BTAddress = device.DeviceAddress.ToString();
@@ -494,17 +497,17 @@ namespace vConnect
             //  to be sent to the server.
             Dictionary<string, object> dictionary = new Dictionary<string, object>();
             // Create the "shell" of empty elements from the schema.
-            elemList = CreateElementsFromSchema(schema);
+           // elemList = CreateElementsFromSchema(schema);
             // Fill the contents of the elements with the data from the car
-            elemList = GetElementData(elemList);
+           // elemList = GetElementData(elemList);
             // Create a dictionary out of the list of elements.
-            dictionary = CreateDictionary(elemList);
+            //dictionary = CreateDictionary(elemList);
             // Add the dictionary containing the data points to the cache.
-            cache.AddElementToCache(dictionary);
+           // cache.AddElementToCache(dictionary);
 
             
-            //CheckForErrorCodes(elemList);
-            cache.SendToServer(cache.JsonString, "data");
+            CheckForErrorCodes(elemList);
+         //   cache.SendToServer(cache.JsonString, "data");
         }
 
 
@@ -657,19 +660,19 @@ namespace vConnect
         /// </summary>
         private bool CheckForErrorCodes(List<DataElement> elemList)
         {
-            byte[] errorCode = new byte[20];
+            byte[] errorCode = new byte[50];
             if (BTConnection.Client.Connected)
             {
                 // encode message
                 try
                 {
-                    byte[] writeCode = System.Text.Encoding.ASCII.GetBytes("03");
+                    byte[] writeCode = System.Text.Encoding.ASCII.GetBytes("3");
                     Stream peerStream = BTConnection.Client.GetStream();
                     peerStream.Flush();
                     peerStream.Write(writeCode, 0, writeCode.Length);
-                    System.Threading.Thread.Sleep(7000);
-                    peerStream.Read(errorCode, 0, 20);
-                    MessageBox.Show("ERROR CODES: " + errorCode.ToString());
+                    System.Threading.Thread.Sleep(10000);
+                    peerStream.Read(errorCode, 0, 50);
+                    MessageBox.Show("ERROR CODES: " + System.Text.Encoding.ASCII.GetString(errorCode));
                     peerStream.Flush();
                     peerStream.Close();
                 }
