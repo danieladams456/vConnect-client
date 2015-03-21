@@ -249,6 +249,25 @@ namespace vConnect
             MessageBox.Show(helpMessage);
         }
 
+        /// <summary>
+        /// This function displays the most recent NUM_LINES lines from the error log, for ease of use.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void view_error_log_button_Click(object sender, EventArgs e)
+        {
+            int NUM_LINES = 5;
+            try
+            {
+                MessageBox.Show("The 5 most recent error messages recorded are: \n\n" + string.Join("\r\n", File.ReadLines("error.log").Reverse().Take(NUM_LINES).Reverse()), "Error Log");
+            }
+            catch (FileNotFoundException)
+            {
+                LogMessageToFile("Error Log", "The error log could not be found/opened.");
+            }
+        }
+
+
 
         /// <summary>
         ///  Allows the user to enter a new IP address using the GUI.
@@ -331,7 +350,6 @@ namespace vConnect
                     device_Status_Label.Text = "Connected";
                     BTConnection.DeviceID = device.DeviceName;
                     BTConnection.DeviceInfo = device;
-                    label5.Text = device.DeviceName;
                     BT_ID.Text = device.DeviceName;
                     Properties.Settings.Default.BTDeviceName = device.DeviceName;
                     Properties.Settings.Default.BTAddress = device.DeviceAddress.ToString();
@@ -851,10 +869,5 @@ namespace vConnect
                 writer.Close();
             }
         }
-
-        
-
-
     }
-
 }
