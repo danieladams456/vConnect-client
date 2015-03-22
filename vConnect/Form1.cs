@@ -278,23 +278,22 @@ namespace vConnect
         /// <param name="e"></param>
         private void edit_IP_button_Click(object sender, EventArgs e)
         {
-            string value = "IP Address";
-
-            // Saves IP address to the settings file, as well as the server connection handler. 
-            if (InputBox("New IP Address", "New IP Address:", ref value) == DialogResult.OK)
+            if (pollingData)
             {
-                string temp = serverConnection.IPAddress;
-                serverConnection.IPAddress = value;
-                if (serverConnection.CheckServerConnection())
+                MessageBox.Show("Stop Polling before Changing IP Address.");
+            }
+            else
+            {
+                string value = "IP Address";
+
+                // Saves IP address to the settings file, as well as the server connection handler. 
+                if (InputBox("New IP Address", "New IP Address:", ref value) == DialogResult.OK)
                 {
+                    serverConnection.IPAddress = value;
+
                     server_IP.Text = value;
                     Properties.Settings.Default.ServerIP = value;
                     Properties.Settings.Default.Save();
-                }
-                else
-                {
-                    MessageBox.Show("Invalid IP Address, could not connect.");
-                    serverConnection.IPAddress = temp;
                 }
             }
         }
@@ -306,44 +305,45 @@ namespace vConnect
         /// <param name="e"></param>
         private void edit_port_button_Click(object sender, EventArgs e)
         {
-            string value = "Port Number";
-            if (InputBox("New Port Number", "New Port Number (1-65535):", ref value) == DialogResult.OK)
+            if (pollingData)
             {
-
-                // Bounds checking for a valid port number
-                // Saves Port Number to the settings file, as well as the server connection handler.
-                int valueInt = 0;
-                try
+                MessageBox.Show("Stop Polling data before changing the port number.");
+            }
+            else
+            {
+                string value = "Port Number";
+                if (InputBox("New Port Number", "New Port Number (1-65535):", ref value) == DialogResult.OK)
                 {
-                    valueInt = Int32.Parse(value);
-                    if (valueInt > 0 && valueInt < 65535)
+
+                    // Bounds checking for a valid port number
+                    // Saves Port Number to the settings file, as well as the server connection handler.
+                    int valueInt = 0;
+                    try
                     {
-                        string temp = serverConnection.PortNumber.ToString();
-                        serverConnection.PortNumber = Int32.Parse(value);
-                        if (serverConnection.CheckServerConnection())
+                        valueInt = Int32.Parse(value);
+                        if (valueInt > 0 && valueInt < 65535)
                         {
+                            serverConnection.PortNumber = Int32.Parse(value);
+
                             Properties.Settings.Default.ServerPort = value;
                             Properties.Settings.Default.Save();
                             port_number.Text = value;
                         }
                         else
                         {
-                            MessageBox.Show("Invalid Port Number, could not connect.");
-                            serverConnection.PortNumber = Int32.Parse(temp);
+                            MessageBox.Show("Invalid Port Number: Port number must be between 1 and 65534.");
+                            LogMessageToFile("Port Number", "Invalid Port number.");
+
                         }
+
                     }
-                    else
+
+                    catch
                     {
                         MessageBox.Show("Invalid Port Number: Port number must be between 1 and 65534.");
+                        LogMessageToFile("Port Number", "Invalid Port number.");
+
                     }
-                   
-                }
-
-                catch
-                {
-                    MessageBox.Show("Invalid Port Number: Port number must be between 1 and 65534.");
-                    LogMessageToFile("Port Number", "Invalid Port number.");
-
                 }
             }
         }
@@ -404,14 +404,15 @@ namespace vConnect
         {
             if (pollingData)
             {
-                pollData.Change(Timeout.Infinite, Timeout.Infinite);
-                pollData.Dispose();
-                pollingData = false;
+                MessageBox.Show("Stop Polling Data before disconnecting OBDII device.");
             }
-            if (!BTConnection.BTConnectionStatus)
-                MessageBox.Show("There are no OBDII devices connected.");
-            else if (BTConnection.CloseBTConnection())
-                device_Status_Label.Text = "Disconnected";
+            else
+            {
+                if (!BTConnection.BTConnectionStatus)
+                    MessageBox.Show("There are no OBDII devices connected.");
+                else if (BTConnection.CloseBTConnection())
+                    device_Status_Label.Text = "Disconnected";
+            }
 
         }
 
@@ -455,7 +456,7 @@ namespace vConnect
 
             // If no data is currently being polled, update the schema, then
             // begin polling data.
-            else if (BTConnection.BTConnectionStatus)// && serverConnection.ServerConnectionStatus)
+            else if (BTConnection.BTConnectionStatus && serverConnection.CheckServerConnection())
             {
                 schema = SchemaUpdate();
                 pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
