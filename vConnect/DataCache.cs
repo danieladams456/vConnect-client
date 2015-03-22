@@ -33,11 +33,6 @@ namespace vConnect
         List<Dictionary<string, object>> cache = new List<Dictionary<string, object>>();
         ServerConnectionHandler serverConnection;
 
-        // NOTE: These values are used for testing purposes only.
-        private bool cacheTest = false;
-        private bool serverTest = false;
-
-
         /// <summary>
         /// Constructor for initializing the server connection.
         /// </summary>
@@ -90,13 +85,8 @@ namespace vConnect
 
             MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             // Create the web address to connect to
-            if (serverTest)
-            {
-                webAddress = "http://" + "0.0.0.0" + ":" + "1" + "/";
-                serverTest = false;
-            }
-            else
-                webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber + "/" + type;
+           
+            webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber + "/" + type;
 
             // Create the web request with Json/Post attributes and given address
             var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
@@ -118,19 +108,10 @@ namespace vConnect
                     int statusCode = (int)httpResponse.StatusCode;
 
                     MessageBox.Show("Status Code: " + statusCode.ToString());
-                    if (serverTest)
-                    {
-                        if (statusCode == 204)
-                            MessageBox.Show("SERVER TEST: Server successfully received data cache data.");
-
-                    }
+                   
                     if (statusCode == 204)
                         cache.Clear();
-                    if (cacheTest)
-                    {
-                        var msg = "REMOVE CACHE DATA TEST \nWhat should be printed underneath: []\n\n" + JsonString;
-                        MessageBox.Show(msg);
-                    }
+                    
                     // If the web response was anything except 200, then problem. Handle it.
                     //if (statusCode!=200)
                     //{
@@ -161,8 +142,6 @@ namespace vConnect
 
         // C# Accessor Method
         public string JsonString { get { return JsonConvert.SerializeObject(cache); } }
-        public bool CacheTest { get { return cacheTest; } set { cacheTest = value; } }
-        public bool ServerTest { get { return serverTest; } set { serverTest = value; } }
 
     }
 }

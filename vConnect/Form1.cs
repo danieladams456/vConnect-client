@@ -684,7 +684,6 @@ namespace vConnect
             // Loop through each element in the list, and 
             foreach (DataElement elem in elemList)
             {
-                // THIS IS NEW, THEY DONT GOT IT 
                 if (elem.ValueToSend == "Not supported")
                     ;
 
@@ -712,7 +711,8 @@ namespace vConnect
         /// </summary>
         private bool CheckForErrorCodes(List<DataElement> elemList)
         {
-            byte[] errorCode = new byte[50];
+            byte[] errorCode = new byte[20];
+            string errorString = "";
             if (BTConnection.Client.Connected)
             {
                 // encode message
@@ -742,55 +742,23 @@ namespace vConnect
                     }
 
                 }
-                string errorString = null;
-                string DTC1 = null;
-                string DTC2 = null;
-                string DTC3 = null;
-                string DTC4 = null;
-                string DTC5 = null;
 
-                int DTC1Check = (errorCode[0] >> 6) & 0x3;
+                byte[] subErrorCode = new byte[20];
+                int counter = 0;
 
-                if (DTC1Check == 0)
-                    DTC1 = "P";
-                else if (DTC1Check == 1)
-                    DTC1 = "C";
-                else if (DTC1Check == 2)
-                    DTC1 = "B";
-                else if (DTC1Check == 3)
-                    DTC1 = "U";
-
-                int DTC2Check = (errorCode[0] >> 4) & 0x3;
-                DTC2 = DTC2Check.ToString();
-
-                int DTC3Check = errorCode[0] & 0xF;
-                DTC3 = DTC3Check.ToString();
-
-                int DTC4Check = (errorCode[1] >> 4) & 0xF;
-                DTC4 = DTC4Check.ToString();
-
-                int DTC5Check = errorCode[1] & 0xF;
-                DTC5 = DTC5Check.ToString();
-
-                errorString = DTC1 + DTC2 + DTC3 + DTC4 + DTC5;
-
-                var errorDictionary = new Dictionary<string, object>();
-
-                errorDictionary.Add("VIN", elemList[0].ValueToSend);
-
-                errorDictionary.Add("timestamp", DateTime.Now.ToString());
-
-                errorDictionary.Add("trouble_code", errorString);
-
-                string toSend = JsonConvert.SerializeObject(errorDictionary);
-
-                if (errorCode.ToString().Contains("System.Byte[]"))
-                    cache.SendToServer(toSend, "alert");
-
-                else
+                while (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) != " ")
                 {
-                    MessageBox.Show("No Error Codes");
+                    errorCode.CopyTo(subErrorCode, counter);
+                    errorString = parseErrorCode(subErrorCode);
+                    string toSend = null;
+                   // string toSend = "alert { VIN: " + elemList[0].ValueToSend + ", " 
+
+
+                    cache.SendToServer(toSend, "alert");
+                    counter += 2;
+
                 }
+
 
             }
             else
@@ -802,6 +770,51 @@ namespace vConnect
 
 
             return true;
+        }
+
+
+        /// <summary>
+        /// Parses the bits from the a two byte error Code received from the OBDII module
+        /// into its actual error code representation. 
+        /// </summary>
+        /// <param name="errorCode"></param>
+        /// <returns></returns>
+        private string parseErrorCode(byte[] errorCode)
+        {
+            string errorString = "";
+            string DTC1 = "";
+            string DTC2 = "";
+            string DTC3 = "";
+            string DTC4 = "";
+            string DTC5 = "";
+
+            int DTC1Check = (errorCode[0] >> 6) & 0x3;
+
+            if (DTC1Check == 0)
+                DTC1 = "P";
+            else if (DTC1Check == 1)
+                DTC1 = "C";
+            else if (DTC1Check == 2)
+                DTC1 = "B";
+            else if (DTC1Check == 3)
+                DTC1 = "U";
+
+            int DTC2Check = (errorCode[0] >> 4) & 0x3;
+            DTC2 = DTC2Check.ToString();
+
+            int DTC3Check = errorCode[0] & 0xF;
+            DTC3 = DTC3Check.ToString();
+
+            int DTC4Check = (errorCode[1] >> 4) & 0xF;
+            DTC4 = DTC4Check.ToString();
+
+            int DTC5Check = errorCode[1] & 0xF;
+            DTC5 = DTC5Check.ToString();
+
+            errorString = DTC1 + DTC2 + DTC3 + DTC4 + DTC5;
+
+            MessageBox.Show("Error String: " + errorString);
+            return errorString;
         }
 
 
