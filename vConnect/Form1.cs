@@ -70,7 +70,7 @@ namespace vConnect
             this.ShowInTaskbar = false;
             InitializeComponent();
             this.WindowState = FormWindowState.Minimized;
-            
+
             // Initialize the dataCache.
             cache = new DataCache(serverConnection);
 
@@ -96,7 +96,7 @@ namespace vConnect
             {
                 // Grabs the saved BT address from the settings file.
                 BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
-             
+
                 // If connection is established with the device with the specified BT address above,
                 // save the Device's ID, indicated connection status on the GUI.
                 if (BTConnection.EstablishBTConnection())
@@ -120,41 +120,41 @@ namespace vConnect
             else
             {
                 // Array of all detected BT devices.
-                BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices(); 
-                
-                
+                BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
+
+
                 int peerCounter = 0;
 
                 // Loops through all of the BT Devices detected, and attempt to connect with any one who's device ID
                 // indicates that it is an OBDII module.
-              
-                    while (peerCounter < peers.Length)
+
+                while (peerCounter < peers.Length)
+                {
+
+                    if (peers[peerCounter].DeviceName == "CBT." || peers[peerCounter].DeviceName == "OBDII")
                     {
+                        // Retrieve the BT adress from the BT device whose device name indicates that it is 
+                        // as OBDII module.
+                        BTConnection.BluetoothAddress = peers[peerCounter].DeviceAddress;
 
-                        if (peers[peerCounter].DeviceName == "CBT." || peers[peerCounter].DeviceName == "OBDII")
+                        // If connection is established, save the OBDII device's BT Address and Device Name to the 
+                        // settings file, and change details on the GUI accordingly. 
+                        if (BTConnection.EstablishBTConnection())
                         {
-                            // Retrieve the BT adress from the BT device whose device name indicates that it is 
-                            // as OBDII module.
-                            BTConnection.BluetoothAddress = peers[peerCounter].DeviceAddress;
-
-                            // If connection is established, save the OBDII device's BT Address and Device Name to the 
-                            // settings file, and change details on the GUI accordingly. 
-                            if (BTConnection.EstablishBTConnection())
-                            {
-                                BTConnection.DeviceInfo = peers[peerCounter];
-                                BT_ID.Text = peers[peerCounter].DeviceName;
-                                BTConnection.DeviceID = peers[peerCounter].DeviceName;
-                                Properties.Settings.Default.BTAddress = peers[peerCounter].DeviceAddress.ToString();
-                                Properties.Settings.Default.BTDeviceName = peers[peerCounter].DeviceName;
-                                Properties.Settings.Default.Save();
-                                device_Status_Label.Text = "Connected";
-                                peerCounter = peers.Length;
-                                deviceDetect = true;
-                            }
+                            BTConnection.DeviceInfo = peers[peerCounter];
+                            BT_ID.Text = peers[peerCounter].DeviceName;
+                            BTConnection.DeviceID = peers[peerCounter].DeviceName;
+                            Properties.Settings.Default.BTAddress = peers[peerCounter].DeviceAddress.ToString();
+                            Properties.Settings.Default.BTDeviceName = peers[peerCounter].DeviceName;
+                            Properties.Settings.Default.Save();
+                            device_Status_Label.Text = "Connected";
+                            peerCounter = peers.Length;
+                            deviceDetect = true;
                         }
-                        peerCounter++;
                     }
-                
+                    peerCounter++;
+                }
+
             }
 
             // If no OBDII connection is established, then print to the screen stating this fact, and then
@@ -182,7 +182,6 @@ namespace vConnect
                 // If the server is available, switch the bool value to save that info. 
                 if (serverConnection.CheckServerConnection())
                 {
-                    MessageBox.Show("Server Connection Check Worked!");
                     serverDetect = true;
                     port_number.Text = serverConnection.PortNumber.ToString();
                     server_IP.Text = serverConnection.IPAddress;
@@ -272,8 +271,6 @@ namespace vConnect
             }
         }
 
-
-
         /// <summary>
         ///  Allows the user to enter a new IP address using the GUI.
         /// </summary>
@@ -286,14 +283,21 @@ namespace vConnect
             // Saves IP address to the settings file, as well as the server connection handler. 
             if (InputBox("New IP Address", "New IP Address:", ref value) == DialogResult.OK)
             {
-                server_IP.Text = value;
-                Properties.Settings.Default.ServerIP = value;
-                Properties.Settings.Default.Save();
-
+                string temp = serverConnection.IPAddress;
                 serverConnection.IPAddress = value;
+                if (serverConnection.CheckServerConnection())
+                {
+                    server_IP.Text = value;
+                    Properties.Settings.Default.ServerIP = value;
+                    Properties.Settings.Default.Save();
+                }
+                else
+                {
+                    MessageBox.Show("Invalid IP Address, could not connect.");
+                    serverConnection.IPAddress = temp;
+                }
             }
         }
-
 
         /// <summary>
         ///  Allows the user to enter a new port number using the GUI
@@ -305,14 +309,41 @@ namespace vConnect
             string value = "Port Number";
             if (InputBox("New Port Number", "New Port Number (1-65535):", ref value) == DialogResult.OK)
             {
+
                 // Bounds checking for a valid port number
                 // Saves Port Number to the settings file, as well as the server connection handler.
-                if (Int32.Parse(value) > 0 && Int32.Parse(value) < 65535)
+                int valueInt = 0;
+                try
                 {
-                    Properties.Settings.Default.ServerPort = value;
-                    Properties.Settings.Default.Save();
-                    port_number.Text = value;
-                    serverConnection.PortNumber = Int32.Parse(value);
+                    valueInt = Int32.Parse(value);
+                    if (valueInt > 0 && valueInt < 65535)
+                    {
+                        string temp = serverConnection.PortNumber.ToString();
+                        serverConnection.PortNumber = Int32.Parse(value);
+                        if (serverConnection.CheckServerConnection())
+                        {
+                            Properties.Settings.Default.ServerPort = value;
+                            Properties.Settings.Default.Save();
+                            port_number.Text = value;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Invalid Port Number, could not connect.");
+                            serverConnection.PortNumber = Int32.Parse(temp);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Invalid Port Number: Port number must be between 1 and 65534.");
+                    }
+                   
+                }
+
+                catch
+                {
+                    MessageBox.Show("Invalid Port Number: Port number must be between 1 and 65534.");
+                    LogMessageToFile("Port Number", "Invalid Port number.");
+
                 }
             }
         }
@@ -517,17 +548,17 @@ namespace vConnect
             //  to be sent to the server.
             Dictionary<string, object> dictionary = new Dictionary<string, object>();
             // Create the "shell" of empty elements from the schema.
-           // elemList = CreateElementsFromSchema(schema);
+            // elemList = CreateElementsFromSchema(schema);
             // Fill the contents of the elements with the data from the car
-           // elemList = GetElementData(elemList);
+            // elemList = GetElementData(elemList);
             // Create a dictionary out of the list of elements.
             //dictionary = CreateDictionary(elemList);
             // Add the dictionary containing the data points to the cache.
-           // cache.AddElementToCache(dictionary);
+            // cache.AddElementToCache(dictionary);
 
-            
+
             CheckForErrorCodes(elemList);
-         //   cache.SendToServer(cache.JsonString, "data");
+            //   cache.SendToServer(cache.JsonString, "data");
         }
 
 
@@ -654,7 +685,7 @@ namespace vConnect
             {
                 // THIS IS NEW, THEY DONT GOT IT 
                 if (elem.ValueToSend == "Not supported")
-                ;
+                    ;
 
                 // If the datatype is a number, send the value as an integer
                 else if (elem.DataType == "number")
@@ -716,9 +747,9 @@ namespace vConnect
                 string DTC3 = null;
                 string DTC4 = null;
                 string DTC5 = null;
-                
+
                 int DTC1Check = (errorCode[0] >> 6) & 0x3;
-                
+
                 if (DTC1Check == 0)
                     DTC1 = "P";
                 else if (DTC1Check == 1)
@@ -730,31 +761,31 @@ namespace vConnect
 
                 int DTC2Check = (errorCode[0] >> 4) & 0x3;
                 DTC2 = DTC2Check.ToString();
-                
+
                 int DTC3Check = errorCode[0] & 0xF;
                 DTC3 = DTC3Check.ToString();
-                
+
                 int DTC4Check = (errorCode[1] >> 4) & 0xF;
                 DTC4 = DTC4Check.ToString();
-                
+
                 int DTC5Check = errorCode[1] & 0xF;
                 DTC5 = DTC5Check.ToString();
-                
+
                 errorString = DTC1 + DTC2 + DTC3 + DTC4 + DTC5;
-                
+
                 var errorDictionary = new Dictionary<string, object>();
-                
+
                 errorDictionary.Add("VIN", elemList[0].ValueToSend);
-                
+
                 errorDictionary.Add("timestamp", DateTime.Now.ToString());
-                
+
                 errorDictionary.Add("trouble_code", errorString);
-                
+
                 string toSend = JsonConvert.SerializeObject(errorDictionary);
-                
+
                 if (errorCode.ToString().Contains("System.Byte[]"))
                     cache.SendToServer(toSend, "alert");
-                
+
                 else
                 {
                     MessageBox.Show("No Error Codes");
@@ -838,7 +869,7 @@ namespace vConnect
             this.WindowState = FormWindowState.Normal;
         }
 
-        
+
 
         /// <summary>
         /// This static function allows for writing errors to a standard log file

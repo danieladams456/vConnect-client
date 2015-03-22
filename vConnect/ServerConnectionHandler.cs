@@ -37,25 +37,33 @@ namespace vConnect
         public bool CheckServerConnection()
         {
             bool serverConnection = false;
+            try
+            {
+               
 
-            string webAddress = "http://" + ipAddress + ":" + portNumber + "/status";
+                string webAddress = "http://" + ipAddress + ":" + portNumber + "/status";
 
-            // Create the web request with Json/Post attributes and given address
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
-            httpWebRequest.ContentType = "text/plain";
-            httpWebRequest.Method = "HEAD";
-            httpWebRequest.UserAgent = "vConnect";
+                // Create the web request with Json/Post attributes and given address
+                var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
+                httpWebRequest.ContentType = "text/plain";
+                httpWebRequest.Method = "HEAD";
+                httpWebRequest.UserAgent = "vConnect";
 
 
 
-            // Get web response (most importantly, status code)
-            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-            int statusCode = (int)httpResponse.StatusCode;
+                // Get web response (most importantly, status code)
+                var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                int statusCode = (int)httpResponse.StatusCode;
 
-            MessageBox.Show("Status Code: " + statusCode.ToString());
-            if (statusCode.ToString() == "204")
-                serverConnection = true;
+                if (statusCode.ToString() == "204")
+                    serverConnection = true;
+            }
+            catch (Exception e)
+            {
+                Form1.LogMessageToFile("Server Connection Handler", "Could not connect to this IP Address: " + ipAddress);
 
+
+            }
 
             return serverConnection;
         }
