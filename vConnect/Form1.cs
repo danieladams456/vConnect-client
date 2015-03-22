@@ -55,10 +55,11 @@ namespace vConnect
 
         // Bool value specifying whether the data polling asychronous operation is currently
         // running or not. 
-        bool pollingData = false;
+        static public bool pollingData = false;
 
         // Constant that determines how often the data polling Timer will run. (In miliseconds)
         const int POLLTIME = 120000;
+
 
 
         // Timer CallBack to be used for polling data.
@@ -489,7 +490,7 @@ namespace vConnect
             {
                 pollingData = false;
                 pollData.Change(Timeout.Infinite, Timeout.Infinite);
-                pollData.Dispose();
+                System.Threading.Thread.Sleep(7000);
                 pollData = null;
             }
         }
@@ -551,13 +552,17 @@ namespace vConnect
             // Create the "shell" of empty elements from the schema.
             // elemList = CreateElementsFromSchema(schema);
             // Fill the contents of the elements with the data from the car
+            if (!pollingData)
+                return;
             // elemList = GetElementData(elemList);
             // Create a dictionary out of the list of elements.
             //dictionary = CreateDictionary(elemList);
+           
             // Add the dictionary containing the data points to the cache.
             // cache.AddElementToCache(dictionary);
 
-
+            if (!pollingData)
+                return;
             CheckForErrorCodes(elemList);
             //   cache.SendToServer(cache.JsonString, "data");
         }
@@ -658,6 +663,8 @@ namespace vConnect
                 }
                 else
                 {
+                    if (!pollingData)
+                        return elemList;
                     // Get data from the car for the element and format it.
                     elem.RequestDataFromCar();
                     elem.FormatData();
@@ -715,17 +722,18 @@ namespace vConnect
             string errorString = "";
             if (BTConnection.Client.Connected)
             {
+                if (!pollingData)
+                    return false;
                 // encode message
                 try
                 {
-                    byte[] writeCode = System.Text.Encoding.ASCII.GetBytes("3");
+                    byte[] writeCode = System.Text.Encoding.ASCII.GetBytes("03");
                     Stream peerStream = BTConnection.Client.GetStream();
                     peerStream.Flush();
                     peerStream.Write(writeCode, 0, writeCode.Length);
                     System.Threading.Thread.Sleep(10000);
                     peerStream.Read(errorCode, 0, 50);
                     MessageBox.Show("ERROR CODES: " + System.Text.Encoding.ASCII.GetString(errorCode));
-                    peerStream.Flush();
                     peerStream.Close();
                 }
 
@@ -742,7 +750,8 @@ namespace vConnect
                     }
 
                 }
-
+                if (!pollingData)
+                    return false;
                 byte[] subErrorCode = new byte[20];
                 int counter = 0;
 

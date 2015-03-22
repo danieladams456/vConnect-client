@@ -123,13 +123,20 @@ namespace vConnect
 
                         // Must retrieve the VIN in three different reads. 
                         System.Threading.Thread.Sleep(7000);
+                        if (!Form1.pollingData)
+                            return false;
                         peerStream.Read(vin1, 0, vin1.Length);
-                        MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin1));
+                       // MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin1));
+                       
                         System.Threading.Thread.Sleep(7000);
+                        if (!Form1.pollingData)
+                            return false;
                         peerStream.Read(vin2, 0, vin2.Length);
-                        MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin2));
+                        //MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin2));
 
                         System.Threading.Thread.Sleep(7000);
+                        if (!Form1.pollingData)
+                            return false;
                         peerStream.Read(vin3, 0, vin3.Length);
                         peerStream.Close();
                     }
