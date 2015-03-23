@@ -70,7 +70,7 @@ namespace vConnect
             this.Visible = false;
             this.ShowInTaskbar = false;
             InitializeComponent();
-            this.WindowState = FormWindowState.Minimized;
+           // this.WindowState = FormWindowState.Minimized;
 
             // Initialize the dataCache.
             cache = new DataCache(serverConnection);
@@ -83,13 +83,14 @@ namespace vConnect
             bool serverDetect = false;
 
             // Current server for testing. 
-            serverConnection.PortNumber = 80;
-            serverConnection.IPAddress = "vconnect-danieladams456.rhcloud.com";
-            server_IP.Text = "vconnect-danieladams456.rhcloud.com";
-            Properties.Settings.Default.ServerIP = "vconnect-danieladams456.rhcloud.com";
-            Properties.Settings.Default.ServerPort = "80";
-            port_number.Text = "80";
-            serverConnection.ServerConnectionStatus = true;
+          //  serverConnection.PortNumber = 80;
+          //  serverConnection.IPAddress = "vconnect-danieladams456.rhcloud.com";
+          //  server_IP.Text = "vconnect-danieladams456.rhcloud.com";
+          //  Properties.Settings.Default.ServerIP = "vconnect-danieladams456.rhcloud.com";
+          //  Properties.Settings.Default.ServerPort = "80";
+           // Properties.Settings.Default.Save();
+           // port_number.Text = "80";
+           // serverConnection.ServerConnectionStatus = true;
 
 
             // If there is a saved BT Address, attempt to connect with the device with that address.
@@ -102,6 +103,7 @@ namespace vConnect
                 // save the Device's ID, indicated connection status on the GUI.
                 if (BTConnection.EstablishBTConnection())
                 {
+                    MessageBox.Show("Connected from saved BT.");
                     BTConnection.DeviceID = Properties.Settings.Default.BTDeviceName;
                     BT_ID.Text = Properties.Settings.Default.BTDeviceName;
                     device_Status_Label.Text = "Connected";
@@ -137,11 +139,13 @@ namespace vConnect
                         // Retrieve the BT adress from the BT device whose device name indicates that it is 
                         // as OBDII module.
                         BTConnection.BluetoothAddress = peers[peerCounter].DeviceAddress;
+                        BTConnection.DeviceID = peers[peerCounter].DeviceName;
 
                         // If connection is established, save the OBDII device's BT Address and Device Name to the 
                         // settings file, and change details on the GUI accordingly. 
                         if (BTConnection.EstablishBTConnection())
                         {
+                            MessageBox.Show("COnnected From auto search.");
                             BTConnection.DeviceInfo = peers[peerCounter];
                             BT_ID.Text = peers[peerCounter].DeviceName;
                             BTConnection.DeviceID = peers[peerCounter].DeviceName;
@@ -181,11 +185,13 @@ namespace vConnect
                 serverConnection.IPAddress = Properties.Settings.Default.ServerIP;
 
                 // If the server is available, switch the bool value to save that info. 
-                if (serverConnection.CheckServerConnection())
+                if (true == true)//serverConnection.CheckServerConnection())
                 {
+                    MessageBox.Show("Saved server connection successful.");
                     serverDetect = true;
                     port_number.Text = serverConnection.PortNumber.ToString();
                     server_IP.Text = serverConnection.IPAddress;
+                    serverConnection.ServerConnectionStatus = true;
                 }
                 else
                 {
@@ -207,6 +213,7 @@ namespace vConnect
             // vehicle data. 
             if (deviceDetect && serverDetect)
             {
+                MessageBox.Show("Beginning auto poll now."); 
                 schema = SchemaUpdate();
                 pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
             }
@@ -451,6 +458,13 @@ namespace vConnect
         /// <param name="e"></param>
         private void start_button_Click(object sender, EventArgs e)
         {
+            if (serverConnection.CheckServerConnection())
+            {
+                MessageBox.Show("Server is good!.");
+                Properties.Settings.Default.ServerIP = serverConnection.IPAddress;
+                Properties.Settings.Default.ServerPort = serverConnection.PortNumber.ToString();
+                Properties.Settings.Default.Save();
+            }
             // If data is already being polled, then nothing to do. 
             if (pollingData)
                 MessageBox.Show("Already Polling Data");
@@ -550,21 +564,23 @@ namespace vConnect
             //  to be sent to the server.
             Dictionary<string, object> dictionary = new Dictionary<string, object>();
             // Create the "shell" of empty elements from the schema.
-            // elemList = CreateElementsFromSchema(schema);
+             elemList = CreateElementsFromSchema(schema);
             // Fill the contents of the elements with the data from the car
             if (!pollingData)
                 return;
-            // elemList = GetElementData(elemList);
+           //  elemList = GetElementData(elemList);
+             if (elemList == null)
+                 return;
             // Create a dictionary out of the list of elements.
-            //dictionary = CreateDictionary(elemList);
+         //   dictionary = CreateDictionary(elemList);
            
             // Add the dictionary containing the data points to the cache.
-            // cache.AddElementToCache(dictionary);
+         //    cache.AddElementToCache(dictionary);
 
             if (!pollingData)
                 return;
             CheckForErrorCodes(elemList);
-            //   cache.SendToServer(cache.JsonString, "data");
+           //    cache.SendToServer(cache.JsonString, "data");
         }
 
 
@@ -666,7 +682,8 @@ namespace vConnect
                     if (!pollingData)
                         return elemList;
                     // Get data from the car for the element and format it.
-                    elem.RequestDataFromCar();
+                    if (!elem.RequestDataFromCar() && !pollingData)
+                        return null;
                     elem.FormatData();
                 }
             }
@@ -718,7 +735,7 @@ namespace vConnect
         /// </summary>
         private bool CheckForErrorCodes(List<DataElement> elemList)
         {
-            byte[] errorCode = new byte[20];
+            byte[] errorCode = new byte[60];
             string errorString = "";
             if (BTConnection.Client.Connected)
             {
@@ -727,12 +744,12 @@ namespace vConnect
                 // encode message
                 try
                 {
-                    byte[] writeCode = System.Text.Encoding.ASCII.GetBytes("03");
+                    byte[] writeCode = System.Text.Encoding.ASCII.GetBytes("03 \r");
                     Stream peerStream = BTConnection.Client.GetStream();
                     peerStream.Flush();
                     peerStream.Write(writeCode, 0, writeCode.Length);
-                    System.Threading.Thread.Sleep(10000);
-                    peerStream.Read(errorCode, 0, 50);
+                    System.Threading.Thread.Sleep(1000);
+                    peerStream.Read(errorCode, 0, errorCode.Length);
                     MessageBox.Show("ERROR CODES: " + System.Text.Encoding.ASCII.GetString(errorCode));
                     peerStream.Close();
                 }
@@ -752,10 +769,12 @@ namespace vConnect
                 }
                 if (!pollingData)
                     return false;
-                byte[] subErrorCode = new byte[20];
-                int counter = 0;
+                byte[] subErrorCode = new byte[60];
+                int counter = 4;
 
-                while (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) != " ")
+                while (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) != "\r" && 
+                    (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) != "0" &&
+                    System.Text.Encoding.ASCII.GetString(errorCode, counter+1, 1) != "0"))
                 {
                     errorCode.CopyTo(subErrorCode, counter);
                     errorString = parseErrorCode(subErrorCode);
@@ -764,7 +783,7 @@ namespace vConnect
 
 
                     cache.SendToServer(toSend, "alert");
-                    counter += 2;
+                    counter += 3;
 
                 }
 

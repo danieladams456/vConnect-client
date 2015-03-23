@@ -20,20 +20,7 @@ namespace vConnect
         private string ipAddress = "";
         private int portNumber = 0;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public bool EstablishServerConnection()
-        {
-            return true;
-        }
-
-        public bool CloseServerConnection()
-        {
-            return true;
-        }
-
+      
         public bool CheckServerConnection()
         {
             bool serverConnection = false;
@@ -60,9 +47,7 @@ namespace vConnect
             }
             catch (Exception e)
             {
-                Form1.LogMessageToFile("Server Connection Handler", "Could not connect to this IP Address: " + ipAddress);
-
-
+                Form1.LogMessageToFile("Server Connection Handler", e.Message);
             }
 
             return serverConnection;

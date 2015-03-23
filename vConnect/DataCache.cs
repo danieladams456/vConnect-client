@@ -108,10 +108,11 @@ namespace vConnect
                     int statusCode = (int)httpResponse.StatusCode;
 
                     MessageBox.Show("Status Code: " + statusCode.ToString());
-                   
+
                     if (statusCode == 204)
                         cache.Clear();
-                    
+                    else
+                        MessageBox.Show("didnt like the codes");
                     // If the web response was anything except 200, then problem. Handle it.
                     //if (statusCode!=200)
                     //{

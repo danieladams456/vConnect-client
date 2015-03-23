@@ -41,13 +41,12 @@ namespace vConnect
 
         // can keep this static for our purposes, but should probably implement 
         // a method for user specified PIN just in case.
-        private const string PIN = "1234";
+        private const string PIN = "683752";
 
         // Number of times vConnect with attempt to connect to the application. 
-        private int connectionAttempts = 2;
+        private int connectionAttempts = 4;
 
-        // Testing values
-        private bool bT_Test = false;
+        
  
         /// <summary>
         /// This constructor exists to ensure that the application is running on a computer with a Bluetooth stack
@@ -96,12 +95,12 @@ namespace vConnect
                 return false;
             }
 
-           /* if (deviceID != "CBT." || deviceID != "OBDII")
-            {
-                MessageBox.Show("ERROR: attempted to connect to a non-OBDII device");
-                deviceID = null;
-                return false;
-            }*/
+//            if (deviceID != "CBT." || deviceID != "OBDII" || deviceID != "OBDLink LX" || true == true)
+ //           {
+  //              MessageBox.Show("ERROR: attempted to connect to a non-OBDII device");
+   //             deviceID = null;
+    //            return false;
+     //       }
 
             client = new BluetoothClient();
             // Initialize serviceClass and endpoint.
@@ -132,17 +131,6 @@ namespace vConnect
                 }
             }
            
-
-           
-
-
-            if (bT_Test)
-            {
-                MessageBox.Show("BT Connection Reestablished, Test successful.");
-                connectionAttempts = 0;
-                bTConnectionStatus = true;
-            }
-
             // If connection is established, set the check  bool value to true, and save the OBDII device's
             // Name and BT address. 
             if (client.Connected)
@@ -152,9 +140,7 @@ namespace vConnect
                 Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
                 Properties.Settings.Default.Save();
                 connectLoop = 0;
-                return true;
-
-                
+                return true;     
             }
 
             return false;
@@ -220,7 +206,6 @@ namespace vConnect
         public bool BTConnectionStatus { get { return bTConnectionStatus; } set { bTConnectionStatus = value; } }
         public string ErorrMessageToUI { get { return errorMessageToUI; } set { errorMessageToUI = value; } }
         public BluetoothAddress BluetoothAddress { get { return bluetoothAddress; } set { bluetoothAddress = value; } }
-        public bool BT_Test { get { return bT_Test; } set { bT_Test = value; } }
         public BluetoothClient Client { get { return client; } set { client = value; } }
         public BluetoothDeviceInfo DeviceInfo { get { return deviceInfo; } set { deviceInfo = value; } }
 

@@ -39,6 +39,7 @@ namespace vConnect
         private bool    noDataCheck = false; // Bool that will be switched to true if a data element
                                              // doesn't need to be formatted. 
 
+        private const int vinLoopCheck = 4;
 
         // NOTE: These are only used for testing purposes.
         private static bool testOBDII = false;
@@ -87,7 +88,7 @@ namespace vConnect
         /// </returns>
         public bool RequestDataFromCar()
         {
-            
+            bool loopCheck = false;
             string writeString; // String that will contain the request to be send to the OBDII module.
             string hexLiteral;  // String that will contain a raw hex value returned from the OBDII module.
             string hexLiteral2; // String that will contain a raw hex value returned from the OBDII module. 
@@ -122,19 +123,19 @@ namespace vConnect
                         peerStream.Write(writeCode, 0, writeCode.Length);
 
                         // Must retrieve the VIN in three different reads. 
-                        System.Threading.Thread.Sleep(7000);
+                        System.Threading.Thread.Sleep(500);
                         if (!Form1.pollingData)
                             return false;
                         peerStream.Read(vin1, 0, vin1.Length);
-                       // MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin1));
+                        MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin1));
                        
-                        System.Threading.Thread.Sleep(7000);
+                        System.Threading.Thread.Sleep(500);
                         if (!Form1.pollingData)
                             return false;
                         peerStream.Read(vin2, 0, vin2.Length);
                         //MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin2));
 
-                        System.Threading.Thread.Sleep(7000);
+                        System.Threading.Thread.Sleep(500);
                         if (!Form1.pollingData)
                             return false;
                         peerStream.Read(vin3, 0, vin3.Length);
@@ -168,21 +169,41 @@ namespace vConnect
                     valueToSend = Regex.Replace(valueToSend, @"\?", "");
 
                     valueToSend = Regex.Replace(valueToSend, @"\0", "");
+                    valueToSend = Regex.Replace(valueToSend, @"\.", "");
 
 
                     string res = String.Empty;
+                    int tryLoop = 0;
 
-                    for (int a = 0; a < valueToSend.Length; a = a + 2)
+                    try
                     {
-                        string Char2Convert = valueToSend.Substring(a, 2);
-                        int n = Convert.ToInt32(Char2Convert, 16);
-                        char c = (char)n;
+                        for (int a = 0; a < valueToSend.Length; a = a + 2)
+                        {
+                            string Char2Convert = valueToSend.Substring(a, 2);
+                            int n = Convert.ToInt32(Char2Convert, 16);
+                            char c = (char)n;
 
-                        res += c.ToString();
+                            res += c.ToString();
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        if (tryLoop < vinLoopCheck)
+                        {
+                            RequestDataFromCar();
+                            tryLoop++;
+                        }
+                        else
+                        {
+                            loopCheck = true;
+                            Form1.LogMessageToFile("VIN Parser Error", e.Message);
+                            MessageBox.Show("ERROR PARSING VIN");
+                        }
 
                     }
-
-
+                    if (loopCheck == true)
+                        return false;
 
                     res = Regex.Replace(res, @"I", "");
                     valueToSend = res;
@@ -210,7 +231,7 @@ namespace vConnect
                         byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
                         peerStream.Write(writeCode, 0, writeCode.Length);
                         // Wait 10 seconds for the OBDII module to process the code request
-                        System.Threading.Thread.Sleep(7000);
+                        System.Threading.Thread.Sleep(500);
 
                         // Read the OBDII code data from the OBDII module.
                         peerStream.Read(returnData, 0, returnData.Length);
@@ -244,11 +265,13 @@ namespace vConnect
                     }
                     else
                     {
-
+                        int x = 0;
+                        if (System.Text.Encoding.ASCII.GetString(returnData).Contains("CONNECTED"))
+                            x = 14;
                         // Parse the actual vehicle data from the bytes returned.
                         if (returnDataSize == 1)
                         {
-                            hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
+                            hexLiteral = System.Text.Encoding.ASCII.GetString(returnData,x +11, 1) + System.Text.Encoding.ASCII.GetString(returnData,x+ 12, 1);
                             equVals[0] = Convert.ToInt32(hexLiteral, 16);
                             if (testVehicleData)
                             {
@@ -260,8 +283,8 @@ namespace vConnect
                         }
                         else if (returnDataSize == 2)
                         {
-                            hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, 12, 1);
-                            hexLiteral2 = System.Text.Encoding.ASCII.GetString(returnData, 14, 1) + System.Text.Encoding.ASCII.GetString(returnData, 15, 1);
+                            hexLiteral = System.Text.Encoding.ASCII.GetString(returnData,x+ 11, 1) + System.Text.Encoding.ASCII.GetString(returnData,x+ 12, 1);
+                            hexLiteral2 = System.Text.Encoding.ASCII.GetString(returnData,x+ 14, 1) + System.Text.Encoding.ASCII.GetString(returnData,x+ 15, 1);
                             equVals[0] = Convert.ToInt32(hexLiteral, 16);
                             equVals[1] = Convert.ToInt32(hexLiteral2, 16);
                             if (testVehicleData)
