@@ -504,7 +504,7 @@ namespace vConnect
             {
                 pollingData = false;
                 pollData.Change(Timeout.Infinite, Timeout.Infinite);
-                System.Threading.Thread.Sleep(7000);
+                System.Threading.Thread.Sleep(3000);
                 pollData = null;
             }
         }
@@ -526,7 +526,7 @@ namespace vConnect
             {
                 schema = "NOT FOUND";
                 MessageBox.Show("Did not find the schema");
-                LogMessageToFile("Schema Error", "Could not retrieve schema.");
+                LogMessageToFile("Schema Error", "Could not retrieve schema:" + exception);
             }
             return schema;
         }
@@ -568,19 +568,19 @@ namespace vConnect
             // Fill the contents of the elements with the data from the car
             if (!pollingData)
                 return;
-           //  elemList = GetElementData(elemList);
+             elemList = GetElementData(elemList);
              if (elemList == null)
                  return;
             // Create a dictionary out of the list of elements.
-         //   dictionary = CreateDictionary(elemList);
+            dictionary = CreateDictionary(elemList);
            
             // Add the dictionary containing the data points to the cache.
-         //    cache.AddElementToCache(dictionary);
+             cache.AddElementToCache(dictionary);
 
             if (!pollingData)
                 return;
             CheckForErrorCodes(elemList);
-           //    cache.SendToServer(cache.JsonString, "data");
+               cache.SendToServer(cache.JsonString, "data");
         }
 
 
@@ -737,7 +737,7 @@ namespace vConnect
         {
             byte[] errorCode = new byte[60];
             string errorString = "";
-            if (BTConnection.Client.Connected)
+            if (BTConnection.Client.Connected || true == true)
             {
                 if (!pollingData)
                     return false;
@@ -748,7 +748,7 @@ namespace vConnect
                     Stream peerStream = BTConnection.Client.GetStream();
                     peerStream.Flush();
                     peerStream.Write(writeCode, 0, writeCode.Length);
-                    System.Threading.Thread.Sleep(1000);
+                    System.Threading.Thread.Sleep(5000);
                     peerStream.Read(errorCode, 0, errorCode.Length);
                     MessageBox.Show("ERROR CODES: " + System.Text.Encoding.ASCII.GetString(errorCode));
                     peerStream.Close();
@@ -769,22 +769,35 @@ namespace vConnect
                 }
                 if (!pollingData)
                     return false;
-                byte[] subErrorCode = new byte[60];
-                int counter = 4;
-
-                while (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) != "\r" && 
-                    (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) != "0" &&
-                    System.Text.Encoding.ASCII.GetString(errorCode, counter+1, 1) != "0"))
+                byte[] subErrorCode = new byte[4];
+                int counter = 7;
+                bool loopExit = false;
+                while (!loopExit)
                 {
-                    errorCode.CopyTo(subErrorCode, counter);
+                  //  MessageBox.Show("1st byte: " + System.Text.Encoding.ASCII.GetString(errorCode, 26, 1));
+                    subErrorCode = errorCode.Skip(counter).Take(5).ToArray();
+
+                    MessageBox.Show("SubCode: " + System.Text.Encoding.ASCII.GetString(subErrorCode));
                     errorString = parseErrorCode(subErrorCode);
                     string toSend = null;
-                   // string toSend = "alert { VIN: " + elemList[0].ValueToSend + ", " 
 
+                    if (errorString == "P0000")
+                        loopExit = true;
+                    else
+                    {
+                        toSend = "[{\"VIN\":\"" + elemList[1].ValueToSend + "\",\"timestamp\":\"" + DateTime.Now.ToString()
+                            + "\",\"trouble_code\":\"" + errorString + "\"}]";
 
-                    cache.SendToServer(toSend, "alert");
-                    counter += 3;
-
+                        cache.SendToServer(toSend, "alert");
+                    }
+                    counter += 6;
+                    if ((counter - 3) % 22 == 0)
+                    {
+                        if (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) == "\r" && System.Text.Encoding.ASCII.GetString(errorCode, 1 + counter, 1) == "\r")
+                            loopExit = true;
+                        else
+                            counter += 4;
+                    }
                 }
 
 
@@ -815,8 +828,15 @@ namespace vConnect
             string DTC3 = "";
             string DTC4 = "";
             string DTC5 = "";
-
-            int DTC1Check = (errorCode[0] >> 6) & 0x3;
+            MessageBox.Show(System.Text.Encoding.ASCII.GetString(errorCode));
+            // This will be using the method used in dataElement, where I would do bitwise opps on error Int1 and 2.
+            string hexLiteral = System.Text.Encoding.ASCII.GetString(errorCode, 0, 1) + System.Text.Encoding.ASCII.GetString(errorCode, 1, 1);
+            string hexLiteral2 = System.Text.Encoding.ASCII.GetString(errorCode, 3, 1) + System.Text.Encoding.ASCII.GetString(errorCode, 4, 1);
+            int errorInt1 = Convert.ToInt32(hexLiteral, 16);
+            int errorInt2 = Convert.ToInt32(hexLiteral2, 16);
+                            
+            // This is just using bytes based... 
+            int DTC1Check = (errorCode[0] >> 2) & 0x3;
 
             if (DTC1Check == 0)
                 DTC1 = "P";
@@ -827,16 +847,16 @@ namespace vConnect
             else if (DTC1Check == 3)
                 DTC1 = "U";
 
-            int DTC2Check = (errorCode[0] >> 4) & 0x3;
+            int DTC2Check = errorCode[0] & 0x3;
             DTC2 = DTC2Check.ToString();
 
-            int DTC3Check = errorCode[0] & 0xF;
+            int DTC3Check = errorCode[1] & 0xF;
             DTC3 = DTC3Check.ToString();
 
-            int DTC4Check = (errorCode[1] >> 4) & 0xF;
+            int DTC4Check = errorCode[3] & 0xF;
             DTC4 = DTC4Check.ToString();
 
-            int DTC5Check = errorCode[1] & 0xF;
+            int DTC5Check = errorCode[4] & 0xF;
             DTC5 = DTC5Check.ToString();
 
             errorString = DTC1 + DTC2 + DTC3 + DTC4 + DTC5;

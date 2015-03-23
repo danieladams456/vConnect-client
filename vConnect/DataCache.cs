@@ -83,7 +83,7 @@ namespace vConnect
             */
             string webAddress = null;
 
-            MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+            MessageBox.Show(jsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             // Create the web address to connect to
            
             webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber + "/" + type;
