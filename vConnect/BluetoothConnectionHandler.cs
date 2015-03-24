@@ -29,25 +29,25 @@ namespace vConnect
 
         private string deviceID = "";                   // Name of the BT device that is connected. 
         private bool bTConnectionStatus = false;        // Keeps track of whether or not any BT 
-                                                        //      connection is currently ongoing.
+        //      connection is currently ongoing.
         private string errorMessageToUI = "";           // Error Message to be used.
         private BluetoothAddress bluetoothAddress;      // Class object that contains formatted BT address.
         private BluetoothEndPoint endpoint;             // Class object that contains data for BT endpoint.
         private Guid serviceClass;                      // Process ID used for BT connection.
         private int connectLoop = 0;                    // Integer used to keep track of automatic 
-                                                        //      reconnect attempts. 
+        //      reconnect attempts. 
         private BluetoothDeviceInfo deviceInfo = null;
         private BluetoothClient client = null;          // Class object that contains client info.
 
         // can keep this static for our purposes, but should probably implement 
         // a method for user specified PIN just in case.
-        private const string PIN = "683752";
+        private string pIN = "0";
 
         // Number of times vConnect with attempt to connect to the application. 
         private int connectionAttempts = 4;
 
-        
- 
+
+
         /// <summary>
         /// This constructor exists to ensure that the application is running on a computer with a Bluetooth stack
         ///     supported by 32Feet, the Bluetooth Library used by this application. If a supported stack is not found,
@@ -66,15 +66,15 @@ namespace vConnect
             {
                 // Write the error to the log.
                 Form1.LogMessageToFile("Bluetooth Failure", "The application does not support the client's Bluetooth Stack.");
-                
+
                 // Inform the user why the application will not run
-                MessageBox.Show("vConnect does not support the client's Bluetooth Stack.\n\nConsult the documentation for supported ones.","Quitting");
+                MessageBox.Show("vConnect does not support the client's Bluetooth Stack.\n\nConsult the documentation for supported ones.", "Quitting");
 
                 // Exit the application with a (1) for error.
                 Environment.Exit(1);
             }
         }
-            
+
 
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace vConnect
         /// False - If connection is not established. 
         /// </returns>
         public bool EstablishBTConnection()
-        { 
+        {
             // Close connection if already established. 
             // Not sure if we want to try and auto-connect to previous. 
             if (client.Connected)
@@ -95,12 +95,12 @@ namespace vConnect
                 return false;
             }
 
-//            if (deviceID != "CBT." || deviceID != "OBDII" || deviceID != "OBDLink LX" || true == true)
- //           {
-  //              MessageBox.Show("ERROR: attempted to connect to a non-OBDII device");
-   //             deviceID = null;
-    //            return false;
-     //       }
+            //            if (deviceID != "CBT." || deviceID != "OBDII" || deviceID != "OBDLink LX" || true == true)
+            //           {
+            //              MessageBox.Show("ERROR: attempted to connect to a non-OBDII device");
+            //             deviceID = null;
+            //            return false;
+            //       }
 
             client = new BluetoothClient();
             // Initialize serviceClass and endpoint.
@@ -108,8 +108,7 @@ namespace vConnect
             endpoint = new BluetoothEndPoint(bluetoothAddress, serviceClass);
 
             // Set the PIN to be used in the connection attempt.
-            client.SetPin(PIN);
-
+            client.SetPin(pIN);
             // Tries to connect, catches exception is connection fails,
             // and then will try to connect seven more times before giving it up.
             try { client.Connect(endpoint); }
@@ -130,17 +129,17 @@ namespace vConnect
                     Form1.LogMessageToFile("BT Connection ERROR", msg);
                 }
             }
-           
+
             // If connection is established, set the check  bool value to true, and save the OBDII device's
             // Name and BT address. 
             if (client.Connected)
             {
                 bTConnectionStatus = true;
-                Properties.Settings.Default.BTDeviceName = deviceID;
+                //Properties.Settings.Default.BTDeviceName = deviceID;
                 Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
                 Properties.Settings.Default.Save();
                 connectLoop = 0;
-                return true;     
+                return true;
             }
 
             return false;
@@ -208,7 +207,7 @@ namespace vConnect
         public BluetoothAddress BluetoothAddress { get { return bluetoothAddress; } set { bluetoothAddress = value; } }
         public BluetoothClient Client { get { return client; } set { client = value; } }
         public BluetoothDeviceInfo DeviceInfo { get { return deviceInfo; } set { deviceInfo = value; } }
-
+        public string PIN { get { return pIN; } set { pIN = value; } }
 
     }
 }

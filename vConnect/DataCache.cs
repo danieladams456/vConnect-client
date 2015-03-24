@@ -82,10 +82,8 @@ namespace vConnect
              *  a response of 200. The status code should pop up in a message box.
             */
             string webAddress = null;
-
-            MessageBox.Show(jsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+        //    MessageBox.Show(jsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             // Create the web address to connect to
-           
             webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber + "/" + type;
 
             // Create the web request with Json/Post attributes and given address
@@ -106,13 +104,19 @@ namespace vConnect
                     // Get web response (most importantly, status code)
                     var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
                     int statusCode = (int)httpResponse.StatusCode;
-
-                    MessageBox.Show("Status Code: " + statusCode.ToString());
-
+                    string test = Convert.ToString(statusCode);
                     if (statusCode == 204)
+                    {
+                        if (type == "alert")
+                            MessageBox.Show("Error codes successfully sent.");
+                        else
+                            MessageBox.Show("PID codes successfully sent.");
+
                         cache.Clear();
+
+                    }
                     else
-                        MessageBox.Show("didnt like the codes");
+                        MessageBox.Show("Error, sending failed.");
                     // If the web response was anything except 200, then problem. Handle it.
                     //if (statusCode!=200)
                     //{

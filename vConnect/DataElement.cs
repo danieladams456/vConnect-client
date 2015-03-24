@@ -96,14 +96,13 @@ namespace vConnect
                 // Initialize the read/write stream.
                 Stream peerStream = BTConnection.Client.GetStream();
                 // Flush out any intro message.
-                peerStream.Flush();
-                MessageBox.Show(name);
+           //     peerStream.Flush();
                 // If this is the vin data element, then do the following reads in order to get all 
                 // of the bytes relating to the VIN.
-                if (name == "VIN" && true == false)
+             //   MessageBox.Show(name);
+                if (name == "VIN")
                 {
                     writeString = "09" + ObdPID + "\r"; // Write string for VIN.
-
                     byte[] vin1 = new byte[50]; // Byte arrays to read in VIN.
                     byte[] vin2 = new byte[50];
                     byte[] vin3 = new byte[50];
@@ -117,23 +116,21 @@ namespace vConnect
                         peerStream.Write(writeCode, 0, writeCode.Length);
 
                         // Must retrieve the VIN in three different reads. 
-                        System.Threading.Thread.Sleep(1000);
+                        System.Threading.Thread.Sleep(2000);
                         if (!Form1.pollingData)
                             return false;
                         peerStream.Read(vin1, 0, vin1.Length);
-                        MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin1));
-
-                        System.Threading.Thread.Sleep(1000);
+                  //      MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin1));
+                        System.Threading.Thread.Sleep(2000);
                         if (!Form1.pollingData)
                             return false;
                         peerStream.Read(vin2, 0, vin2.Length);
-                        //MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin2));
 
-                        System.Threading.Thread.Sleep(1000);
+                        System.Threading.Thread.Sleep(2000);
                         if (!Form1.pollingData)
                             return false;
                         peerStream.Read(vin3, 0, vin3.Length);
-                        peerStream.Close();
+                      //  peerStream.Close();
                     }
 
                     catch (Exception ex)
@@ -161,6 +158,7 @@ namespace vConnect
                     valueToSend = Regex.Replace(valueToSend, @"\r", "");
                     valueToSend = Regex.Replace(valueToSend, @">", "");
                     valueToSend = Regex.Replace(valueToSend, @"\?", "");
+                    valueToSend = Regex.Replace(valueToSend, @"BUS INIT: \.\.\.OK", "");
 
                     valueToSend = Regex.Replace(valueToSend, @"\0", "");
                     valueToSend = Regex.Replace(valueToSend, @"\.", "");
@@ -208,9 +206,6 @@ namespace vConnect
 
                 // If the data element is for something other than the VIN, then use the following code
                 // to poll for data.
-                else if (name == "VIN")
-                    //valueToSend = "Not supported";
-                    valueToSend = "1G2NW12E43C174485";
                 else
                 {
                     writeString = "01" + obdPID + "\r";
@@ -221,13 +216,11 @@ namespace vConnect
                         byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
                         peerStream.Write(writeCode, 0, writeCode.Length);
                         // Wait 10 seconds for the OBDII module to process the code request
-                        System.Threading.Thread.Sleep(1000);
+                        System.Threading.Thread.Sleep(2000);
 
                         // Read the OBDII code data from the OBDII module.
                         peerStream.Read(returnData, 0, returnData.Length);
-                        peerStream.Close();
-                        MessageBox.Show(System.Text.Encoding.ASCII.GetString(returnData));
-                        MessageBox.Show("Character before input string: " + System.Text.Encoding.ASCII.GetString(returnData, 10, 1));
+                        //peerStream.Close();
                     }
 
 
@@ -235,15 +228,15 @@ namespace vConnect
                     // If connection is true, recall RequestDataFromCar(), starting the process over.
                     catch (Exception ex)
                     {
-                        if (BTConnection.EstablishBTConnection())
+                       // if (BTConnection.EstablishBTConnection())
                             RequestDataFromCar();
-                        else
-                        {
-                            var msg = "Lost BT connection with Device. ERROR: " + ex;
+                       // else
+                      //  {
+                            var msg = "Lost BT connection with Device. ERROR DATA ELEM: " + ex;
                             MessageBox.Show(msg);
                             Form1.LogMessageToFile("BT Connection Error", msg);
                             return false;
-                        }
+                       // }
 
                     }
 
@@ -342,7 +335,6 @@ namespace vConnect
 
                 }
             }
-         //   MessageBox.Show("Value to send: " + ValueToSend);
             return;
         }
 

@@ -70,5 +70,17 @@ namespace vConnect.Properties {
                 this["ServerPort"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string PIN {
+            get {
+                return ((string)(this["PIN"]));
+            }
+            set {
+                this["PIN"] = value;
+            }
+        }
     }
 }

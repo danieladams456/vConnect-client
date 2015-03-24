@@ -53,6 +53,7 @@
             this.update_schema_button = new System.Windows.Forms.Button();
             this.view_error_log_button = new System.Windows.Forms.Button();
             this.title_label = new System.Windows.Forms.Label();
+            this.Set_PIN_Button = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // trayIcon
@@ -242,6 +243,7 @@
             this.update_schema_button.TabIndex = 32;
             this.update_schema_button.Text = "Update Schema";
             this.update_schema_button.UseVisualStyleBackColor = true;
+            this.update_schema_button.Click += new System.EventHandler(this.update_schema_button_Click_1);
             // 
             // view_error_log_button
             // 
@@ -264,11 +266,22 @@
             this.title_label.TabIndex = 34;
             this.title_label.Text = "vConnect";
             // 
+            // Set_PIN_Button
+            // 
+            this.Set_PIN_Button.Location = new System.Drawing.Point(254, 168);
+            this.Set_PIN_Button.Name = "Set_PIN_Button";
+            this.Set_PIN_Button.Size = new System.Drawing.Size(190, 23);
+            this.Set_PIN_Button.TabIndex = 35;
+            this.Set_PIN_Button.Text = "Set Pin";
+            this.Set_PIN_Button.UseVisualStyleBackColor = true;
+            this.Set_PIN_Button.Click += new System.EventHandler(this.Set_PIN_Button_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(648, 244);
+            this.Controls.Add(this.Set_PIN_Button);
             this.Controls.Add(this.title_label);
             this.Controls.Add(this.view_error_log_button);
             this.Controls.Add(this.update_schema_button);
@@ -317,6 +330,7 @@
         private System.Windows.Forms.Button update_schema_button;
         private System.Windows.Forms.Button view_error_log_button;
         private System.Windows.Forms.Label title_label;
+        private System.Windows.Forms.Button Set_PIN_Button;
 
     }
 }

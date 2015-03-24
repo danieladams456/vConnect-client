@@ -58,7 +58,7 @@ namespace vConnect
         static public bool pollingData = false;
 
         // Constant that determines how often the data polling Timer will run. (In miliseconds)
-        const int POLLTIME = 120000;
+        const int POLLTIME = 60000;
 
 
 
@@ -70,7 +70,7 @@ namespace vConnect
             this.Visible = false;
             this.ShowInTaskbar = false;
             InitializeComponent();
-           // this.WindowState = FormWindowState.Minimized;
+            // this.WindowState = FormWindowState.Minimized;
 
             // Initialize the dataCache.
             cache = new DataCache(serverConnection);
@@ -82,19 +82,11 @@ namespace vConnect
             bool deviceDetect = false;
             bool serverDetect = false;
 
-            // Current server for testing. 
-          //  serverConnection.PortNumber = 80;
-          //  serverConnection.IPAddress = "vconnect-danieladams456.rhcloud.com";
-          //  server_IP.Text = "vconnect-danieladams456.rhcloud.com";
-          //  Properties.Settings.Default.ServerIP = "vconnect-danieladams456.rhcloud.com";
-          //  Properties.Settings.Default.ServerPort = "80";
-           // Properties.Settings.Default.Save();
-           // port_number.Text = "80";
-           // serverConnection.ServerConnectionStatus = true;
 
-
+            BTConnection.PIN = Properties.Settings.Default.PIN;
+            
             // If there is a saved BT Address, attempt to connect with the device with that address.
-            if (Properties.Settings.Default.BTAddress != "")
+            if (Properties.Settings.Default.BTAddress != "" && Properties.Settings.Default.PIN != "")
             {
                 // Grabs the saved BT address from the settings file.
                 BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
@@ -103,10 +95,10 @@ namespace vConnect
                 // save the Device's ID, indicated connection status on the GUI.
                 if (BTConnection.EstablishBTConnection())
                 {
-                    MessageBox.Show("Connected from saved BT.");
                     BTConnection.DeviceID = Properties.Settings.Default.BTDeviceName;
                     BT_ID.Text = Properties.Settings.Default.BTDeviceName;
                     device_Status_Label.Text = "Connected";
+
                     deviceDetect = true;
                 }
                 else
@@ -120,7 +112,7 @@ namespace vConnect
             // If no connection was established with the device with the saved BT Address, then
             // check all detectable BT devices with a Device Name corresponding with an OBDII module,
             // and attempt to connect with them. 
-            else
+         /*   else
             {
                 // Array of all detected BT devices.
                 BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
@@ -145,7 +137,6 @@ namespace vConnect
                         // settings file, and change details on the GUI accordingly. 
                         if (BTConnection.EstablishBTConnection())
                         {
-                            MessageBox.Show("COnnected From auto search.");
                             BTConnection.DeviceInfo = peers[peerCounter];
                             BT_ID.Text = peers[peerCounter].DeviceName;
                             BTConnection.DeviceID = peers[peerCounter].DeviceName;
@@ -161,7 +152,7 @@ namespace vConnect
                 }
 
             }
-
+            */
             // If no OBDII connection is established, then print to the screen stating this fact, and then
             // load the GUI. 
             if (deviceDetect == false)
@@ -173,7 +164,6 @@ namespace vConnect
                 BTConnection.DeviceID = null;
                 BTConnection.DeviceInfo = null;
                 device_Status_Label.Text = "Disconnected";
-                MessageBox.Show("No OBDII devices were connected to automatically.");
             }
 
             // Checks if any server connection data is saved in the settings file. If so, attempts to see if connection
@@ -185,9 +175,8 @@ namespace vConnect
                 serverConnection.IPAddress = Properties.Settings.Default.ServerIP;
 
                 // If the server is available, switch the bool value to save that info. 
-                if (true == true)//serverConnection.CheckServerConnection())
+                if (serverConnection.CheckServerConnection())
                 {
-                    MessageBox.Show("Saved server connection successful.");
                     serverDetect = true;
                     port_number.Text = serverConnection.PortNumber.ToString();
                     server_IP.Text = serverConnection.IPAddress;
@@ -213,9 +202,16 @@ namespace vConnect
             // vehicle data. 
             if (deviceDetect && serverDetect)
             {
-                MessageBox.Show("Beginning auto poll now."); 
+                MessageBox.Show("Beginning auto poll now.");
                 schema = SchemaUpdate();
-                pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
+                if (schema != "NOT FOUND")
+                    pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
+                else
+                {
+                    MessageBox.Show("Error: No Schema detected, need to update schema.");
+                    LogMessageToFile("Start Click", "Schema file was empty.");
+
+                }
             }
             // If connections have not been established to the OBDII device and server, then initialize the loop to 
             // poll data, but do not start it. 
@@ -441,6 +437,7 @@ namespace vConnect
                 Stream stream = client.OpenRead(address);
                 StreamReader reader = new StreamReader(stream);
                 String json = reader.ReadToEnd();
+                MessageBox.Show(json);
                 File.WriteAllText("schema.json", json);
             }
             catch
@@ -460,7 +457,6 @@ namespace vConnect
         {
             if (serverConnection.CheckServerConnection())
             {
-                MessageBox.Show("Server is good!.");
                 Properties.Settings.Default.ServerIP = serverConnection.IPAddress;
                 Properties.Settings.Default.ServerPort = serverConnection.PortNumber.ToString();
                 Properties.Settings.Default.Save();
@@ -474,7 +470,14 @@ namespace vConnect
             else if (BTConnection.BTConnectionStatus && serverConnection.CheckServerConnection())
             {
                 schema = SchemaUpdate();
-                pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
+                if (schema != "NOT FOUND")
+                    pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
+                else
+                {
+                    MessageBox.Show("Error: No Schema detected, need to update schema.");
+                    LogMessageToFile("Start Click", "Schema file was empty.");
+                    
+                }
             }
             else
             {
@@ -504,7 +507,7 @@ namespace vConnect
             {
                 pollingData = false;
                 pollData.Change(Timeout.Infinite, Timeout.Infinite);
-                System.Threading.Thread.Sleep(3000);
+                System.Threading.Thread.Sleep(4000);
                 pollData = null;
             }
         }
@@ -564,23 +567,23 @@ namespace vConnect
             //  to be sent to the server.
             Dictionary<string, object> dictionary = new Dictionary<string, object>();
             // Create the "shell" of empty elements from the schema.
-             elemList = CreateElementsFromSchema(schema);
+            elemList = CreateElementsFromSchema(schema);
             // Fill the contents of the elements with the data from the car
             if (!pollingData)
                 return;
-             elemList = GetElementData(elemList);
-             if (elemList == null)
-                 return;
+            elemList = GetElementData(elemList);
+            if (elemList == null)
+                return;
             // Create a dictionary out of the list of elements.
             dictionary = CreateDictionary(elemList);
-           
+
             // Add the dictionary containing the data points to the cache.
-             cache.AddElementToCache(dictionary);
+            cache.AddElementToCache(dictionary);
 
             if (!pollingData)
                 return;
             CheckForErrorCodes(elemList);
-               cache.SendToServer(cache.JsonString, "data");
+            cache.SendToServer(cache.JsonString, "data");
         }
 
 
@@ -737,7 +740,9 @@ namespace vConnect
         {
             byte[] errorCode = new byte[60];
             string errorString = "";
-            if (BTConnection.Client.Connected || true == true)
+            bool exit = false;
+
+            try
             {
                 if (!pollingData)
                     return false;
@@ -750,65 +755,76 @@ namespace vConnect
                     peerStream.Write(writeCode, 0, writeCode.Length);
                     System.Threading.Thread.Sleep(5000);
                     peerStream.Read(errorCode, 0, errorCode.Length);
-                    MessageBox.Show("ERROR CODES: " + System.Text.Encoding.ASCII.GetString(errorCode));
                     peerStream.Close();
                 }
 
                 catch (Exception ex)
                 {
-                    if (BTConnection.EstablishBTConnection())
-                        CheckForErrorCodes(elemList);
-                    else
-                    {
-                        var msg = "failed to connect to BT Device. ERROR: " + ex;
+                    //if (BTConnection.EstablishBTConnection())
+                     //   CheckForErrorCodes(elemList);
+                    //else
+                   // {
+                        var msg = "failed to connect to BT Device. ERROR CODES: " + ex;
                         MessageBox.Show(msg);
                         LogMessageToFile("Checking for error codes error", msg);
-                        return false;
-                    }
+                        exit = true;
+                  //  }
 
                 }
-                if (!pollingData)
+                if (!pollingData || exit)
                     return false;
-                byte[] subErrorCode = new byte[4];
+                byte[] subErrorCode = new byte[5];
                 int counter = 7;
                 bool loopExit = false;
-                while (!loopExit)
+                string toSend = null;
+
+                if (!System.Text.Encoding.ASCII.GetString(errorCode).Contains("NO DATA"))
                 {
-                  //  MessageBox.Show("1st byte: " + System.Text.Encoding.ASCII.GetString(errorCode, 26, 1));
-                    subErrorCode = errorCode.Skip(counter).Take(5).ToArray();
 
-                    MessageBox.Show("SubCode: " + System.Text.Encoding.ASCII.GetString(subErrorCode));
-                    errorString = parseErrorCode(subErrorCode);
-                    string toSend = null;
 
-                    if (errorString == "P0000")
-                        loopExit = true;
-                    else
+
+                    while (!loopExit)
                     {
-                        toSend = "[{\"VIN\":\"" + elemList[1].ValueToSend + "\",\"timestamp\":\"" + DateTime.Now.ToString()
-                            + "\",\"trouble_code\":\"" + errorString + "\"}]";
+                        subErrorCode = errorCode.Skip(counter).Take(5).ToArray();
 
-                        cache.SendToServer(toSend, "alert");
-                    }
-                    counter += 6;
-                    if ((counter - 3) % 22 == 0)
-                    {
-                        if (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) == "\r" && System.Text.Encoding.ASCII.GetString(errorCode, 1 + counter, 1) == "\r")
+                        errorString = parseErrorCode(subErrorCode);
+
+
+                        if (errorString == "P0000")
                             loopExit = true;
                         else
-                            counter += 4;
+                        {
+                            toSend = "[{\"VIN\":\"" + elemList[1].ValueToSend + "\",\"timestamp\":\"" + DateTime.Now.ToString()
+                                + "\",\"trouble_code\":\"" + errorString + "\"}]";
+
+                            // cache.SendToServer(toSend, "alert");
+                        }
+                        counter += 6;
+                        if ((counter - 3) % 22 == 0)
+                        {
+                            if (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) == "\r" && System.Text.Encoding.ASCII.GetString(errorCode, 1 + counter, 1) == "\r")
+                                loopExit = true;
+                            else
+                                counter += 4;
+                        }
                     }
+                    cache.SendToServer(toSend, "alert");
+
+
+                }
+                else
+                {
+                    MessageBox.Show("No error codes.");
+                    return false;
                 }
 
 
             }
-            else
+            catch (Exception e)
             {
                 MessageBox.Show("Cannot Check for Error Codes, no BT connection.");
-                return false;
+                LogMessageToFile("Error code check", "Lost BT connection: " + e.Message);
             }
-
-
 
             return true;
         }
@@ -828,13 +844,8 @@ namespace vConnect
             string DTC3 = "";
             string DTC4 = "";
             string DTC5 = "";
-            MessageBox.Show(System.Text.Encoding.ASCII.GetString(errorCode));
-            // This will be using the method used in dataElement, where I would do bitwise opps on error Int1 and 2.
-            string hexLiteral = System.Text.Encoding.ASCII.GetString(errorCode, 0, 1) + System.Text.Encoding.ASCII.GetString(errorCode, 1, 1);
-            string hexLiteral2 = System.Text.Encoding.ASCII.GetString(errorCode, 3, 1) + System.Text.Encoding.ASCII.GetString(errorCode, 4, 1);
-            int errorInt1 = Convert.ToInt32(hexLiteral, 16);
-            int errorInt2 = Convert.ToInt32(hexLiteral2, 16);
-                            
+
+
             // This is just using bytes based... 
             int DTC1Check = (errorCode[0] >> 2) & 0x3;
 
@@ -861,7 +872,6 @@ namespace vConnect
 
             errorString = DTC1 + DTC2 + DTC3 + DTC4 + DTC5;
 
-            MessageBox.Show("Error String: " + errorString);
             return errorString;
         }
 
@@ -965,6 +975,49 @@ namespace vConnect
             {
                 // Close the stream
                 writer.Close();
+            }
+        }
+
+        private void Set_PIN_Button_Click(object sender, EventArgs e)
+        {
+            string value = null;
+            if (InputBox("New PIN", "New PIN:", ref value) == DialogResult.OK)
+            {
+                try
+                {
+                    int test = Convert.ToInt32(value);
+                    BTConnection.PIN = value;
+                    Properties.Settings.Default.PIN = value;
+                    Properties.Settings.Default.Save();
+
+                }
+                catch
+                {
+                    MessageBox.Show("Must insert numerical value for PIN.");
+
+                }
+
+            }
+
+        }
+
+        private void update_schema_button_Click_1(object sender, EventArgs e)
+        {
+            try
+            {
+                // Address to request schema from.
+                string address = "http://vconnect-danieladams456.rhcloud.com/data/schema";
+                // Initialize the connection the address above.
+                WebClient client = new WebClient();
+                Stream stream = client.OpenRead(address);
+                StreamReader reader = new StreamReader(stream);
+                String json = reader.ReadToEnd();
+                File.WriteAllText("schema.json", json);
+            }
+            catch
+            {
+                MessageBox.Show("ERROR: Could not retrieve schema.");
+                LogMessageToFile("Schema Retrieval", "Could not retrieve Schema from server.");
             }
         }
     }
