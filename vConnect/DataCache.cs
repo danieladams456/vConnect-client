@@ -124,8 +124,8 @@ namespace vConnect
                         // If the web server returned an unexpceted response code or failure,
                         //  write the current cache to disk, then clear it.
                         MessageBox.Show("Error, sending failed.");
-                        WriteToDisk();
                         Form1.LogMessageToFile("Server Response Error", "The server returned a " + statusCode.ToString() + " code instead of a 204");
+                        WriteToDisk();
                         cache.Clear();
                     }   
                 }
@@ -134,10 +134,10 @@ namespace vConnect
             {
                 // If the web server raised an exception, write the cached data to disk, then clear it.
                 MessageBox.Show("Could not connect to the server..."+ e.Message, "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
-                WriteToDisk();
                 Form1.LogMessageToFile("Server Connect Error", e.ToString());
+                WriteToDisk();
+                cache.Clear();
             }
-
 
 
             // MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
@@ -170,6 +170,8 @@ namespace vConnect
         /// </summary>
         public void ReadFromDisk()
         {
+            // Temporary 'cache's to be used for creating a new cache containing the contents
+            //  from the existing cache as well as the data read from the file.
             List<Dictionary<string, object>> readCache = new List<Dictionary<string, object>>();
             List<Dictionary<string, object>> tempCache = new List<Dictionary<string, object>>();
             string jsonFromFile = "";
