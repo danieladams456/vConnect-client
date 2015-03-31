@@ -33,6 +33,9 @@ namespace vConnect
         List<Dictionary<string, object>> cache = new List<Dictionary<string, object>>();
         ServerConnectionHandler serverConnection;
 
+        // File to write the cache to if necessary.
+        const string CACHEFILE = "jsonCache.txt";
+
         /// <summary>
         /// Constructor for initializing the server connection.
         /// </summary>
@@ -70,19 +73,20 @@ namespace vConnect
         /// </returns>
         public bool SendToServer(string jsonString, string type)
         {
-            /*
-             * In order to test this without needing the actual server runnning, turn on
-             *  Kali in a VM. Make sure that it is connected on the virtual adapter and you
-             *  can ping its IP. Set up a netcat listener with 
-             *  $ echo -e "HTTP/1.1 200 OK\r\n" | nc -l -p 9999 -vvv
-             *  where 9999 is whatever port number you wish. Configure that port number and
-             *  your VM's ip in the settings for the app before you attempt to send the data.
-             *  
-             * Check and make sure the listener received the JSON and that the app received 
-             *  a response of 200. The status code should pop up in a message box.
-            */
+            // Check if the cache-file (used for storing cached data that failed to send)
+            //  contains any data. If it does, then read that data.
+            try
+            {
+                if (new FileInfo(CACHEFILE).Length != 0)
+                    ReadFromDisk();
+            }
+            catch (Exception e)
+            {
+                Form1.LogMessageToFile("Cache File Info Error", e.ToString());
+            }
+
             string webAddress = null;
-        //    MessageBox.Show(jsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+            // MessageBox.Show(jsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             // Create the web address to connect to
             webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber + "/" + type;
 
@@ -115,18 +119,22 @@ namespace vConnect
                         cache.Clear();
 
                     }
-                    else
+                    else 
+                    {
+                        // If the web server returned an unexpceted response code or failure,
+                        //  write the current cache to disk, then clear it.
                         MessageBox.Show("Error, sending failed.");
-                    // If the web response was anything except 200, then problem. Handle it.
-                    //if (statusCode!=200)
-                    //{
-                    // Handle Bad Error Request Here!
-                    //}
+                        WriteToDisk();
+                        Form1.LogMessageToFile("Server Response Error", "The server returned a " + statusCode.ToString() + " code instead of a 204");
+                        cache.Clear();
+                    }   
                 }
             }
             catch (WebException e)
             {
+                // If the web server raised an exception, write the cached data to disk, then clear it.
                 MessageBox.Show("Could not connect to the server..."+ e.Message, "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                WriteToDisk();
                 Form1.LogMessageToFile("Server Connect Error", e.ToString());
             }
 
@@ -141,12 +149,78 @@ namespace vConnect
         /// </summary>
         public void WriteToDisk()
         {
-            // string toWrite = "C:\\Users\\Charlie\\Desktop\\jsonCache.txt";
-            // System.IO.File.WriteAllText(@toWrite, JsonString);
+            try 
+            {
+                // This function creates a new file and writes to it.
+                //  If the file already exists, it is overwritten.
+                File.WriteAllText(CACHEFILE, JsonString);
+            }
+            catch (IOException e)
+            {
+                // If the write to file fails, log the error.
+                Form1.LogMessageToFile("Cache File Write Error", e.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Read the contents of the cache file to the List(Dict)
+        /// 
+        /// Note: After this method finishes, the List(Dict) object "cache" will contain
+        ///     its original contents with the contents of the cache-file prepended to it. 
+        /// </summary>
+        public void ReadFromDisk()
+        {
+            List<Dictionary<string, object>> readCache = new List<Dictionary<string, object>>();
+            List<Dictionary<string, object>> tempCache = new List<Dictionary<string, object>>();
+            string jsonFromFile = "";
+            try
+            {
+                // This function creates a new file and writes to it.
+                //  If the file already exists, it is overwritten.
+                jsonFromFile = File.ReadAllText(CACHEFILE);
+            }
+            catch (IOException e)
+            {
+                // If the write to file fails, log the error.
+                Form1.LogMessageToFile("Cache File Read Error", e.ToString());
+            }
+
+            try
+            {
+                // Create the new cache List<Dict> from the file contents and place it in
+                //  readCache, a holding place.
+                readCache = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(jsonFromFile);
+            }
+            catch (JsonSerializationException e)
+            {
+                // If the Json -> List<Dictionary<string,object>> fails, catch it.
+                Form1.LogMessageToFile("Cache File Read Error", "Malformed JSON in file:" + e.ToString());
+            }
+
+            // Create a temporary copy of the existing cache.
+            tempCache = cache;
+
+            // Re-create a List<dict> of the length of the existing cache + the cache read from file
+            cache = new List<Dictionary<string, object>>(readCache.Count + tempCache.Count);
+
+            // Re-populate the cache with the contents read from file and the original cache appended to it.
+            cache.AddRange(readCache);
+            cache.AddRange(tempCache);
+
+            // Empty the cache-file contents.
+            try
+            {
+                File.WriteAllText(CACHEFILE, string.Empty);
+            }
+            catch (IOException e)
+            {
+                // If the write to file fails, log the error.
+                Form1.LogMessageToFile("Cache File Empty Error", e.ToString());
+            }
         }
 
         // C# Accessor Method
-        public string JsonString { get { return JsonConvert.SerializeObject(cache); } }
+        public string JsonString { get { return JsonConvert.SerializeObject(cache); } set { JsonString = value; } }
 
     }
 }

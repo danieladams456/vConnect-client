@@ -566,14 +566,17 @@ namespace vConnect
             // Create a dictionary of string-object pairs. This will contain the key-value pairs
             //  to be sent to the server.
             Dictionary<string, object> dictionary = new Dictionary<string, object>();
+
             // Create the "shell" of empty elements from the schema.
             elemList = CreateElementsFromSchema(schema);
+
             // Fill the contents of the elements with the data from the car
             if (!pollingData)
                 return;
             elemList = GetElementData(elemList);
             if (elemList == null)
                 return;
+            
             // Create a dictionary out of the list of elements.
             dictionary = CreateDictionary(elemList);
 
