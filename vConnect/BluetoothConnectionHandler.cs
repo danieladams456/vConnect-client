@@ -118,6 +118,7 @@ namespace vConnect
                 if (connectLoop < connectionAttempts)
                 {
                     connectLoop++;
+                    MessageBox.Show("Reconnect attempt in BTConnection handler");
                     EstablishBTConnection();
                 }
                 // If connection cannot be established after seven attempts, send Windows Error Message,
@@ -127,6 +128,7 @@ namespace vConnect
                     var msg = "failed to connect to BT Device. ERROR:\n\n " + ex;
                     MessageBox.Show(msg);
                     Form1.LogMessageToFile("BT Connection ERROR", msg);
+                    throw ex;
                 }
             }
 
@@ -135,7 +137,7 @@ namespace vConnect
             if (client.Connected)
             {
                 bTConnectionStatus = true;
-                //Properties.Settings.Default.BTDeviceName = deviceID;
+                MessageBox.Show("Connected!");
                 Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
                 Properties.Settings.Default.Save();
                 connectLoop = 0;
@@ -208,6 +210,6 @@ namespace vConnect
         public BluetoothClient Client { get { return client; } set { client = value; } }
         public BluetoothDeviceInfo DeviceInfo { get { return deviceInfo; } set { deviceInfo = value; } }
         public string PIN { get { return pIN; } set { pIN = value; } }
-
+        public bool ConnectionStatus { get { return client.Connected;  } }
     }
 }

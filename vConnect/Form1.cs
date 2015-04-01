@@ -70,7 +70,7 @@ namespace vConnect
             this.Visible = false;
             this.ShowInTaskbar = false;
             InitializeComponent();
-            // this.WindowState = FormWindowState.Minimized;
+            this.WindowState = FormWindowState.Minimized;
 
             // Initialize the dataCache.
             cache = new DataCache(serverConnection);
@@ -361,40 +361,45 @@ namespace vConnect
         /// <param name="e"></param>
         private void browse_button_Click(object sender, EventArgs e)
         {
-            var msg = "Please disconnect current OBDII connection " +
-                "before connecting to a new OBDII device";
-
-            // If there is already an established connection with an OBDII device, then
-            // prompt the user to disconnect with it before attempting to browse for a new device.
-            if (BTConnection.Client.Connected)
-                MessageBox.Show(msg);
-
-            // Open a dialog box that will show all detectable BT Devices. Selecting a device 
-            // will save its name and address. 
+            if (pollingData)
+                MessageBox.Show("Must stop polling data before changing OBDII device.");
             else
             {
-                var dlg = new SelectBluetoothDeviceDialog();
-                DialogResult result = dlg.ShowDialog(this);
-                if (result != DialogResult.OK)
-                {
-                    return;
-                }
-                BluetoothDeviceInfo device = dlg.SelectedDevice;
-                BluetoothAddress BTaddr = device.DeviceAddress;
-                BTConnection.BluetoothAddress = BTaddr;
-                BTConnection.DeviceID = device.DeviceName;
+                var msg = "Please disconnect current OBDII connection " +
+                    "before connecting to a new OBDII device";
 
-                // If connection is successfully esablished, save the device's name and address to the 
-                // settings file, and update the device status on the GUI to "connected.
-                if (BTConnection.EstablishBTConnection())
+                // If there is already an established connection with an OBDII device, then
+                // prompt the user to disconnect with it before attempting to browse for a new device.
+                if (BTConnection.Client.Connected)
+                    MessageBox.Show(msg);
+
+                // Open a dialog box that will show all detectable BT Devices. Selecting a device 
+                // will save its name and address. 
+                else
                 {
-                    device_Status_Label.Text = "Connected";
+                    var dlg = new SelectBluetoothDeviceDialog();
+                    DialogResult result = dlg.ShowDialog(this);
+                    if (result != DialogResult.OK)
+                    {
+                        return;
+                    }
+                    BluetoothDeviceInfo device = dlg.SelectedDevice;
+                    BluetoothAddress BTaddr = device.DeviceAddress;
+                    BTConnection.BluetoothAddress = BTaddr;
                     BTConnection.DeviceID = device.DeviceName;
-                    BTConnection.DeviceInfo = device;
-                    BT_ID.Text = device.DeviceName;
-                    Properties.Settings.Default.BTDeviceName = device.DeviceName;
-                    Properties.Settings.Default.BTAddress = device.DeviceAddress.ToString();
-                    Properties.Settings.Default.Save();
+
+                    // If connection is successfully esablished, save the device's name and address to the 
+                    // settings file, and update the device status on the GUI to "connected.
+                    if (BTConnection.EstablishBTConnection())
+                    {
+                        device_Status_Label.Text = "Connected";
+                        BTConnection.DeviceID = device.DeviceName;
+                        BTConnection.DeviceInfo = device;
+                        BT_ID.Text = device.DeviceName;
+                        Properties.Settings.Default.BTDeviceName = device.DeviceName;
+                        Properties.Settings.Default.BTAddress = device.DeviceAddress.ToString();
+                        Properties.Settings.Default.Save();
+                    }
                 }
             }
         }
@@ -986,44 +991,53 @@ namespace vConnect
 
         private void Set_PIN_Button_Click(object sender, EventArgs e)
         {
-            string value = null;
-            if (InputBox("New PIN", "New PIN:", ref value) == DialogResult.OK)
+            if (pollingData)
+                MessageBox.Show("Must stop polling before changing PIN");
+            else
             {
-                try
+                string value = null;
+                if (InputBox("New PIN", "New PIN:", ref value) == DialogResult.OK)
                 {
-                    int test = Convert.ToInt32(value);
-                    BTConnection.PIN = value;
-                    Properties.Settings.Default.PIN = value;
-                    Properties.Settings.Default.Save();
+                    try
+                    {
+                        int test = Convert.ToInt32(value);
+                        BTConnection.PIN = value;
+                        Properties.Settings.Default.PIN = value;
+                        Properties.Settings.Default.Save();
+
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Must insert numerical value for PIN.");
+
+                    }
 
                 }
-                catch
-                {
-                    MessageBox.Show("Must insert numerical value for PIN.");
-
-                }
-
             }
-
         }
 
         private void update_schema_button_Click_1(object sender, EventArgs e)
         {
-            try
+            if (pollingData)
+                MessageBox.Show("Must stop polling before updating schema");
+            else
             {
-                // Address to request schema from.
-                string address = "http://vconnect-danieladams456.rhcloud.com/data/schema";
-                // Initialize the connection the address above.
-                WebClient client = new WebClient();
-                Stream stream = client.OpenRead(address);
-                StreamReader reader = new StreamReader(stream);
-                String json = reader.ReadToEnd();
-                File.WriteAllText("schema.json", json);
-            }
-            catch
-            {
-                MessageBox.Show("ERROR: Could not retrieve schema.");
-                LogMessageToFile("Schema Retrieval", "Could not retrieve Schema from server.");
+                try
+                {
+                    // Address to request schema from.
+                    string address = "http://vconnect-danieladams456.rhcloud.com/data/schema";
+                    // Initialize the connection the address above.
+                    WebClient client = new WebClient();
+                    Stream stream = client.OpenRead(address);
+                    StreamReader reader = new StreamReader(stream);
+                    String json = reader.ReadToEnd();
+                    File.WriteAllText("schema.json", json);
+                }
+                catch
+                {
+                    MessageBox.Show("ERROR: Could not retrieve schema.");
+                    LogMessageToFile("Schema Retrieval", "Could not retrieve Schema from server.");
+                }
             }
         }
     }
