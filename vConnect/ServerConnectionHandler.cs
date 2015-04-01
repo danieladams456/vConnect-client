@@ -29,14 +29,14 @@ namespace vConnect
                
 
                 string webAddress = "http://" + ipAddress + ":" + portNumber + "/status";
-
+                
                 // Create the web request with Json/Post attributes and given address
                 var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
                 httpWebRequest.ContentType = "text/plain";
                 httpWebRequest.Method = "HEAD";
                 httpWebRequest.UserAgent = "vConnect";
 
-
+                MessageBox.Show("Before response part");
 
                 // Get web response (most importantly, status code)
                 var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();

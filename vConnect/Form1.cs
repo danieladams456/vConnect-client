@@ -98,7 +98,7 @@ namespace vConnect
                     BTConnection.DeviceID = Properties.Settings.Default.BTDeviceName;
                     BT_ID.Text = Properties.Settings.Default.BTDeviceName;
                     device_Status_Label.Text = "Connected";
-
+                    MessageBox.Show("Auto BT Connect!");
                     deviceDetect = true;
                 }
                 else
@@ -178,6 +178,7 @@ namespace vConnect
                 if (serverConnection.CheckServerConnection())
                 {
                     serverDetect = true;
+                    MessageBox.Show("Auto server connect!");
                     port_number.Text = serverConnection.PortNumber.ToString();
                     server_IP.Text = serverConnection.IPAddress;
                     serverConnection.ServerConnectionStatus = true;
@@ -571,6 +572,7 @@ namespace vConnect
             elemList = CreateElementsFromSchema(schema);
 
             // Fill the contents of the elements with the data from the car
+            MessageBox.Show("Polling Data");
             if (!pollingData)
                 return;
             elemList = GetElementData(elemList);
@@ -582,10 +584,11 @@ namespace vConnect
 
             // Add the dictionary containing the data points to the cache.
             cache.AddElementToCache(dictionary);
-
+            MessageBox.Show("Checkin them error codes");
             if (!pollingData)
                 return;
             CheckForErrorCodes(elemList);
+            MessageBox.Show("Sendin them codes");
             cache.SendToServer(cache.JsonString, "data");
         }
 
