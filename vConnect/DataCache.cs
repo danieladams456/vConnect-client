@@ -73,7 +73,7 @@ namespace vConnect
         /// </returns>
         public bool SendToServer(string jsonString, string type)
         {
-            MessageBox.Show(jsonString);
+          /////  MessageBox.Show(jsonString);
             // Check if the cache-file (used for storing cached data that failed to send)
             //  contains any data. If it does, then read that data.
             try
@@ -113,10 +113,12 @@ namespace vConnect
                     if (statusCode == 204)
                     {
                         if (type == "alert")
-                            MessageBox.Show("Error codes successfully sent.");
+                            ;
+                        //   MessageBox.Show("Error codes successfully sent.");
                         else
-                            MessageBox.Show("PID codes successfully sent.");
-
+                            ;
+                            //  MessageBox.Show("PID codes successfully sent.");
+                            File.WriteAllText("test.txt", jsonString + "\n\nAND IT WORKED!\n\n");
                         cache.Clear();
 
                     }

@@ -92,7 +92,7 @@ namespace vConnect
             if (client.Connected)
             {
                 MessageBox.Show("Close current BT connection before selecting another device.");
-                return false;
+                return true;
             }
 
             //            if (deviceID != "CBT." || deviceID != "OBDII" || deviceID != "OBDLink LX" || true == true)
@@ -119,7 +119,7 @@ namespace vConnect
                 {
                     connectLoop++;
                     MessageBox.Show("Reconnect attempt in BTConnection handler");
-                    EstablishBTConnection();
+                   return EstablishBTConnection();
                 }
                 // If connection cannot be established after seven attempts, send Windows Error Message,
                 // and print message to the screen.
@@ -128,7 +128,7 @@ namespace vConnect
                     var msg = "failed to connect to BT Device. ERROR:\n\n " + ex;
                     MessageBox.Show(msg);
                     Form1.LogMessageToFile("BT Connection ERROR", msg);
-                    throw ex;
+                    return false;
                 }
             }
 
@@ -136,8 +136,9 @@ namespace vConnect
             // Name and BT address. 
             if (client.Connected)
             {
+                Form1.peerStream = client.GetStream();
                 bTConnectionStatus = true;
-                MessageBox.Show("Connected!");
+            /////    MessageBox.Show("Connected!");
                 Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
                 Properties.Settings.Default.Save();
                 connectLoop = 0;
@@ -163,6 +164,7 @@ namespace vConnect
             {
                 Properties.Settings.Default.BTAddress = null;
                 Properties.Settings.Default.BTDeviceName = null;
+                Form1.peerStream.Close();
                 client.Dispose();
                 return true;
             }

@@ -56,6 +56,8 @@ namespace vConnect
         // Bool value specifying whether the data polling asychronous operation is currently
         // running or not. 
         static public bool pollingData = false;
+        static public Stream peerStream;
+
 
         // Constant that determines how often the data polling Timer will run. (In miliseconds)
         const int POLLTIME = 60000;
@@ -577,7 +579,7 @@ namespace vConnect
             elemList = CreateElementsFromSchema(schema);
 
             // Fill the contents of the elements with the data from the car
-            MessageBox.Show("Polling Data");
+        /////    MessageBox.Show("Polling Data");
             if (!pollingData)
                 return;
             elemList = GetElementData(elemList);
@@ -589,11 +591,11 @@ namespace vConnect
 
             // Add the dictionary containing the data points to the cache.
             cache.AddElementToCache(dictionary);
-            MessageBox.Show("Checkin them error codes");
+      /////      MessageBox.Show("Checkin them error codes");
             if (!pollingData)
                 return;
             CheckForErrorCodes(elemList);
-            MessageBox.Show("Sendin them codes");
+      /////      MessageBox.Show("Sendin them codes");
             cache.SendToServer(cache.JsonString, "data");
         }
 
@@ -761,7 +763,6 @@ namespace vConnect
                 try
                 {
                     byte[] writeCode = System.Text.Encoding.ASCII.GetBytes("03 \r");
-                    Stream peerStream = BTConnection.Client.GetStream();
                     peerStream.Flush();
                     peerStream.Write(writeCode, 0, writeCode.Length);
                     System.Threading.Thread.Sleep(5000);
@@ -825,7 +826,7 @@ namespace vConnect
                 }
                 else
                 {
-                    MessageBox.Show("No error codes.");
+         /////           MessageBox.Show("No error codes.");
                     return false;
                 }
 

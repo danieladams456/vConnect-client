@@ -94,12 +94,12 @@ namespace vConnect
             if (BTConnection.ConnectionStatus)
             {
                 // Initialize the read/write stream.
-                Stream peerStream = BTConnection.Client.GetStream();
+               // Stream peerStream = BTConnection.Client.GetStream();
                 // Flush out any intro message.
            //     peerStream.Flush();
                 // If this is the vin data element, then do the following reads in order to get all 
                 // of the bytes relating to the VIN.
-                MessageBox.Show(name);
+           /////     MessageBox.Show(name);
                 if (name == "VIN")
                 {
                     writeString = "09" + ObdPID + "\r"; // Write string for VIN.
@@ -113,22 +113,22 @@ namespace vConnect
                     try
                     {
                         // Write the code to the OBDII module.
-                        peerStream.Write(writeCode, 0, writeCode.Length);
+                        Form1.peerStream.Write(writeCode, 0, writeCode.Length);
 
                         // Must retrieve the VIN in three different reads. 
                         System.Threading.Thread.Sleep(2000);
                         if (!Form1.pollingData)
                             return false;
-                        peerStream.Read(vin1, 0, vin1.Length);
+                        Form1.peerStream.Read(vin1, 0, vin1.Length);
                         System.Threading.Thread.Sleep(2000);
                         if (!Form1.pollingData)
                             return false;
-                        peerStream.Read(vin2, 0, vin2.Length);
+                        Form1.peerStream.Read(vin2, 0, vin2.Length);
                        
                         System.Threading.Thread.Sleep(2000);
                         if (!Form1.pollingData)
                             return false;
-                        peerStream.Read(vin3, 0, vin3.Length);
+                        Form1.peerStream.Read(vin3, 0, vin3.Length);
                         if (!BTConnection.ConnectionStatus)
                             MessageBox.Show(" BT is connected in the middle of VIn getting....");
                         //peerStream.Close();
@@ -221,12 +221,12 @@ namespace vConnect
                     {
                         // Encode the writeString, then write it to the OBDII module. 
                         byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
-                        peerStream.Write(writeCode, 0, writeCode.Length);
+                        Form1.peerStream.Write(writeCode, 0, writeCode.Length);
                         // Wait 10 seconds for the OBDII module to process the code request
                         System.Threading.Thread.Sleep(2000);
 
                         // Read the OBDII code data from the OBDII module.
-                        peerStream.Read(returnData, 0, returnData.Length);
+                        Form1.peerStream.Read(returnData, 0, returnData.Length);
                         //peerStream.Close();
                     }
 
