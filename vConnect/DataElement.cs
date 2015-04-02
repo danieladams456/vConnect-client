@@ -269,6 +269,7 @@ namespace vConnect
                         }
                         else if (returnDataSize == 2)
                         {
+                            MessageBox.Show("Raw Data: " + System.Text.Encoding.ASCII.GetString(returnData) + "\n\n Note bytes grabbed are 11,12 and 14,15");
                             hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, x + 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, x + 12, 1);
                             hexLiteral2 = System.Text.Encoding.ASCII.GetString(returnData, x + 14, 1) + System.Text.Encoding.ASCII.GetString(returnData, x + 15, 1);
                             equVals[0] = Convert.ToInt32(hexLiteral, 16);
@@ -340,9 +341,13 @@ namespace vConnect
 
                     // Store the formatted answer in the valueToSend variable.
                     ValueToSend = answerToExpression.ToString();
-                    valueToSend = Regex.Replace(valueToSend, @"\.[1-9]", "");
+                    if (name == "engine_rpm")
+                        MessageBox.Show("Engine RPM before regex: " + ValueToSend);
+                    valueToSend = Regex.Replace(valueToSend, @"\.[1-9][1-9]*", "");
+                    if (name == "engine_rpm")
+                        MessageBox.Show("Engine RPM ater regex: " + ValueToSend);
 
-
+                    
                 }
             }
             return;

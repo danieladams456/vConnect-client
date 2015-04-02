@@ -118,7 +118,7 @@ namespace vConnect
                         else
                             ;
                             //  MessageBox.Show("PID codes successfully sent.");
-                            File.WriteAllText("test.txt", jsonString + "\n\nAND IT WORKED!\n\n");
+                            File.AppendAllText("test.txt", jsonString + "\n\nAND IT WORKED!\n\n");
                         cache.Clear();
 
                     }
