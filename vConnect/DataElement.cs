@@ -91,7 +91,7 @@ namespace vConnect
             string hexLiteral;  // String that will contain a raw hex value returned from the OBDII module.
             string hexLiteral2; // String that will contain a raw hex value returned from the OBDII module. 
             // If BT device is connected. 
-            if (BTConnection.Client.Connected)
+            if (BTConnection.ConnectionStatus)
             {
                 // Initialize the read/write stream.
                 Stream peerStream = BTConnection.Client.GetStream();
@@ -99,7 +99,7 @@ namespace vConnect
            //     peerStream.Flush();
                 // If this is the vin data element, then do the following reads in order to get all 
                 // of the bytes relating to the VIN.
-             //   MessageBox.Show(name);
+                MessageBox.Show(name);
                 if (name == "VIN")
                 {
                     writeString = "09" + ObdPID + "\r"; // Write string for VIN.
@@ -120,23 +120,28 @@ namespace vConnect
                         if (!Form1.pollingData)
                             return false;
                         peerStream.Read(vin1, 0, vin1.Length);
-                  //      MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin1));
                         System.Threading.Thread.Sleep(2000);
                         if (!Form1.pollingData)
                             return false;
                         peerStream.Read(vin2, 0, vin2.Length);
-
+                       
                         System.Threading.Thread.Sleep(2000);
                         if (!Form1.pollingData)
                             return false;
                         peerStream.Read(vin3, 0, vin3.Length);
-                      //  peerStream.Close();
+                        if (!BTConnection.ConnectionStatus)
+                            MessageBox.Show(" BT is connected in the middle of VIn getting....");
+                        //peerStream.Close();
                     }
 
                     catch (Exception ex)
                     {
+                        MessageBox.Show("VIN Data elem");
+
                         if (BTConnection.EstablishBTConnection())
-                            RequestDataFromCar();
+                        {
+                            return RequestDataFromCar();
+                        }
                         else
                         {
                             var msg = "Lost BT connection to Device. ERROR: " + ex;
@@ -183,14 +188,16 @@ namespace vConnect
                     {
                         if (tryLoop < vinLoopCheck)
                         {
-                            RequestDataFromCar();
                             tryLoop++;
+                            return RequestDataFromCar();
+                           
                         }
                         else
                         {
                             loopCheck = true;
                             Form1.LogMessageToFile("VIN Parser Error", e.Message);
                             MessageBox.Show("ERROR PARSING VIN");
+                            return false;
                         }
 
                     }
@@ -228,15 +235,16 @@ namespace vConnect
                     // If connection is true, recall RequestDataFromCar(), starting the process over.
                     catch (Exception ex)
                     {
-                       // if (BTConnection.EstablishBTConnection())
-                            RequestDataFromCar();
-                       // else
-                      //  {
+                        MessageBox.Show("Normal Data elem input");
+                        if (BTConnection.EstablishBTConnection())
+                            return RequestDataFromCar();
+                        else
+                        {
                             var msg = "Lost BT connection with Device. ERROR DATA ELEM: " + ex;
                             MessageBox.Show(msg);
                             Form1.LogMessageToFile("BT Connection Error", msg);
                             return false;
-                       // }
+                        }
 
                     }
 
@@ -276,8 +284,10 @@ namespace vConnect
             // If connection is lost, print to screen.
             else 
             {
+                MessageBox.Show("Data elem at end");
+
                 if (BTConnection.EstablishBTConnection())
-                    RequestDataFromCar();
+                    return RequestDataFromCar();
                 else
                 {
                     MessageBox.Show("Lost BT Connection", "My Application",
@@ -339,10 +349,6 @@ namespace vConnect
         }
 
         
-        public bool CheckEmergencyCode()
-        {
-            return true;
-        }
 
         // The following are C#'s way of using accessors (get and set). Call them with
         // Set:

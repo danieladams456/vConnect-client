@@ -73,6 +73,7 @@ namespace vConnect
         /// </returns>
         public bool SendToServer(string jsonString, string type)
         {
+            MessageBox.Show(jsonString);
             // Check if the cache-file (used for storing cached data that failed to send)
             //  contains any data. If it does, then read that data.
             try

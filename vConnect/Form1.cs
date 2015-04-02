@@ -370,7 +370,7 @@ namespace vConnect
 
                 // If there is already an established connection with an OBDII device, then
                 // prompt the user to disconnect with it before attempting to browse for a new device.
-                if (BTConnection.Client.Connected)
+                if (BTConnection.ConnectionStatus)
                     MessageBox.Show(msg);
 
                 // Open a dialog box that will show all detectable BT Devices. Selecting a device 
@@ -766,7 +766,7 @@ namespace vConnect
                     peerStream.Write(writeCode, 0, writeCode.Length);
                     System.Threading.Thread.Sleep(5000);
                     peerStream.Read(errorCode, 0, errorCode.Length);
-                    peerStream.Close();
+                    //peerStream.Close();
                 }
 
                 catch (Exception ex)

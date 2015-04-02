@@ -48,6 +48,7 @@ namespace vConnect
             catch (Exception e)
             {
                 Form1.LogMessageToFile("Server Connection Handler", e.Message);
+                return false;
             }
 
             return serverConnection;
