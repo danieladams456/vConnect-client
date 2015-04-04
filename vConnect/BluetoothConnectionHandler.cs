@@ -118,7 +118,7 @@ namespace vConnect
                 if (connectLoop < connectionAttempts)
                 {
                     connectLoop++;
-                    MessageBox.Show("Reconnect attempt in BTConnection handler");
+               /////     MessageBox.Show("Reconnect attempt in BTConnection handler");
                    return EstablishBTConnection();
                 }
                 // If connection cannot be established after seven attempts, send Windows Error Message,

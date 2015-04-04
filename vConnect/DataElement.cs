@@ -99,7 +99,6 @@ namespace vConnect
            //     peerStream.Flush();
                 // If this is the vin data element, then do the following reads in order to get all 
                 // of the bytes relating to the VIN.
-           /////     MessageBox.Show(name);
                 if (name == "VIN")
                 {
                     writeString = "09" + ObdPID + "\r"; // Write string for VIN.
@@ -117,27 +116,21 @@ namespace vConnect
 
                         // Must retrieve the VIN in three different reads. 
                         System.Threading.Thread.Sleep(2000);
-                        if (!Form1.pollingData)
-                            return false;
+                        
                         Form1.peerStream.Read(vin1, 0, vin1.Length);
                         System.Threading.Thread.Sleep(2000);
-                        if (!Form1.pollingData)
-                            return false;
+                        
                         Form1.peerStream.Read(vin2, 0, vin2.Length);
                        
                         System.Threading.Thread.Sleep(2000);
+                        
+                        Form1.peerStream.Read(vin3, 0, vin3.Length);
                         if (!Form1.pollingData)
                             return false;
-                        Form1.peerStream.Read(vin3, 0, vin3.Length);
-                        if (!BTConnection.ConnectionStatus)
-                            MessageBox.Show(" BT is connected in the middle of VIn getting....");
-                        //peerStream.Close();
                     }
 
                     catch (Exception ex)
                     {
-                        MessageBox.Show("VIN Data elem");
-
                         if (BTConnection.EstablishBTConnection())
                         {
                             return RequestDataFromCar();
@@ -196,7 +189,6 @@ namespace vConnect
                         {
                             loopCheck = true;
                             Form1.LogMessageToFile("VIN Parser Error", e.Message);
-                            MessageBox.Show("ERROR PARSING VIN");
                             return false;
                         }
 
@@ -227,6 +219,8 @@ namespace vConnect
 
                         // Read the OBDII code data from the OBDII module.
                         Form1.peerStream.Read(returnData, 0, returnData.Length);
+                        if (!Form1.pollingData)
+                            return false;
                         //peerStream.Close();
                     }
 
@@ -235,14 +229,13 @@ namespace vConnect
                     // If connection is true, recall RequestDataFromCar(), starting the process over.
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Normal Data elem input");
                         if (BTConnection.EstablishBTConnection())
                             return RequestDataFromCar();
                         else
                         {
-                            var msg = "Lost BT connection with Device. ERROR DATA ELEM: " + ex;
+                            var msg = "Lost BT connection with Device.  ";
                             MessageBox.Show(msg);
-                            Form1.LogMessageToFile("BT Connection Error", msg);
+                            Form1.LogMessageToFile("BT Connection Error", msg + ex);
                             return false;
                         }
 
@@ -269,7 +262,6 @@ namespace vConnect
                         }
                         else if (returnDataSize == 2)
                         {
-                            MessageBox.Show("Raw Data: " + System.Text.Encoding.ASCII.GetString(returnData) + "\n\n Note bytes grabbed are 11,12 and 14,15");
                             hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, x + 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, x + 12, 1);
                             hexLiteral2 = System.Text.Encoding.ASCII.GetString(returnData, x + 14, 1) + System.Text.Encoding.ASCII.GetString(returnData, x + 15, 1);
                             equVals[0] = Convert.ToInt32(hexLiteral, 16);
@@ -285,7 +277,6 @@ namespace vConnect
             // If connection is lost, print to screen.
             else 
             {
-                MessageBox.Show("Data elem at end");
 
                 if (BTConnection.EstablishBTConnection())
                     return RequestDataFromCar();
@@ -341,16 +332,13 @@ namespace vConnect
 
                     // Store the formatted answer in the valueToSend variable.
                     ValueToSend = answerToExpression.ToString();
-                    if (name == "engine_rpm")
-                        MessageBox.Show("Engine RPM before regex: " + ValueToSend);
+                  
                     valueToSend = Regex.Replace(valueToSend, @"\.[1-9][1-9]*", "");
-                    if (name == "engine_rpm")
-                        MessageBox.Show("Engine RPM ater regex: " + ValueToSend);
+                  
 
                     
                 }
             }
-            return;
         }
 
         

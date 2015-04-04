@@ -43,7 +43,7 @@ namespace vConnect
         DataCache cache = null;
 
         // Instantiates a timer used to poll data from the OBDII module.
-        public System.Threading.Timer pollData;
+        static public System.Threading.Timer pollData;
 
 
         // List that will used to hold OBDII codes before being inserted into the cache.
@@ -479,12 +479,15 @@ namespace vConnect
             {
                 schema = SchemaUpdate();
                 if (schema != "NOT FOUND")
+                {
+                    peerStream.Flush();
                     pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
+                }
                 else
                 {
                     MessageBox.Show("Error: No Schema detected, need to update schema.");
                     LogMessageToFile("Start Click", "Schema file was empty.");
-                    
+
                 }
             }
             else
@@ -506,20 +509,26 @@ namespace vConnect
         /// <param name="e"></param>
         private void stop_polling_button_Click(object sender, EventArgs e)
         {
+            stop_polling();
+        }
+       
+        static private void stop_polling()
+        {
             // If no data is currently being polled, do nothing. 
+
             if (pollingData == false)
                 MessageBox.Show("Currently not polling Data.");
 
-            // If data is still being polled, stop the process.  
+           // If data is still being polled, stop the process.  
             else
             {
                 pollingData = false;
                 pollData.Change(Timeout.Infinite, Timeout.Infinite);
-                System.Threading.Thread.Sleep(4000);
+                System.Threading.Thread.Sleep(7000);
                 pollData = null;
             }
-        }
 
+        }
 
         /// <summary>
         /// Read the schema from the json file to the schema string for use. 
@@ -567,7 +576,7 @@ namespace vConnect
         public void RequestDataForElements(object sender)
         {
             pollingData = true;
-
+            MessageBox.Show("Starting.");
             // Create a list of DataElements.
             List<DataElement> elemList = new List<DataElement>();
 
@@ -579,23 +588,20 @@ namespace vConnect
             elemList = CreateElementsFromSchema(schema);
 
             // Fill the contents of the elements with the data from the car
-        /////    MessageBox.Show("Polling Data");
             if (!pollingData)
                 return;
             elemList = GetElementData(elemList);
             if (elemList == null)
                 return;
-            
+            MessageBox.Show("Done Polling ELements");
             // Create a dictionary out of the list of elements.
             dictionary = CreateDictionary(elemList);
 
             // Add the dictionary containing the data points to the cache.
             cache.AddElementToCache(dictionary);
-      /////      MessageBox.Show("Checkin them error codes");
             if (!pollingData)
                 return;
             CheckForErrorCodes(elemList);
-      /////      MessageBox.Show("Sendin them codes");
             cache.SendToServer(cache.JsonString, "data");
         }
 
@@ -672,7 +678,7 @@ namespace vConnect
                 elementList.Add(new DataElement(name, mode, code, type, Int32.Parse(size), equation, getBTConnection()));
 
             }
-
+            
             // Return the list of DataElements
             return elementList;
         }
@@ -698,8 +704,13 @@ namespace vConnect
                     if (!pollingData)
                         return elemList;
                     // Get data from the car for the element and format it.
-                    if (!elem.RequestDataFromCar() && !pollingData)
+                    if (!elem.RequestDataFromCar())
+                    {
+                        if(!BTConnection.ConnectionStatus)
+                            stop_polling();
+
                         return null;
+                    }
                     elem.FormatData();
                 }
             }
@@ -772,15 +783,17 @@ namespace vConnect
 
                 catch (Exception ex)
                 {
-                    //if (BTConnection.EstablishBTConnection())
-                     //   CheckForErrorCodes(elemList);
-                    //else
-                   // {
-                        var msg = "failed to connect to BT Device. ERROR CODES: " + ex;
+                    if (BTConnection.EstablishBTConnection())
+                        return CheckForErrorCodes(elemList);
+                    else
+                    {
+                        var msg = "failed to re- connect to BT Device.  ";
                         MessageBox.Show(msg);
-                        LogMessageToFile("Checking for error codes error", msg);
-                        exit = true;
-                  //  }
+                        LogMessageToFile("Checking for error codes error", msg + ex);
+                        stop_polling();
+                        return false; 
+                      //  exit = true;
+                    }
 
                 }
                 if (!pollingData || exit)
@@ -836,6 +849,8 @@ namespace vConnect
             {
                 MessageBox.Show("Cannot Check for Error Codes, no BT connection.");
                 LogMessageToFile("Error code check", "Lost BT connection: " + e.Message);
+                stop_polling();
+                return false;
             }
 
             return true;

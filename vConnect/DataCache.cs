@@ -1,6 +1,4 @@
-﻿
-
-/* DataCache.cs - vConnect (Liberty University CSCI Capstone Project)
+﻿/* DataCache.cs - vConnect (Liberty University CSCI Capstone Project)
  * Written by Troy Cosner and Charlie Snyder in February-March, 2015. 
  * 
  * 
@@ -25,11 +23,10 @@ namespace vConnect
 {
     /// <summary>
     /// This class holds and sends the data elements after they are
-    ///  cached for sending.
+    /// cached for sending.
     /// </summary>
     class DataCache
     {
-        //List<ElementCluster> cache = new List<ElementCluster>();
         List<Dictionary<string, object>> cache = new List<Dictionary<string, object>>();
         ServerConnectionHandler serverConnection;
 
@@ -73,12 +70,12 @@ namespace vConnect
         /// </returns>
         public bool SendToServer(string jsonString, string type)
         {
-          /////  MessageBox.Show(jsonString);
+            MessageBox.Show(JsonString);
             // Check if the cache-file (used for storing cached data that failed to send)
             //  contains any data. If it does, then read that data.
             try
             {
-                if (new FileInfo(CACHEFILE).Length != 0)
+                if (new FileInfo(CACHEFILE).Length != 0 && type != "alert")
                     ReadFromDisk();
             }
             catch (Exception e)
@@ -87,46 +84,57 @@ namespace vConnect
             }
 
             string webAddress = null;
-            // MessageBox.Show(jsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             // Create the web address to connect to
             webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber + "/" + type;
-
+            MessageBox.Show(serverConnection.IPAddress);
             // Create the web request with Json/Post attributes and given address
             var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
             httpWebRequest.UserAgent = "vConnect";
-
+            MessageBox.Show("Did I get stuck here?");
             try
             {
+                MessageBox.Show("How about here0?");
+
                 // Write the current JSON string to the server
                 using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                 {
+                    MessageBox.Show("How about here1?");
+
                     streamWriter.Write(jsonString + "\n");
+                    MessageBox.Show("How about here2?");
+
                     streamWriter.Flush();
+                    MessageBox.Show("How about here3?");
+
                     streamWriter.Close();
+                    MessageBox.Show("How about here?");
 
                     // Get web response (most importantly, status code)
                     var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                    MessageBox.Show("OR here?");
+
                     int statusCode = (int)httpResponse.StatusCode;
+                    MessageBox.Show("WHYYYY?");
+
                     string test = Convert.ToString(statusCode);
                     if (statusCode == 204)
                     {
-                        if (type == "alert")
-                            ;
-                        //   MessageBox.Show("Error codes successfully sent.");
-                        else
-                            ;
-                            //  MessageBox.Show("PID codes successfully sent.");
-                            File.AppendAllText("test.txt", jsonString + "\n\nAND IT WORKED!\n\n");
-                        cache.Clear();
+                        MessageBox.Show("This doesn't even make sense...");
 
+                        if (type == "alert")
+                           MessageBox.Show("Error codes successfully sent.");
+                        else
+                             MessageBox.Show("PID codes successfully sent.");
+                        File.AppendAllText("test.txt", jsonString + "\n\nAND IT WORKED!\n\n");
+                        cache.Clear();
                     }
                     else 
                     {
                         // If the web server returned an unexpceted response code or failure,
                         //  write the current cache to disk, then clear it.
-                        MessageBox.Show("Error, sending failed.");
+                       ///// MessageBox.Show("Error, sending failed.");
                         Form1.LogMessageToFile("Server Response Error", "The server returned a " + statusCode.ToString() + " code instead of a 204");
                         WriteToDisk();
                         cache.Clear();
@@ -142,6 +150,7 @@ namespace vConnect
                 cache.Clear();
             }
 
+            MessageBox.Show("After its sent/not sent: " + JsonString);
 
             // MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             return true;

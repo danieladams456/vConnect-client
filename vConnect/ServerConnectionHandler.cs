@@ -20,14 +20,11 @@ namespace vConnect
         private string ipAddress = "";
         private int portNumber = 0;
 
-      
         public bool CheckServerConnection()
         {
             bool serverConnection = false;
             try
             {
-               
-
                 string webAddress = "http://" + ipAddress + ":" + portNumber + "/status";
                 
                 // Create the web request with Json/Post attributes and given address
