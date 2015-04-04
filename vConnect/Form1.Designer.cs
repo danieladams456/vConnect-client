@@ -301,6 +301,8 @@
             this.Controls.Add(this.server_label);
             this.Controls.Add(this.close_button);
             this.Controls.Add(this.help_button);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "vConnect";
             this.ResumeLayout(false);
