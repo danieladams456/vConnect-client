@@ -70,7 +70,8 @@ namespace vConnect
         /// </returns>
         public bool SendToServer(string jsonString, string type)
         {
-            MessageBox.Show(JsonString);
+            
+            MessageBox.Show("stuff to send: " + JsonString);
             // Check if the cache-file (used for storing cached data that failed to send)
             //  contains any data. If it does, then read that data.
             try
@@ -86,42 +87,41 @@ namespace vConnect
             string webAddress = null;
             // Create the web address to connect to
             webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber + "/" + type;
-            MessageBox.Show(serverConnection.IPAddress);
+            // MessageBox.Show(serverConnection.IPAddress);
             // Create the web request with Json/Post attributes and given address
             var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
             httpWebRequest.UserAgent = "vConnect";
-            MessageBox.Show("Did I get stuck here?");
+           // MessageBox.Show("?");
             try
             {
-                MessageBox.Show("How about here0?");
+            //    MessageBox.Show("How about here0?");
 
                 // Write the current JSON string to the server
                 using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                 {
-                    MessageBox.Show("How about here1?");
 
                     streamWriter.Write(jsonString + "\n");
                     MessageBox.Show("How about here2?");
 
                     streamWriter.Flush();
-                    MessageBox.Show("How about here3?");
+               //     MessageBox.Show("How about here3?");
 
                     streamWriter.Close();
-                    MessageBox.Show("How about here?");
+                 //   MessageBox.Show("How about here?");
 
                     // Get web response (most importantly, status code)
                     var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                    MessageBox.Show("OR here?");
+                 //   MessageBox.Show("OR here?");
 
                     int statusCode = (int)httpResponse.StatusCode;
-                    MessageBox.Show("WHYYYY?");
+//                    MessageBox.Show("WHYYYY?");
 
                     string test = Convert.ToString(statusCode);
                     if (statusCode == 204)
                     {
-                        MessageBox.Show("This doesn't even make sense...");
+              //          MessageBox.Show("This doesn't even make sense...");
 
                         if (type == "alert")
                            MessageBox.Show("Error codes successfully sent.");
