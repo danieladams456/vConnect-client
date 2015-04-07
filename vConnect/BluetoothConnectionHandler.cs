@@ -87,6 +87,7 @@ namespace vConnect
         /// </returns>
         public bool EstablishBTConnection()
         {
+            pIN = "912978";
             // Close connection if already established. 
             // Not sure if we want to try and auto-connect to previous. 
             if (client.Connected)
@@ -137,6 +138,8 @@ namespace vConnect
             if (client.Connected)
             {
                 Form1.peerStream = client.GetStream();
+              //  byte[] test = System.Text.Encoding.ASCII.GetBytes("AT SP 0");
+             //   Form1.peerStream.Write(test, 0, test.Length);
                 bTConnectionStatus = true;
             /////    MessageBox.Show("Connected!");
                 Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();

@@ -28,6 +28,8 @@ using InTheHand.Windows.Forms;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Configuration;
+using System.Text.RegularExpressions;
+
 
 
 namespace vConnect
@@ -85,8 +87,6 @@ namespace vConnect
             bool serverDetect = false;
 
 
-            BTConnection.PIN = Properties.Settings.Default.PIN;
-            
             // If there is a saved BT Address, attempt to connect with the device with that address.
             if (Properties.Settings.Default.BTAddress != "" && Properties.Settings.Default.PIN != "")
             {
@@ -100,7 +100,7 @@ namespace vConnect
                     BTConnection.DeviceID = Properties.Settings.Default.BTDeviceName;
                     BT_ID.Text = Properties.Settings.Default.BTDeviceName;
                     device_Status_Label.Text = "Connected";
-                    MessageBox.Show("Auto BT Connect!");
+                    MessageBox.Show("BT Connected Automatically");
                     deviceDetect = true;
                 }
                 else
@@ -111,50 +111,7 @@ namespace vConnect
                 }
             }
 
-            // If no connection was established with the device with the saved BT Address, then
-            // check all detectable BT devices with a Device Name corresponding with an OBDII module,
-            // and attempt to connect with them. 
-         /*   else
-            {
-                // Array of all detected BT devices.
-                BluetoothDeviceInfo[] peers = BTConnection.Client.DiscoverDevices();
 
-
-                int peerCounter = 0;
-
-                // Loops through all of the BT Devices detected, and attempt to connect with any one who's device ID
-                // indicates that it is an OBDII module.
-
-                while (peerCounter < peers.Length)
-                {
-
-                    if (peers[peerCounter].DeviceName == "CBT." || peers[peerCounter].DeviceName == "OBDII")
-                    {
-                        // Retrieve the BT adress from the BT device whose device name indicates that it is 
-                        // as OBDII module.
-                        BTConnection.BluetoothAddress = peers[peerCounter].DeviceAddress;
-                        BTConnection.DeviceID = peers[peerCounter].DeviceName;
-
-                        // If connection is established, save the OBDII device's BT Address and Device Name to the 
-                        // settings file, and change details on the GUI accordingly. 
-                        if (BTConnection.EstablishBTConnection())
-                        {
-                            BTConnection.DeviceInfo = peers[peerCounter];
-                            BT_ID.Text = peers[peerCounter].DeviceName;
-                            BTConnection.DeviceID = peers[peerCounter].DeviceName;
-                            Properties.Settings.Default.BTAddress = peers[peerCounter].DeviceAddress.ToString();
-                            Properties.Settings.Default.BTDeviceName = peers[peerCounter].DeviceName;
-                            Properties.Settings.Default.Save();
-                            device_Status_Label.Text = "Connected";
-                            peerCounter = peers.Length;
-                            deviceDetect = true;
-                        }
-                    }
-                    peerCounter++;
-                }
-
-            }
-            */
             // If no OBDII connection is established, then print to the screen stating this fact, and then
             // load the GUI. 
             if (deviceDetect == false)
@@ -173,42 +130,46 @@ namespace vConnect
             if (Properties.Settings.Default.ServerIP != "" && Properties.Settings.Default.ServerPort != "")
             {
                 serverConnection.PortNumber = Convert.ToInt32(Properties.Settings.Default.ServerPort);
-
                 serverConnection.IPAddress = Properties.Settings.Default.ServerIP;
+                port_number.Text = serverConnection.PortNumber.ToString();
+                server_IP.Text = serverConnection.IPAddress;
 
                 // If the server is available, switch the bool value to save that info. 
-                if (serverConnection.CheckServerConnection())
-                {
-                    serverDetect = true;
-                    MessageBox.Show("Auto server connect!");
-                    port_number.Text = serverConnection.PortNumber.ToString();
-                    server_IP.Text = serverConnection.IPAddress;
-                    serverConnection.ServerConnectionStatus = true;
-                }
-                else
-                {
-                    MessageBox.Show("ERROR: Could not connect to server at saved IP address and port number.");
-                    Properties.Settings.Default.ServerIP = null;
-                    server_IP.Text = "N/A";
-                    serverConnection.IPAddress = null;
+                /*       if (serverConnection.CheckServerConnection())
+                       {
+                           serverDetect = true;
+                           MessageBox.Show("Auto server connect!");
+                           port_number.Text = serverConnection.PortNumber.ToString();
+                           server_IP.Text = serverConnection.IPAddress;
+                           serverConnection.ServerConnectionStatus = true;
+                       }
+                       else
+                       {
+                           MessageBox.Show("ERROR: Could not connect to server at saved IP address and port number.");
+                           Properties.Settings.Default.ServerIP = null;
+                           server_IP.Text = "N/A";
+                           serverConnection.IPAddress = null;
 
-                    Properties.Settings.Default.ServerPort = null;
-                    port_number.Text = "0";
-                    serverConnection.PortNumber = 0;
-                    Properties.Settings.Default.Save();
-                }
+                           Properties.Settings.Default.ServerPort = null;
+                           port_number.Text = "0";
+                           serverConnection.PortNumber = 0;
+                           Properties.Settings.Default.Save();
+                       }*/
             }
             else
                 MessageBox.Show("No server connection data was found, please add server IP address and port number");
 
             // If connections have been established to the OBDII device and the server, then begin polling for 
             // vehicle data. 
-            if (deviceDetect && serverDetect)
+            if (deviceDetect)// && serverDetect)
             {
                 MessageBox.Show("Beginning auto poll now.");
                 schema = SchemaUpdate();
                 if (schema != "NOT FOUND")
+                {
+                    poll_status.Text = "Polling";
                     pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
+                }
                 else
                 {
                     MessageBox.Show("Error: No Schema detected, need to update schema.");
@@ -219,7 +180,10 @@ namespace vConnect
             // If connections have not been established to the OBDII device and server, then initialize the loop to 
             // poll data, but do not start it. 
             else
+            {
+                poll_status.Text = "Not Polling";
                 pollData = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
+            }
         }
 
         /// <summary>
@@ -285,24 +249,24 @@ namespace vConnect
         /// <param name="e"></param>
         private void edit_IP_button_Click(object sender, EventArgs e)
         {
-            if (pollingData)
-            {
-                MessageBox.Show("Stop Polling before Changing IP Address.");
-            }
-            else
-            {
-                string value = "IP Address";
+            //if (pollingData)
+            // {
+            //    MessageBox.Show("Stop Polling before Changing IP Address.");
+            //}
+            // else
+            //  {
+            string value = "IP Address";
 
-                // Saves IP address to the settings file, as well as the server connection handler. 
-                if (InputBox("New IP Address", "New IP Address:", ref value) == DialogResult.OK)
-                {
-                    serverConnection.IPAddress = value;
+            // Saves IP address to the settings file, as well as the server connection handler. 
+            if (InputBox("New IP Address", "New IP Address:", ref value) == DialogResult.OK)
+            {
+                serverConnection.IPAddress = value;
 
-                    server_IP.Text = value;
-                    Properties.Settings.Default.ServerIP = value;
-                    Properties.Settings.Default.Save();
-                }
+                server_IP.Text = value;
+                Properties.Settings.Default.ServerIP = value;
+                Properties.Settings.Default.Save();
             }
+            //  }
         }
 
         /// <summary>
@@ -312,47 +276,47 @@ namespace vConnect
         /// <param name="e"></param>
         private void edit_port_button_Click(object sender, EventArgs e)
         {
-            if (pollingData)
+            /*   if (pollingData)
+               {
+                   MessageBox.Show("Stop Polling data before changing the port number.");
+               }
+               else
+               {*/
+            string value = "Port Number";
+            if (InputBox("New Port Number", "New Port Number (1-65535):", ref value) == DialogResult.OK)
             {
-                MessageBox.Show("Stop Polling data before changing the port number.");
-            }
-            else
-            {
-                string value = "Port Number";
-                if (InputBox("New Port Number", "New Port Number (1-65535):", ref value) == DialogResult.OK)
+
+                // Bounds checking for a valid port number
+                // Saves Port Number to the settings file, as well as the server connection handler.
+                int valueInt = 0;
+                try
                 {
-
-                    // Bounds checking for a valid port number
-                    // Saves Port Number to the settings file, as well as the server connection handler.
-                    int valueInt = 0;
-                    try
+                    valueInt = Int32.Parse(value);
+                    if (valueInt > 0 && valueInt < 65535)
                     {
-                        valueInt = Int32.Parse(value);
-                        if (valueInt > 0 && valueInt < 65535)
-                        {
-                            serverConnection.PortNumber = Int32.Parse(value);
+                        serverConnection.PortNumber = Int32.Parse(value);
 
-                            Properties.Settings.Default.ServerPort = value;
-                            Properties.Settings.Default.Save();
-                            port_number.Text = value;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Invalid Port Number: Port number must be between 1 and 65534.");
-                            LogMessageToFile("Port Number", "Invalid Port number.");
-
-                        }
-
+                        Properties.Settings.Default.ServerPort = value;
+                        Properties.Settings.Default.Save();
+                        port_number.Text = value;
                     }
-
-                    catch
+                    else
                     {
                         MessageBox.Show("Invalid Port Number: Port number must be between 1 and 65534.");
                         LogMessageToFile("Port Number", "Invalid Port number.");
 
                     }
+
+                }
+
+                catch
+                {
+                    MessageBox.Show("Invalid Port Number: Port number must be between 1 and 65534.");
+                    LogMessageToFile("Port Number", "Invalid Port number.");
+
                 }
             }
+            //}
         }
 
 
@@ -463,24 +427,25 @@ namespace vConnect
         /// <param name="e"></param>
         private void start_button_Click(object sender, EventArgs e)
         {
-            if (serverConnection.CheckServerConnection())
-            {
-                Properties.Settings.Default.ServerIP = serverConnection.IPAddress;
-                Properties.Settings.Default.ServerPort = serverConnection.PortNumber.ToString();
-                Properties.Settings.Default.Save();
-            }
+            /*     if (serverConnection.CheckServerConnection())
+                 {
+                     Properties.Settings.Default.ServerIP = serverConnection.IPAddress;
+                     Properties.Settings.Default.ServerPort = serverConnection.PortNumber.ToString();
+                     Properties.Settings.Default.Save();
+                 }*/
             // If data is already being polled, then nothing to do. 
             if (pollingData)
                 MessageBox.Show("Already Polling Data");
 
             // If no data is currently being polled, update the schema, then
             // begin polling data.
-            else if (BTConnection.BTConnectionStatus && serverConnection.CheckServerConnection())
+            else if (BTConnection.BTConnectionStatus) //&& serverConnection.CheckServerConnection())
             {
                 schema = SchemaUpdate();
                 if (schema != "NOT FOUND")
                 {
                     peerStream.Flush();
+                    poll_status.Text = "Polling";
                     pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
                 }
                 else
@@ -492,12 +457,12 @@ namespace vConnect
             }
             else
             {
-                if (!BTConnection.BTConnectionStatus && !serverConnection.ServerConnectionStatus)
-                    MessageBox.Show("No connection to OBDII device or server, cannot start.");
-                else if (!BTConnection.BTConnectionStatus)
+                //  if (!BTConnection.BTConnectionStatus && !serverConnection.ServerConnectionStatus)
+                //        MessageBox.Show("No connection to OBDII device or server, cannot start.");
+                if (!BTConnection.BTConnectionStatus)
                     MessageBox.Show("No connection to OBDII device, cannot start.");
-                else if (!serverConnection.ServerConnectionStatus)
-                    MessageBox.Show("No connection to server, cannot start.");
+                //    else if (!serverConnection.ServerConnectionStatus)
+                //      MessageBox.Show("No connection to server, cannot start.");
             }
         }
 
@@ -510,8 +475,9 @@ namespace vConnect
         private void stop_polling_button_Click(object sender, EventArgs e)
         {
             stop_polling();
+            poll_status.Text = "Polling";
         }
-       
+
         static private void stop_polling()
         {
             // If no data is currently being polled, do nothing. 
@@ -522,6 +488,7 @@ namespace vConnect
            // If data is still being polled, stop the process.  
             else
             {
+
                 pollingData = false;
                 pollData.Change(Timeout.Infinite, Timeout.Infinite);
                 System.Threading.Thread.Sleep(7000);
@@ -576,7 +543,7 @@ namespace vConnect
         public void RequestDataForElements(object sender)
         {
             pollingData = true;
-            MessageBox.Show("Starting.");
+        //    MessageBox.Show("Starting.");
             // Create a list of DataElements.
             List<DataElement> elemList = new List<DataElement>();
 
@@ -593,7 +560,6 @@ namespace vConnect
             elemList = GetElementData(elemList);
             if (elemList == null)
                 return;
-            MessageBox.Show("Done Polling ELements");
             // Create a dictionary out of the list of elements.
             dictionary = CreateDictionary(elemList);
 
@@ -603,6 +569,10 @@ namespace vConnect
                 return;
             CheckForErrorCodes(elemList);
             cache.SendToServer(cache.JsonString, "data");
+      //      if (cache.connect_check)
+        //        server_status.Text = "Connected";
+         //   else
+          //      server_status.Text = "Not Connected";
         }
 
 
@@ -678,7 +648,7 @@ namespace vConnect
                 elementList.Add(new DataElement(name, mode, code, type, Int32.Parse(size), equation, getBTConnection()));
 
             }
-            
+
             // Return the list of DataElements
             return elementList;
         }
@@ -706,7 +676,7 @@ namespace vConnect
                     // Get data from the car for the element and format it.
                     if (!elem.RequestDataFromCar())
                     {
-                        if(!BTConnection.ConnectionStatus)
+                        if (!BTConnection.ConnectionStatus)
                             stop_polling();
 
                         return null;
@@ -791,8 +761,8 @@ namespace vConnect
                         MessageBox.Show(msg);
                         LogMessageToFile("Checking for error codes error", msg + ex);
                         stop_polling();
-                        return false; 
-                      //  exit = true;
+                        return false;
+                        //  exit = true;
                     }
 
                 }
@@ -802,8 +772,10 @@ namespace vConnect
                 int counter = 7;
                 bool loopExit = false;
                 string toSend = null;
-
-                if (!System.Text.Encoding.ASCII.GetString(errorCode).Contains("NO DATA"))
+                string hexLiteral = System.Text.Encoding.ASCII.GetString(errorCode, 10, 1) + System.Text.Encoding.ASCII.GetString(errorCode, 11, 1) + " \r";
+           //     MessageBox.Show("Literal: " + hexLiteral);
+                //    if (!System.Text.Encoding.ASCII.GetString(errorCode).Contains("NO DATA"))
+                if (hexLiteral != "00 \r")
                 {
 
 
@@ -839,7 +811,7 @@ namespace vConnect
                 }
                 else
                 {
-         /////           MessageBox.Show("No error codes.");
+                    /////           MessageBox.Show("No error codes.");
                     return false;
                 }
 

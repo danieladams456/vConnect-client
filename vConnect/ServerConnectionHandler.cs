@@ -33,7 +33,7 @@ namespace vConnect
                 httpWebRequest.Method = "HEAD";
                 httpWebRequest.UserAgent = "vConnect";
 
-             /////   MessageBox.Show("Before response part");
+                MessageBox.Show("Before response part");
 
                 // Get web response (most importantly, status code)
                 var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
