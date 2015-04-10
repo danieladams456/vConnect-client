@@ -19,10 +19,10 @@ Describe usage here.
 ### Code Structure
 Describe the basic classes and how they interact.
 
+### Architecture
+![alt text](vConnect/architecture.png)
+
 ### Data Elements Currently Implemented
-
-note: The data elements used are specified in the JSON schema on the web server.
-
 | Element Name | Description | Unit |
 | ------------ | ----------- | ---- |
 | VIN | Vehicle Identification Number | Characters |
@@ -33,7 +33,7 @@ note: The data elements used are specified in the JSON schema on the web server.
 | oil_temp | Engine Oil Temperature | degrees Celsius |
 | accel_pos | Relative Accelerator Position | Percent |
 | dist_with_MIL | Distance Driven With Check-Engine Light On | km |
-  
+note: The data elements used are specified in the JSON schema on the web server.  
   
 [1]: https://32feet.codeplex.com/
 [2]: https://ncalc.codeplex.com/
