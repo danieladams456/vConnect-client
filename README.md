@@ -21,8 +21,8 @@ Describe the basic classes and how they interact.
 
 ### Data Elements Currently Implemented
 note: The data elements used are specified in the JSON schema on the web server.
-Element Name | Description | Unit
- --- | --- | ---
+| Element Name | Description | Unit |
+| ------------ | ----------- | ---- |
 VIN | Vehicle Identification Number | Characters
 vehicle_speed | Current Speed of Vehicle | km/h
 engine_rpm | Current RPM of Vehicle | rpm
