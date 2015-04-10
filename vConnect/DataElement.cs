@@ -40,7 +40,6 @@ namespace vConnect
                                              // doesn't need to be formatted. 
 
         private const int vinLoopCheck = 4;
-
        
 
         // This connection gets passed from the caller. It is the current connection.
@@ -94,14 +93,15 @@ namespace vConnect
             if (BTConnection.ConnectionStatus)
             {
                 // Initialize the read/write stream.
-               // Stream peerStream = BTConnection.Client.GetStream();
+             //   Stream peerStream1 = BTConnection.Client.GetStream();
                 // Flush out any intro message.
            //     peerStream.Flush();
                 // If this is the vin data element, then do the following reads in order to get all 
                 // of the bytes relating to the VIN.
+              //  MessageBox.Show(name);
                 if (name == "VIN")
                 {
-                    writeString = "09" + ObdPID + "\r"; // Write string for VIN.
+                    writeString = "09" + obdPID + "\r";// Write string for VIN.
                     byte[] vin1 = new byte[50]; // Byte arrays to read in VIN.
                     byte[] vin2 = new byte[50];
                     byte[] vin3 = new byte[50];
@@ -113,24 +113,26 @@ namespace vConnect
                     {
                         // Write the code to the OBDII module.
                         Form1.peerStream.Write(writeCode, 0, writeCode.Length);
-
+                     //   peerStream.Write(writeCode, 0, writeCode.Length);
                         // Must retrieve the VIN in three different reads. 
                         System.Threading.Thread.Sleep(2000);
                         
                         Form1.peerStream.Read(vin1, 0, vin1.Length);
+                //        MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin1));
                         System.Threading.Thread.Sleep(2000);
-                        
+
                         Form1.peerStream.Read(vin2, 0, vin2.Length);
                        
-                        System.Threading.Thread.Sleep(2000);
+                     //   System.Threading.Thread.Sleep(2000);
                         
-                        Form1.peerStream.Read(vin3, 0, vin3.Length);
+                     //   Form1.peerStream.Read(vin3, 0, vin3.Length);
                         if (!Form1.pollingData)
                             return false;
                     }
 
                     catch (Exception ex)
                     {
+                   
                         if (BTConnection.EstablishBTConnection())
                         {
                             return RequestDataFromCar();
@@ -145,9 +147,16 @@ namespace vConnect
                     }
                     // Format the raw data read from the OBDII module.
                     valueToSend = System.Text.Encoding.ASCII.GetString(vin1)
-                        + System.Text.Encoding.ASCII.GetString(vin2)
-                        + System.Text.Encoding.ASCII.GetString(vin3);
+                        + System.Text.Encoding.ASCII.GetString(vin2);
+                        //+ System.Text.Encoding.ASCII.GetString(vin3);
+                  //  MessageBox.Show(valueToSend);
                     // valueToSend = valueToSend.Substring(4, valueToSend.Length - 4);
+                    valueToSend = Regex.Replace(valueToSend, @".:", "");
+                    valueToSend = Regex.Replace(valueToSend, @"014", "");
+                    valueToSend = Regex.Replace(valueToSend, @"49", "");
+                    valueToSend = Regex.Replace(valueToSend, @"02", "");
+                    valueToSend = Regex.Replace(valueToSend, @"01", "");
+
                     valueToSend = Regex.Replace(valueToSend, @"ELM327v1.4", "");
                     valueToSend = Regex.Replace(valueToSend, @"CONNECTED", "");
                     valueToSend = Regex.Replace(valueToSend, @"SEARCHING\.\.", "");
@@ -160,7 +169,7 @@ namespace vConnect
 
                     valueToSend = Regex.Replace(valueToSend, @"\0", "");
                     valueToSend = Regex.Replace(valueToSend, @"\.", "");
-
+          //          MessageBox.Show(valueToSend);
 
                     string res = String.Empty;
                     int tryLoop = 0;
@@ -201,6 +210,7 @@ namespace vConnect
                     valueToSend = Regex.Replace(valueToSend, @"\0", "");
                     valueToSend = Regex.Replace(valueToSend, @" ", "");
                     valueToSend = Regex.Replace(valueToSend, @"[^a-zA-Z0-9]", "");
+                   // MessageBox.Show(valueToSend);
                 }
 
                 // If the data element is for something other than the VIN, then use the following code
@@ -215,12 +225,13 @@ namespace vConnect
                         byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
                         Form1.peerStream.Write(writeCode, 0, writeCode.Length);
                         // Wait 10 seconds for the OBDII module to process the code request
-                        System.Threading.Thread.Sleep(2000);
+                        System.Threading.Thread.Sleep(1000);
 
                         // Read the OBDII code data from the OBDII module.
                         Form1.peerStream.Read(returnData, 0, returnData.Length);
                         if (!Form1.pollingData)
                             return false;
+                     //  MessageBox.Show(System.Text.Encoding.ASCII.GetString(returnData));
                         //peerStream.Close();
                     }
 
@@ -258,7 +269,7 @@ namespace vConnect
                         {
                             hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, x + 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, x + 12, 1);
                             equVals[0] = Convert.ToInt32(hexLiteral, 16);
-
+                            
                         }
                         else if (returnDataSize == 2)
                         {
@@ -266,7 +277,6 @@ namespace vConnect
                             hexLiteral2 = System.Text.Encoding.ASCII.GetString(returnData, x + 14, 1) + System.Text.Encoding.ASCII.GetString(returnData, x + 15, 1);
                             equVals[0] = Convert.ToInt32(hexLiteral, 16);
                             equVals[1] = Convert.ToInt32(hexLiteral2, 16);
-
                         }
                     }
 
@@ -332,8 +342,9 @@ namespace vConnect
 
                     // Store the formatted answer in the valueToSend variable.
                     ValueToSend = answerToExpression.ToString();
-                  
-                    valueToSend = Regex.Replace(valueToSend, @"\.[1-9][1-9]*", "");
+                    float temp = float.Parse(valueToSend);
+                    ValueToSend = ((int)temp).ToString();
+                  //  valueToSend = Regex.Replace(valueToSend, @"\.[1-9][1-9]*", "");
                   
 
                     

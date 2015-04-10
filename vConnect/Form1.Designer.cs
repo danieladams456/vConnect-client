@@ -54,6 +54,10 @@
             this.view_error_log_button = new System.Windows.Forms.Button();
             this.title_label = new System.Windows.Forms.Label();
             this.Set_PIN_Button = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.poll_status = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.server_status = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // trayIcon
@@ -260,7 +264,7 @@
             this.title_label.AutoSize = true;
             this.title_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 38F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.title_label.ForeColor = System.Drawing.Color.Blue;
-            this.title_label.Location = new System.Drawing.Point(12, 52);
+            this.title_label.Location = new System.Drawing.Point(2, 29);
             this.title_label.Name = "title_label";
             this.title_label.Size = new System.Drawing.Size(240, 59);
             this.title_label.TabIndex = 34;
@@ -276,11 +280,55 @@
             this.Set_PIN_Button.UseVisualStyleBackColor = true;
             this.Set_PIN_Button.Click += new System.EventHandler(this.Set_PIN_Button_Click);
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.label1.Location = new System.Drawing.Point(29, 96);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(89, 20);
+            this.label1.TabIndex = 36;
+            this.label1.Text = "Poll Status:";
+            // 
+            // poll_status
+            // 
+            this.poll_status.AutoSize = true;
+            this.poll_status.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.poll_status.Location = new System.Drawing.Point(125, 96);
+            this.poll_status.Name = "poll_status";
+            this.poll_status.Size = new System.Drawing.Size(84, 20);
+            this.poll_status.TabIndex = 37;
+            this.poll_status.Text = "Not Polling";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.label2.Location = new System.Drawing.Point(8, 116);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(110, 20);
+            this.label2.TabIndex = 38;
+            this.label2.Text = "Server Status:";
+            // 
+            // server_status
+            // 
+            this.server_status.AutoSize = true;
+            this.server_status.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.server_status.Location = new System.Drawing.Point(125, 116);
+            this.server_status.Name = "server_status";
+            this.server_status.Size = new System.Drawing.Size(87, 20);
+            this.server_status.TabIndex = 39;
+            this.server_status.Text = "Connected";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(648, 244);
+            this.Controls.Add(this.server_status);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.poll_status);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.Set_PIN_Button);
             this.Controls.Add(this.title_label);
             this.Controls.Add(this.view_error_log_button);
@@ -333,6 +381,10 @@
         private System.Windows.Forms.Button view_error_log_button;
         private System.Windows.Forms.Label title_label;
         private System.Windows.Forms.Button Set_PIN_Button;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label poll_status;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label server_status;
 
     }
 }

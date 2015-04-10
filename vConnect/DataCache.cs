@@ -32,6 +32,7 @@ namespace vConnect
 
         // File to write the cache to if necessary.
         const string CACHEFILE = "jsonCache.txt";
+        public bool connect_check = true;
 
         /// <summary>
         /// Constructor for initializing the server connection.
@@ -70,8 +71,8 @@ namespace vConnect
         /// </returns>
         public bool SendToServer(string jsonString, string type)
         {
-            
-            MessageBox.Show("stuff to send: " + JsonString);
+            if (type == "data")
+                MessageBox.Show("stuff to send: \n\n" + jsonString);
             // Check if the cache-file (used for storing cached data that failed to send)
             //  contains any data. If it does, then read that data.
             try
@@ -93,64 +94,76 @@ namespace vConnect
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
             httpWebRequest.UserAgent = "vConnect";
-           // MessageBox.Show("?");
+            // MessageBox.Show("?");
             try
             {
-            //    MessageBox.Show("How about here0?");
-
+                //    MessageBox.Show("How about here0?");
+                // var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream());
                 // Write the current JSON string to the server
+
                 using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                 {
 
                     streamWriter.Write(jsonString + "\n");
-                    MessageBox.Show("How about here2?");
 
                     streamWriter.Flush();
-               //     MessageBox.Show("How about here3?");
+                    //     MessageBox.Show("How about here3?");
 
                     streamWriter.Close();
-                 //   MessageBox.Show("How about here?");
+                    //   MessageBox.Show("How about here?");
 
                     // Get web response (most importantly, status code)
                     var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                 //   MessageBox.Show("OR here?");
+                    //   MessageBox.Show("OR here?");
 
                     int statusCode = (int)httpResponse.StatusCode;
-//                    MessageBox.Show("WHYYYY?");
+                    //                    MessageBox.Show("WHYYYY?");
 
-                    string test = Convert.ToString(statusCode);
                     if (statusCode == 204)
                     {
-              //          MessageBox.Show("This doesn't even make sense...");
-
+                        //          MessageBox.Show("This doesn't even make sense...");
+                        connect_check = true;
                         if (type == "alert")
-                           MessageBox.Show("Error codes successfully sent.");
+                            MessageBox.Show("Error codes successfully sent.");
                         else
-                             MessageBox.Show("PID codes successfully sent.");
-                        File.AppendAllText("test.txt", jsonString + "\n\nAND IT WORKED!\n\n");
-                        cache.Clear();
+                        {
+                            cache.Clear();
+                            MessageBox.Show("PID codes successfully sent.");
+                        }
+                        // File.AppendAllText("test.txt", jsonString + "\n\nAND IT WORKED!\n\n");
                     }
-                    else 
+                    else
                     {
                         // If the web server returned an unexpceted response code or failure,
                         //  write the current cache to disk, then clear it.
-                       ///// MessageBox.Show("Error, sending failed.");
+                        ///// MessageBox.Show("Error, sending failed.");
+                        connect_check = false;
                         Form1.LogMessageToFile("Server Response Error", "The server returned a " + statusCode.ToString() + " code instead of a 204");
-                        WriteToDisk();
-                        cache.Clear();
-                    }   
+                        if (type == "data")
+                        {
+                            WriteToDisk();
+                            cache.Clear();
+                        }
+                    }
+                    streamWriter.Close();
+                    streamWriter.Dispose();
+
                 }
             }
             catch (WebException e)
             {
                 // If the web server raised an exception, write the cached data to disk, then clear it.
-                MessageBox.Show("Could not connect to the server..."+ e.Message, "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                MessageBox.Show("Could not connect to the server..." + e.Message, "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
                 Form1.LogMessageToFile("Server Connect Error", e.ToString());
-                WriteToDisk();
-                cache.Clear();
+                if (type == "data")
+                {
+                    connect_check = false;
+                    WriteToDisk();
+                    cache.Clear();
+                }
             }
 
-            MessageBox.Show("After its sent/not sent: " + JsonString);
+           // MessageBox.Show("After its sent/not sent: " + JsonString);
 
             // MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             return true;
@@ -161,7 +174,7 @@ namespace vConnect
         /// </summary>
         public void WriteToDisk()
         {
-            try 
+            try
             {
                 // This function creates a new file and writes to it.
                 //  If the file already exists, it is overwritten.
