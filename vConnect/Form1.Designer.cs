@@ -58,6 +58,10 @@
             this.poll_status = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.server_status = new System.Windows.Forms.Label();
+            this.sent_label = new System.Windows.Forms.Label();
+            this.fail_label = new System.Windows.Forms.Label();
+            this.data_sent = new System.Windows.Forms.Label();
+            this.data_failed = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // trayIcon
@@ -264,7 +268,7 @@
             this.title_label.AutoSize = true;
             this.title_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 38F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.title_label.ForeColor = System.Drawing.Color.Blue;
-            this.title_label.Location = new System.Drawing.Point(2, 29);
+            this.title_label.Location = new System.Drawing.Point(0, 9);
             this.title_label.Name = "title_label";
             this.title_label.Size = new System.Drawing.Size(240, 59);
             this.title_label.TabIndex = 34;
@@ -284,7 +288,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.label1.Location = new System.Drawing.Point(29, 96);
+            this.label1.Location = new System.Drawing.Point(8, 68);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(89, 20);
             this.label1.TabIndex = 36;
@@ -294,7 +298,7 @@
             // 
             this.poll_status.AutoSize = true;
             this.poll_status.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.poll_status.Location = new System.Drawing.Point(125, 96);
+            this.poll_status.Location = new System.Drawing.Point(125, 68);
             this.poll_status.Name = "poll_status";
             this.poll_status.Size = new System.Drawing.Size(84, 20);
             this.poll_status.TabIndex = 37;
@@ -304,7 +308,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.label2.Location = new System.Drawing.Point(8, 116);
+            this.label2.Location = new System.Drawing.Point(8, 88);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(110, 20);
             this.label2.TabIndex = 38;
@@ -314,17 +318,63 @@
             // 
             this.server_status.AutoSize = true;
             this.server_status.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.server_status.Location = new System.Drawing.Point(125, 116);
+            this.server_status.Location = new System.Drawing.Point(125, 88);
             this.server_status.Name = "server_status";
             this.server_status.Size = new System.Drawing.Size(87, 20);
             this.server_status.TabIndex = 39;
             this.server_status.Text = "Connected";
+            // 
+            // sent_label
+            // 
+            this.sent_label.AutoSize = true;
+            this.sent_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.sent_label.Location = new System.Drawing.Point(8, 108);
+            this.sent_label.Name = "sent_label";
+            this.sent_label.Size = new System.Drawing.Size(108, 20);
+            this.sent_label.TabIndex = 40;
+            this.sent_label.Text = "Packets Sent:";
+            // 
+            // fail_label
+            // 
+            this.fail_label.AutoSize = true;
+            this.fail_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.fail_label.Location = new System.Drawing.Point(8, 128);
+            this.fail_label.Name = "fail_label";
+            this.fail_label.Size = new System.Drawing.Size(117, 20);
+            this.fail_label.TabIndex = 41;
+            this.fail_label.Text = "Packets Failed:";
+            this.fail_label.Click += new System.EventHandler(this.label4_Click);
+            // 
+            // data_sent
+            // 
+            this.data_sent.AutoSize = true;
+            this.data_sent.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.data_sent.Location = new System.Drawing.Point(125, 108);
+            this.data_sent.Name = "data_sent";
+            this.data_sent.Size = new System.Drawing.Size(18, 20);
+            this.data_sent.TabIndex = 42;
+            this.data_sent.Text = "0";
+            // 
+            // data_failed
+            // 
+            this.data_failed.AutoSize = true;
+            this.data_failed.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.data_failed.Location = new System.Drawing.Point(125, 128);
+            this.data_failed.Name = "data_failed";
+            this.data_failed.Size = new System.Drawing.Size(18, 20);
+            this.data_failed.TabIndex = 43;
+            this.data_failed.Text = "0";
+            this.data_failed.Click += new System.EventHandler(this.label6_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(648, 244);
+            this.Controls.Add(this.data_failed);
+            this.Controls.Add(this.data_sent);
+            this.Controls.Add(this.fail_label);
+            this.Controls.Add(this.sent_label);
             this.Controls.Add(this.server_status);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.poll_status);
@@ -385,6 +435,10 @@
         private System.Windows.Forms.Label poll_status;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label server_status;
+        private System.Windows.Forms.Label sent_label;
+        private System.Windows.Forms.Label fail_label;
+        private System.Windows.Forms.Label data_sent;
+        private System.Windows.Forms.Label data_failed;
 
     }
 }

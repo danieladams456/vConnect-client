@@ -24,30 +24,30 @@ namespace vConnect
     /// </summary>
     public class DataElement
     {
-        private string  obdPID      = "";       // PID to be sent to the car to retrive data
-        private string  obdMode     = "";       // Mode on which to send the PID.
-        private string  name        = "";       // Name of the data element
-        private string  dataType    = "";       // Data type of the element (string, number, etc.)
-        private int     returnDataSize = 0;     // Number of bytes that the element will receive from car
-        private byte[]  returnData;             // Holds the data returned from the car
-        private string  valueToSend = "";       // Holds the value to send to the server for the element
-        private string  equation    = "";       // The equation to calculate a human-readable value from 
-                                                //  the bytes returned by the car.
-        private int[]   equVals     = new int[10]; // Array that will contain raw values from the OBDII module 
-                                                   // to be used in calculating formatted data values. 
-        
-        private bool    noDataCheck = false; // Bool that will be switched to true if a data element
-                                             // doesn't need to be formatted. 
+        private string obdPID = "";       // PID to be sent to the car to retrive data
+        private string obdMode = "";       // Mode on which to send the PID.
+        private string name = "";       // Name of the data element
+        private string dataType = "";       // Data type of the element (string, number, etc.)
+        private int returnDataSize = 0;     // Number of bytes that the element will receive from car
+        private byte[] returnData;             // Holds the data returned from the car
+        private string valueToSend = "";       // Holds the value to send to the server for the element
+        private string equation = "";       // The equation to calculate a human-readable value from 
+        //  the bytes returned by the car.
+        private int[] equVals = new int[10]; // Array that will contain raw values from the OBDII module 
+        // to be used in calculating formatted data values. 
+
+        private bool noDataCheck = false; // Bool that will be switched to true if a data element
+        // doesn't need to be formatted. 
 
         private const int vinLoopCheck = 4;
-       
+
 
         // This connection gets passed from the caller. It is the current connection.
         public BluetoothConnectionHandler BTConnection;
 
         // This defines the largest potential size of return data from the car. It should never
         //  really even get close to this value.
-        private const int MAX_DATA_SIZE= 30;
+        private const int MAX_DATA_SIZE = 30;
 
         /// <summary>
         /// Constructor that defines name and PID and number of bytes explicitly 
@@ -93,12 +93,12 @@ namespace vConnect
             if (BTConnection.ConnectionStatus)
             {
                 // Initialize the read/write stream.
-             //   Stream peerStream1 = BTConnection.Client.GetStream();
+                //   Stream peerStream1 = BTConnection.Client.GetStream();
                 // Flush out any intro message.
-           //     peerStream.Flush();
+                //     peerStream.Flush();
                 // If this is the vin data element, then do the following reads in order to get all 
                 // of the bytes relating to the VIN.
-              //  MessageBox.Show(name);
+                //  MessageBox.Show(name);
                 if (name == "VIN")
                 {
                     writeString = "09" + obdPID + "\r";// Write string for VIN.
@@ -113,44 +113,30 @@ namespace vConnect
                     {
                         // Write the code to the OBDII module.
                         Form1.peerStream.Write(writeCode, 0, writeCode.Length);
-                     //   peerStream.Write(writeCode, 0, writeCode.Length);
+                        //   peerStream.Write(writeCode, 0, writeCode.Length);
                         // Must retrieve the VIN in three different reads. 
-                        System.Threading.Thread.Sleep(2000);
-                        
-                        Form1.peerStream.Read(vin1, 0, vin1.Length);
-                //        MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin1));
-                        System.Threading.Thread.Sleep(2000);
+                        System.Threading.Thread.Sleep(150);
 
+                        Form1.peerStream.Read(vin1, 0, vin1.Length);
+                        System.Threading.Thread.Sleep(100);
+                     //   MessageBox.Show(System.Text.Encoding.ASCII.GetString(vin1));
                         Form1.peerStream.Read(vin2, 0, vin2.Length);
-                       
-                     //   System.Threading.Thread.Sleep(2000);
-                        
-                     //   Form1.peerStream.Read(vin3, 0, vin3.Length);
+
+
                         if (!Form1.pollingData)
                             return false;
                     }
 
                     catch (Exception ex)
                     {
-                   
-                        if (BTConnection.EstablishBTConnection())
-                        {
-                            return RequestDataFromCar();
-                        }
-                        else
-                        {
-                            var msg = "Lost BT connection to Device. ERROR: " + ex;
-                            MessageBox.Show(msg);
-                            Form1.LogMessageToFile("Bt Connection Error", msg);
-                            return false;
-                        }
+                        var msg = "Lost BT connection to Device. ERROR: " + ex;
+                        Form1.LogMessageToFile("Bt Connection Error", msg);
+                        return false;
                     }
                     // Format the raw data read from the OBDII module.
                     valueToSend = System.Text.Encoding.ASCII.GetString(vin1)
                         + System.Text.Encoding.ASCII.GetString(vin2);
-                        //+ System.Text.Encoding.ASCII.GetString(vin3);
-                  //  MessageBox.Show(valueToSend);
-                    // valueToSend = valueToSend.Substring(4, valueToSend.Length - 4);
+                 //   MessageBox.Show("VIN:\n\n" + valueToSend);
                     valueToSend = Regex.Replace(valueToSend, @".:", "");
                     valueToSend = Regex.Replace(valueToSend, @"014", "");
                     valueToSend = Regex.Replace(valueToSend, @"49", "");
@@ -169,10 +155,9 @@ namespace vConnect
 
                     valueToSend = Regex.Replace(valueToSend, @"\0", "");
                     valueToSend = Regex.Replace(valueToSend, @"\.", "");
-          //          MessageBox.Show(valueToSend);
+                    //          MessageBox.Show(valueToSend);
 
                     string res = String.Empty;
-                    int tryLoop = 0;
 
                     try
                     {
@@ -188,18 +173,11 @@ namespace vConnect
                     }
                     catch (Exception e)
                     {
-                        if (tryLoop < vinLoopCheck)
-                        {
-                            tryLoop++;
-                            return RequestDataFromCar();
-                           
-                        }
-                        else
-                        {
-                            loopCheck = true;
-                            Form1.LogMessageToFile("VIN Parser Error", e.Message);
-                            return false;
-                        }
+
+                        loopCheck = true;
+                        Form1.LogMessageToFile("VIN Parser Error", e.Message);
+                        return false;
+
 
                     }
                     if (loopCheck == true)
@@ -210,7 +188,7 @@ namespace vConnect
                     valueToSend = Regex.Replace(valueToSend, @"\0", "");
                     valueToSend = Regex.Replace(valueToSend, @" ", "");
                     valueToSend = Regex.Replace(valueToSend, @"[^a-zA-Z0-9]", "");
-                   // MessageBox.Show(valueToSend);
+                    // MessageBox.Show(valueToSend);
                 }
 
                 // If the data element is for something other than the VIN, then use the following code
@@ -225,14 +203,13 @@ namespace vConnect
                         byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
                         Form1.peerStream.Write(writeCode, 0, writeCode.Length);
                         // Wait 10 seconds for the OBDII module to process the code request
-                        System.Threading.Thread.Sleep(1000);
+                        System.Threading.Thread.Sleep(150);
 
                         // Read the OBDII code data from the OBDII module.
                         Form1.peerStream.Read(returnData, 0, returnData.Length);
                         if (!Form1.pollingData)
                             return false;
-                     //  MessageBox.Show(System.Text.Encoding.ASCII.GetString(returnData));
-                        //peerStream.Close();
+                        // MessageBox.Show(System.Text.Encoding.ASCII.GetString(returnData));
                     }
 
 
@@ -240,15 +217,11 @@ namespace vConnect
                     // If connection is true, recall RequestDataFromCar(), starting the process over.
                     catch (Exception ex)
                     {
-                        if (BTConnection.EstablishBTConnection())
-                            return RequestDataFromCar();
-                        else
-                        {
-                            var msg = "Lost BT connection with Device.  ";
-                            MessageBox.Show(msg);
-                            Form1.LogMessageToFile("BT Connection Error", msg + ex);
-                            return false;
-                        }
+
+                        var msg = "Lost BT connection with Device.  ";
+                        Form1.LogMessageToFile("BT Connection Error", msg + ex);
+                        return false;
+
 
                     }
 
@@ -261,43 +234,49 @@ namespace vConnect
                     }
                     else
                     {
-                        int x = 0;
-                        if (System.Text.Encoding.ASCII.GetString(returnData).Contains("CONNECTED"))
-                            x = 14;
-                        // Parse the actual vehicle data from the bytes returned.
-                        if (returnDataSize == 1)
+                        try
                         {
-                            hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, x + 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, x + 12, 1);
-                            equVals[0] = Convert.ToInt32(hexLiteral, 16);
-                            
+                            int x = 0;
+                            if (System.Text.Encoding.ASCII.GetString(returnData).Contains("CONNECTED"))
+                                x = 14;
+                            // Parse the actual vehicle data from the bytes returned.
+                            if (returnDataSize == 1)
+                            {
+                                hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, x + 4, 1) + System.Text.Encoding.ASCII.GetString(returnData, x + 5, 1);
+                                equVals[0] = Convert.ToInt32(hexLiteral, 16);
+
+                            }
+                            else if (returnDataSize == 2)
+                            {
+                                hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, x + 4, 1) + System.Text.Encoding.ASCII.GetString(returnData, x + 5, 1);
+                                hexLiteral2 = System.Text.Encoding.ASCII.GetString(returnData, x + 6, 1) + System.Text.Encoding.ASCII.GetString(returnData, x + 7, 1);
+                                equVals[0] = Convert.ToInt32(hexLiteral, 16);
+                                equVals[1] = Convert.ToInt32(hexLiteral2, 16);
+                            }
                         }
-                        else if (returnDataSize == 2)
+                        catch(Exception e)
                         {
-                            hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, x + 11, 1) + System.Text.Encoding.ASCII.GetString(returnData, x + 12, 1);
-                            hexLiteral2 = System.Text.Encoding.ASCII.GetString(returnData, x + 14, 1) + System.Text.Encoding.ASCII.GetString(returnData, x + 15, 1);
-                            equVals[0] = Convert.ToInt32(hexLiteral, 16);
-                            equVals[1] = Convert.ToInt32(hexLiteral2, 16);
+                            var msg = "Polled data was corrupted.";
+                            Form1.LogMessageToFile("BT Connection Error", msg + e);
+                            return false;
+
                         }
                     }
 
                 }
-                
+
             }
 
             // If connection is lost, print to screen.
-            else 
+            else
             {
 
-                if (BTConnection.EstablishBTConnection())
-                    return RequestDataFromCar();
-                else
-                {
-                    MessageBox.Show("Lost BT Connection", "My Application",
-                    MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                Form1.LogMessageToFile("DataElement", "Lost BT Connection");
+                  
                     return false;
-                }
+                
             }
-                     
+
             return true;
         }
 
@@ -310,7 +289,7 @@ namespace vConnect
             // If the data element is for the VIN, then its already formatted, proceed if otherwise.
             if (name != "VIN")
             {
-              //  MessageBox.Show(name);
+                //  MessageBox.Show(name);
                 // Create an expression with the equation specified.
                 Expression expr = new Expression(equation);
 
@@ -344,15 +323,14 @@ namespace vConnect
                     ValueToSend = answerToExpression.ToString();
                     float temp = float.Parse(valueToSend);
                     ValueToSend = ((int)temp).ToString();
-                  //  valueToSend = Regex.Replace(valueToSend, @"\.[1-9][1-9]*", "");
-                  
 
-                    
+
+
                 }
             }
         }
 
-        
+
 
         // The following are C#'s way of using accessors (get and set). Call them with
         // Set:

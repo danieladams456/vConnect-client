@@ -32,6 +32,7 @@ using System.Text.RegularExpressions;
 
 
 
+
 namespace vConnect
 {
 
@@ -44,10 +45,12 @@ namespace vConnect
         ServerConnectionHandler serverConnection = new ServerConnectionHandler();
         DataCache cache = null;
 
+
         // Instantiates a timer used to poll data from the OBDII module.
         static public System.Threading.Timer pollData;
 
-
+        int failCounter = 0;
+        int succeedCounter = 0;
         // List that will used to hold OBDII codes before being inserted into the cache.
         List<Dictionary<string, object>> elementDictionaryList =
                                                 new List<Dictionary<string, object>>();
@@ -59,10 +62,10 @@ namespace vConnect
         // running or not. 
         static public bool pollingData = false;
         static public Stream peerStream;
-
+        BluetoothWin32Events x;
 
         // Constant that determines how often the data polling Timer will run. (In miliseconds)
-        const int POLLTIME = 60000;
+        const int POLLTIME = 20000;
 
 
 
@@ -78,15 +81,13 @@ namespace vConnect
 
             // Initialize the dataCache.
             cache = new DataCache(serverConnection);
-
             // Create a Timer callback method for polling data. 
             tcb = RequestDataForElements;
+            Microsoft.Win32.SystemEvents.PowerModeChanged += OnPowerChange;
 
             // Bool variable to record whether an OBDII device and server have been successfully detected and pinged/established connection. 
             bool deviceDetect = false;
-            bool serverDetect = false;
-
-
+            bool addrCheck = true;
             // If there is a saved BT Address, attempt to connect with the device with that address.
             if (Properties.Settings.Default.BTAddress != "" && Properties.Settings.Default.PIN != "")
             {
@@ -100,7 +101,6 @@ namespace vConnect
                     BTConnection.DeviceID = Properties.Settings.Default.BTDeviceName;
                     BT_ID.Text = Properties.Settings.Default.BTDeviceName;
                     device_Status_Label.Text = "Connected";
-                    MessageBox.Show("BT Connected Automatically");
                     deviceDetect = true;
                 }
                 else
@@ -110,7 +110,8 @@ namespace vConnect
                     Properties.Settings.Default.Save();
                 }
             }
-
+            else
+                addrCheck = false;
 
             // If no OBDII connection is established, then print to the screen stating this fact, and then
             // load the GUI. 
@@ -133,57 +134,37 @@ namespace vConnect
                 serverConnection.IPAddress = Properties.Settings.Default.ServerIP;
                 port_number.Text = serverConnection.PortNumber.ToString();
                 server_IP.Text = serverConnection.IPAddress;
-
-                // If the server is available, switch the bool value to save that info. 
-                /*       if (serverConnection.CheckServerConnection())
-                       {
-                           serverDetect = true;
-                           MessageBox.Show("Auto server connect!");
-                           port_number.Text = serverConnection.PortNumber.ToString();
-                           server_IP.Text = serverConnection.IPAddress;
-                           serverConnection.ServerConnectionStatus = true;
-                       }
-                       else
-                       {
-                           MessageBox.Show("ERROR: Could not connect to server at saved IP address and port number.");
-                           Properties.Settings.Default.ServerIP = null;
-                           server_IP.Text = "N/A";
-                           serverConnection.IPAddress = null;
-
-                           Properties.Settings.Default.ServerPort = null;
-                           port_number.Text = "0";
-                           serverConnection.PortNumber = 0;
-                           Properties.Settings.Default.Save();
-                       }*/
             }
             else
                 MessageBox.Show("No server connection data was found, please add server IP address and port number");
 
             // If connections have been established to the OBDII device and the server, then begin polling for 
             // vehicle data. 
-            if (deviceDetect)// && serverDetect)
-            {
-                MessageBox.Show("Beginning auto poll now.");
-                schema = SchemaUpdate();
-                if (schema != "NOT FOUND")
-                {
-                    poll_status.Text = "Polling";
-                    pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
-                }
-                else
-                {
-                    MessageBox.Show("Error: No Schema detected, need to update schema.");
-                    LogMessageToFile("Start Click", "Schema file was empty.");
+            //            if (deviceDetect)// && serverDetect)
+            //           {
+            schema = SchemaUpdate();
 
-                }
+            poll_status.Text = "Polling";
+            if (addrCheck)
+            {
+                pollingData = true;
+                pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
             }
-            // If connections have not been established to the OBDII device and server, then initialize the loop to 
-            // poll data, but do not start it. 
             else
             {
-                poll_status.Text = "Not Polling";
-                pollData = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
+                MessageBox.Show("No OBDII Connection info detected. Please set up OBDII Connection.");
             }
+            x = BluetoothWin32Events.GetInstance();
+            x.OutOfRange += OnoutOfRange;
+
+        }
+
+        // Deal with stuff here....
+        private void OnoutOfRange(object sender, BluetoothWin32RadioOutOfRangeEventArgs e)
+        {
+            peerStream.Close();
+            BTConnection.Client.Dispose();
+            LogMessageToFile("OutOfRange", "OutofRangeWorked... or at least ran.");
         }
 
         /// <summary>
@@ -249,12 +230,7 @@ namespace vConnect
         /// <param name="e"></param>
         private void edit_IP_button_Click(object sender, EventArgs e)
         {
-            //if (pollingData)
-            // {
-            //    MessageBox.Show("Stop Polling before Changing IP Address.");
-            //}
-            // else
-            //  {
+
             string value = "IP Address";
 
             // Saves IP address to the settings file, as well as the server connection handler. 
@@ -276,12 +252,7 @@ namespace vConnect
         /// <param name="e"></param>
         private void edit_port_button_Click(object sender, EventArgs e)
         {
-            /*   if (pollingData)
-               {
-                   MessageBox.Show("Stop Polling data before changing the port number.");
-               }
-               else
-               {*/
+
             string value = "Port Number";
             if (InputBox("New Port Number", "New Port Number (1-65535):", ref value) == DialogResult.OK)
             {
@@ -427,45 +398,51 @@ namespace vConnect
         /// <param name="e"></param>
         private void start_button_Click(object sender, EventArgs e)
         {
-            /*     if (serverConnection.CheckServerConnection())
-                 {
-                     Properties.Settings.Default.ServerIP = serverConnection.IPAddress;
-                     Properties.Settings.Default.ServerPort = serverConnection.PortNumber.ToString();
-                     Properties.Settings.Default.Save();
-                 }*/
-            // If data is already being polled, then nothing to do. 
+            start_polling();
+        }
+
+
+        private void start_polling()
+        {
             if (pollingData)
                 MessageBox.Show("Already Polling Data");
 
             // If no data is currently being polled, update the schema, then
             // begin polling data.
-            else if (BTConnection.BTConnectionStatus) //&& serverConnection.CheckServerConnection())
+            // else if (BTConnection.BTConnectionStatus) //&& serverConnection.CheckServerConnection())
+            //{
+            schema = SchemaUpdate();
+            if (schema != "NOT FOUND")
             {
-                schema = SchemaUpdate();
-                if (schema != "NOT FOUND")
+                peerStream.Flush();
+                poll_status.Text = "Polling";
+                this.Invoke((MethodInvoker)delegate
                 {
-                    peerStream.Flush();
                     poll_status.Text = "Polling";
-                    pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
-                }
-                else
-                {
-                    MessageBox.Show("Error: No Schema detected, need to update schema.");
-                    LogMessageToFile("Start Click", "Schema file was empty.");
+                });
+                pollingData = true;
+                pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
+                Form1.LogMessageToFile("Start polling", "Inside polling worked");
 
-                }
             }
             else
             {
-                //  if (!BTConnection.BTConnectionStatus && !serverConnection.ServerConnectionStatus)
-                //        MessageBox.Show("No connection to OBDII device or server, cannot start.");
-                if (!BTConnection.BTConnectionStatus)
-                    MessageBox.Show("No connection to OBDII device, cannot start.");
-                //    else if (!serverConnection.ServerConnectionStatus)
-                //      MessageBox.Show("No connection to server, cannot start.");
-            }
-        }
+                MessageBox.Show("Error: No Schema detected, need to update schema.");
+                LogMessageToFile("Start Click", "Schema file was empty.");
 
+            }
+            // }
+            /*  else
+              {
+                  //  if (!BTConnection.BTConnectionStatus && !serverConnection.ServerConnectionStatus)
+                  //        MessageBox.Show("No connection to OBDII device or server, cannot start.");
+                  if (!BTConnection.BTConnectionStatus)
+                      MessageBox.Show("No connection to OBDII device, cannot start.");
+                  //    else if (!serverConnection.ServerConnectionStatus)
+                  //      MessageBox.Show("No connection to server, cannot start.");
+              }*/
+
+        }
 
         /// <summary>
         /// Stop polling vehicle data. 
@@ -476,6 +453,15 @@ namespace vConnect
         {
             stop_polling();
             poll_status.Text = "Polling";
+            succeedCounter = 0;
+            failCounter = 0;
+            data_failed.Text = "0";
+            data_sent.Text = "0";
+            this.Invoke((MethodInvoker)delegate
+            {
+                poll_status.Text = "Not Polling";
+            });
+
         }
 
         static private void stop_polling()
@@ -489,9 +475,13 @@ namespace vConnect
             else
             {
 
+
                 pollingData = false;
                 pollData.Change(Timeout.Infinite, Timeout.Infinite);
-                System.Threading.Thread.Sleep(7000);
+                LogMessageToFile("Power Mode: Suspend", "Stop polling worked");
+
+                System.Threading.Thread.Sleep(2050);
+
                 pollData = null;
             }
 
@@ -517,8 +507,56 @@ namespace vConnect
             }
             return schema;
         }
+        //   public event 
 
 
+
+        private void OnPowerChange(object s, Microsoft.Win32.PowerModeChangedEventArgs e)
+        {
+            switch (e.Mode)
+            {
+                case Microsoft.Win32.PowerModes.Resume:
+
+                    LogMessageToFile("PowerMode", "Resuming");
+                    if (pollingData)
+                    {
+                        try
+                        {
+                            LogMessageToFile("Power Mode: Resumeing", "Inside try");
+
+                            pollingData = false;
+                            BTConnection.EstablishBTConnection();
+                            start_polling();
+                        }
+                        catch
+                        {
+                            LogMessageToFile("Power Mode: Resume", "ERROR: " + e);
+                        }
+                    }
+                    break;
+                case Microsoft.Win32.PowerModes.Suspend:
+                    if (pollingData)
+                    {
+                        try
+                        {
+                            if (BTConnection.CloseBTConnection())
+                                LogMessageToFile("Power Mode: Suspend", "WOrked?");
+
+                            stop_polling();
+                        }
+                        catch
+                        {
+                            LogMessageToFile("Power Mode: Suspend", "ERROR:" + e);
+                        }
+                        finally
+                        {
+                            pollingData = true;
+                        }
+                    }
+                    LogMessageToFile("PowerMode", "Suspending");
+                    break;
+            }
+        }
         /// <summary>
         /// This function serves as the launching point for requesting data.
         /// 
@@ -542,38 +580,136 @@ namespace vConnect
         /// </summary>
         public void RequestDataForElements(object sender)
         {
-            pollingData = true;
-        //    MessageBox.Show("Starting.");
-            // Create a list of DataElements.
-            List<DataElement> elemList = new List<DataElement>();
+            try
+            {
+                schema = SchemaUpdate();
+                // LABEL FOR SCHEMA NOT UP TO DATE.
+                if (BTConnection.Client.Connected && schema != "NOT FOUND")
+                {
 
-            // Create a dictionary of string-object pairs. This will contain the key-value pairs
-            //  to be sent to the server.
-            Dictionary<string, object> dictionary = new Dictionary<string, object>();
+                    pollingData = true;
+                    //    MessageBox.Show("Starting.");
+                    // Create a list of DataElements.
+                    List<DataElement> elemList = new List<DataElement>();
 
-            // Create the "shell" of empty elements from the schema.
-            elemList = CreateElementsFromSchema(schema);
+                    // Create a dictionary of string-object pairs. This will contain the key-value pairs
+                    //  to be sent to the server.
+                    Dictionary<string, object> dictionary = new Dictionary<string, object>();
 
-            // Fill the contents of the elements with the data from the car
-            if (!pollingData)
-                return;
-            elemList = GetElementData(elemList);
-            if (elemList == null)
-                return;
-            // Create a dictionary out of the list of elements.
-            dictionary = CreateDictionary(elemList);
+                    // Create the "shell" of empty elements from the schema.
+                    elemList = CreateElementsFromSchema(schema);
 
-            // Add the dictionary containing the data points to the cache.
-            cache.AddElementToCache(dictionary);
-            if (!pollingData)
-                return;
-            CheckForErrorCodes(elemList);
-            cache.SendToServer(cache.JsonString, "data");
-      //      if (cache.connect_check)
-        //        server_status.Text = "Connected";
-         //   else
-          //      server_status.Text = "Not Connected";
+                    // Fill the contents of the elements with the data from the car
+                    if (!pollingData)
+                        return;
+                    elemList = GetElementData(elemList);
+                    if (elemList == null && !pollingData)
+                        return;
+                    else if (elemList == null)
+                    {
+                        failCounter = failCounter + 1;
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            data_failed.Text = failCounter.ToString();
+                        });
+                        return;
+                    }
+                    // Create a dictionary out of the list of elements.
+                    dictionary = CreateDictionary(elemList);
+
+                    // Add the dictionary containing the data points to the cache.
+                    cache.AddElementToCache(dictionary);
+                    if (!pollingData)
+                        return;
+                    if (CheckForErrorCodes(elemList) == false)
+                    {
+                        failCounter = failCounter + 1;
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            data_failed.Text = failCounter.ToString();
+                        });
+                        return;
+                    }
+                    else
+                    {
+                        succeedCounter = succeedCounter + 1;
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            data_sent.Text = succeedCounter.ToString();
+                        });
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            server_status.Text = "Connected";
+                        });
+
+                    }
+                    if (cache.SendToServer(cache.JsonString, "data"))
+                    {
+                        succeedCounter = succeedCounter + 1;
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            data_sent.Text = succeedCounter.ToString();
+                        });
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            server_status.Text = "Connected";
+                        });
+
+                    }
+                    else
+                    {
+                        failCounter = failCounter + 1;
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            data_failed.Text = failCounter.ToString();
+                        });
+
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            server_status.Text = "Not Connected";
+                        });
+                        return;
+
+                    }
+                }
+                else
+                {
+
+                    try { peerStream.Close(); }
+                    catch { ;}
+
+
+                    BTConnection.Client.Dispose();
+                    BTConnection.EstablishBTConnection();
+                    return;
+                }
+
+                if (cache.connect_check)
+                {
+                    this.Invoke((MethodInvoker)delegate
+                    {
+                        server_status.Text = "Connected";
+                    });
+                }
+                else
+                {
+                    this.Invoke((MethodInvoker)delegate
+                    {
+                        server_status.Text = "Disconnected";
+                    });
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                System.Threading.Thread.Sleep(100);
+
+                LogMessageToFile("Pool Loop.", "Unknown Error in polling loop." + e);
+                MessageBox.Show("Unknown Polling Loop error.");
+
+            }
         }
+
 
 
         /// <summary>
@@ -676,8 +812,8 @@ namespace vConnect
                     // Get data from the car for the element and format it.
                     if (!elem.RequestDataFromCar())
                     {
-                        if (!BTConnection.ConnectionStatus)
-                            stop_polling();
+                        //  if (!BTConnection.ConnectionStatus)
+                        //     stop_polling();
 
                         return null;
                     }
@@ -705,20 +841,21 @@ namespace vConnect
             // Loop through each element in the list, and 
             foreach (DataElement elem in elemList)
             {
-                if (elem.ValueToSend == "Not supported")
-                    ;
+                if (elem.ValueToSend != "Not supported")
+                {
 
-                // If the datatype is a number, send the value as an integer
-                else if (elem.DataType == "number")
-                    elementDictionary.Add(elem.Name, elem.ValueToSend);
+                    // If the datatype is a number, send the value as an integer
+                    if (elem.DataType == "number")
+                        elementDictionary.Add(elem.Name, elem.ValueToSend);
 
-                // If the datatype is a date, send it as a String?
-                else if (elem.DataType == "date")
-                    elementDictionary.Add(elem.Name, elem.ValueToSend);
+                   // If the datatype is a date, send it as a String?
+                    else if (elem.DataType == "date")
+                        elementDictionary.Add(elem.Name, elem.ValueToSend);
 
-                // IF the datatype is a date, just send it as a string.
-                else if (elem.DataType == "string")
-                    elementDictionary.Add(elem.Name, elem.ValueToSend);
+                    // IF the datatype is a date, just send it as a string.
+                    else if (elem.DataType == "string")
+                        elementDictionary.Add(elem.Name, elem.ValueToSend);
+                }
             }
 
             // Return the dictionary containing the name of each element and its
@@ -734,8 +871,6 @@ namespace vConnect
         {
             byte[] errorCode = new byte[60];
             string errorString = "";
-            bool exit = false;
-
             try
             {
                 if (!pollingData)
@@ -746,82 +881,81 @@ namespace vConnect
                     byte[] writeCode = System.Text.Encoding.ASCII.GetBytes("03 \r");
                     peerStream.Flush();
                     peerStream.Write(writeCode, 0, writeCode.Length);
-                    System.Threading.Thread.Sleep(5000);
+                    System.Threading.Thread.Sleep(2000);
                     peerStream.Read(errorCode, 0, errorCode.Length);
+                    //  MessageBox.Show("ERROR MESSAGE: \n\n" + System.Text.Encoding.ASCII.GetString(errorCode));
                     //peerStream.Close();
                 }
 
                 catch (Exception ex)
                 {
-                    if (BTConnection.EstablishBTConnection())
-                        return CheckForErrorCodes(elemList);
-                    else
-                    {
-                        var msg = "failed to re- connect to BT Device.  ";
-                        MessageBox.Show(msg);
-                        LogMessageToFile("Checking for error codes error", msg + ex);
-                        stop_polling();
-                        return false;
-                        //  exit = true;
-                    }
-
-                }
-                if (!pollingData || exit)
+                    var msg = "Lost connection to OBDII device.  ";
+                    LogMessageToFile("Checking for error codes error", msg + ex);
                     return false;
-                byte[] subErrorCode = new byte[5];
-                int counter = 7;
+                }
+                if (!pollingData)
+                    return false;
+                byte[] subErrorCode = new byte[4];
+                int counter = 2;
                 bool loopExit = false;
                 string toSend = null;
-                string hexLiteral = System.Text.Encoding.ASCII.GetString(errorCode, 10, 1) + System.Text.Encoding.ASCII.GetString(errorCode, 11, 1) + " \r";
-           //     MessageBox.Show("Literal: " + hexLiteral);
+                string hexLiteral = System.Text.Encoding.ASCII.GetString(errorCode);
+                //     MessageBox.Show("Literal: " + hexLiteral);
                 //    if (!System.Text.Encoding.ASCII.GetString(errorCode).Contains("NO DATA"))
-                if (hexLiteral != "00 \r")
+                if (System.Text.Encoding.ASCII.GetString(errorCode).Contains("4300\n4300\n\n"))
                 {
 
 
-
+                    bool first = true;
                     while (!loopExit)
                     {
-                        subErrorCode = errorCode.Skip(counter).Take(5).ToArray();
+                        subErrorCode = errorCode.Skip(counter).Take(4).ToArray();
 
                         errorString = parseErrorCode(subErrorCode);
-
+                        // MessageBox.Show(errorString);
 
                         if (errorString == "P0000")
                             loopExit = true;
                         else
                         {
-                            toSend = "[{\"VIN\":\"" + elemList[1].ValueToSend + "\",\"timestamp\":\"" + DateTime.Now.ToString()
-                                + "\",\"trouble_code\":\"" + errorString + "\"}]";
+                            if (first)
+                            {
+                                toSend = toSend + "{\"VIN\":\"" + elemList[1].ValueToSend + "\",\"timestamp\":\"" + DateTime.Now.ToString()
+                                    + "\",\"trouble_code\":\"" + errorString + "\"}";
+                                first = false;
+                            }
+                            else
+                                toSend = toSend + ",{\"VIN\":\"" + elemList[1].ValueToSend + "\",\"timestamp\":\"" + DateTime.Now.ToString()
+                                    + "\",\"trouble_code\":\"" + errorString + "\"}";
+
 
                             // cache.SendToServer(toSend, "alert");
                         }
-                        counter += 6;
-                        if ((counter - 3) % 22 == 0)
-                        {
-                            if (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) == "\r" && System.Text.Encoding.ASCII.GetString(errorCode, 1 + counter, 1) == "\r")
-                                loopExit = true;
-                            else
-                                counter += 4;
-                        }
+                        counter += 4;
+
+                        if (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) == "\r" && System.Text.Encoding.ASCII.GetString(errorCode, 1 + counter, 1) == "\r")
+                            loopExit = true;
+                        else if (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) == "\r")
+                            counter += 3;
+
                     }
+                    toSend = "[" + toSend + "]";
+                    //  MessageBox.Show("ALL THE CODES" + toSend);
                     cache.SendToServer(toSend, "alert");
 
 
                 }
                 else
                 {
-                    /////           MessageBox.Show("No error codes.");
-                    return false;
+                    // MessageBox.Show("No error codes.");
+                    return true;
                 }
 
 
             }
             catch (Exception e)
             {
-                MessageBox.Show("Cannot Check for Error Codes, no BT connection.");
                 LogMessageToFile("Error code check", "Lost BT connection: " + e.Message);
-                stop_polling();
                 return false;
             }
 
@@ -844,33 +978,40 @@ namespace vConnect
             string DTC4 = "";
             string DTC5 = "";
 
+            try
+            {
+                // This is just using bytes based... 
+                int DTC1Check = (errorCode[0] >> 2) & 0x3;
 
-            // This is just using bytes based... 
-            int DTC1Check = (errorCode[0] >> 2) & 0x3;
+                if (DTC1Check == 0)
+                    DTC1 = "P";
+                else if (DTC1Check == 1)
+                    DTC1 = "C";
+                else if (DTC1Check == 2)
+                    DTC1 = "B";
+                else if (DTC1Check == 3)
+                    DTC1 = "U";
 
-            if (DTC1Check == 0)
-                DTC1 = "P";
-            else if (DTC1Check == 1)
-                DTC1 = "C";
-            else if (DTC1Check == 2)
-                DTC1 = "B";
-            else if (DTC1Check == 3)
-                DTC1 = "U";
+                int DTC2Check = errorCode[0] & 0x3;
+                DTC2 = DTC2Check.ToString();
 
-            int DTC2Check = errorCode[0] & 0x3;
-            DTC2 = DTC2Check.ToString();
+                int DTC3Check = errorCode[1] & 0xF;
+                DTC3 = DTC3Check.ToString();
 
-            int DTC3Check = errorCode[1] & 0xF;
-            DTC3 = DTC3Check.ToString();
+                int DTC4Check = errorCode[2] & 0xF;
+                DTC4 = DTC4Check.ToString();
 
-            int DTC4Check = errorCode[3] & 0xF;
-            DTC4 = DTC4Check.ToString();
+                int DTC5Check = errorCode[3] & 0xF;
+                DTC5 = DTC5Check.ToString();
 
-            int DTC5Check = errorCode[4] & 0xF;
-            DTC5 = DTC5Check.ToString();
+                errorString = DTC1 + DTC2 + DTC3 + DTC4 + DTC5;
+            }
+            catch (Exception e)
+            {
+                LogMessageToFile("Parser", "Bad Parse" + e);
+                return "P0000";
 
-            errorString = DTC1 + DTC2 + DTC3 + DTC4 + DTC5;
-
+            }
             return errorString;
         }
 
@@ -1028,5 +1169,20 @@ namespace vConnect
                 }
             }
         }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
+
+
+
     }
 }

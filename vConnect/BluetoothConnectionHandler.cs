@@ -44,7 +44,7 @@ namespace vConnect
         private string pIN = "0";
 
         // Number of times vConnect with attempt to connect to the application. 
-        private int connectionAttempts = 4;
+        private int connectionAttempts = 3;
 
 
 
@@ -87,31 +87,34 @@ namespace vConnect
         /// </returns>
         public bool EstablishBTConnection()
         {
-            pIN = "912978";
             // Close connection if already established. 
             // Not sure if we want to try and auto-connect to previous. 
-            if (client.Connected)
-            {
-                MessageBox.Show("Close current BT connection before selecting another device.");
-                return true;
-            }
-
-            //            if (deviceID != "CBT." || deviceID != "OBDII" || deviceID != "OBDLink LX" || true == true)
+  //          if (client.Connected)
+    //        {
+      //          MessageBox.Show("Close current BT connection before selecting another device.");
+        //        return true;
+         //   }
+            //if (client.Connected)
+              //  client.Dispose();
+            //            if (deviceID != "OBDLink LX")
             //           {
             //              MessageBox.Show("ERROR: attempted to connect to a non-OBDII device");
             //             deviceID = null;
             //            return false;
             //       }
-
+            pIN = "631434";
             client = new BluetoothClient();
             // Initialize serviceClass and endpoint.
-            serviceClass = BluetoothService.SerialPort;
+           // serviceClass = BluetoothService.SerialPort;
+            serviceClass = new Guid("{00112233-4455-6677-8899-aabbccddeeff}");
             endpoint = new BluetoothEndPoint(bluetoothAddress, serviceClass);
-
             // Set the PIN to be used in the connection attempt.
             client.SetPin(pIN);
             // Tries to connect, catches exception is connection fails,
             // and then will try to connect seven more times before giving it up.
+            Form1.LogMessageToFile("BTCONNECTION", "BEfore try to connect");
+            Form1.LogMessageToFile("BTCONNECTION", bluetoothAddress.ToString());
+            Form1.LogMessageToFile("BTCONNECTION", serviceClass.ToString());
             try { client.Connect(endpoint); }
 
             catch (Exception ex)
@@ -127,8 +130,9 @@ namespace vConnect
                 else
                 {
                     var msg = "failed to connect to BT Device. ERROR:\n\n " + ex;
-                    MessageBox.Show(msg);
+                //    MessageBox.Show(msg);
                     Form1.LogMessageToFile("BT Connection ERROR", msg);
+                    connectLoop = 0;
                     return false;
                 }
             }
@@ -137,9 +141,62 @@ namespace vConnect
             // Name and BT address. 
             if (client.Connected)
             {
+                Form1.LogMessageToFile("BTCONNECTION", "in IF STSTEMETN");
+
+
                 Form1.peerStream = client.GetStream();
+                byte[] test = System.Text.Encoding.ASCII.GetBytes("010D\r");
+                Form1.peerStream.Write(test, 0, test.Length);
+                System.Threading.Thread.Sleep(500);
+                byte[] testRead = new byte[30];
+                Form1.peerStream.Read(testRead,0,testRead.Length);
+
+                string check = System.Text.Encoding.ASCII.GetString(testRead);
+              
+                if (check.Contains("SEARCHING") || check.Contains("BUS INIT") || check.Contains("UNABLE TO CONNECT") || check.Contains("ERROR"))
+                {
+                    MessageBox.Show("Invalid PIN number or vehicle is off.");
+                    CloseBTConnection();
+                    return false;
+                }
+                byte[] first= System.Text.Encoding.ASCII.GetBytes("AT D\r");
+                byte[] second= System.Text.Encoding.ASCII.GetBytes("AT Z\r");
+
+                byte[] third= System.Text.Encoding.ASCII.GetBytes("AT E0\r");
+
+                byte[] fourth= System.Text.Encoding.ASCII.GetBytes("AT L0\r");
+
+                byte[] fifth= System.Text.Encoding.ASCII.GetBytes("AT S0\r");
+
+                byte[] sixth= System.Text.Encoding.ASCII.GetBytes("AT H0\r");
+
+                byte[] seventh= System.Text.Encoding.ASCII.GetBytes("AT SP 0\r");
+
               //  byte[] test = System.Text.Encoding.ASCII.GetBytes("AT SP 0");
-             //   Form1.peerStream.Write(test, 0, test.Length);
+                Form1.peerStream.Write(first, 0, first.Length);
+                System.Threading.Thread.Sleep(500);
+
+//                Form1.peerStream.Write(second, 0, second.Length);
+                System.Threading.Thread.Sleep(500);
+
+                Form1.peerStream.Write(third, 0, third.Length);
+                System.Threading.Thread.Sleep(500);
+
+                Form1.peerStream.Write(fourth, 0, fourth.Length);
+                System.Threading.Thread.Sleep(500);
+
+                Form1.peerStream.Write(fifth, 0, fifth.Length);
+                System.Threading.Thread.Sleep(500);
+
+                Form1.peerStream.Write(sixth, 0, sixth.Length);
+                System.Threading.Thread.Sleep(500);
+
+            //    Form1.peerStream.Write(seventh, 0, seventh.Length);
+                System.Threading.Thread.Sleep(500);
+
+                System.Threading.Thread.Sleep(500);
+                byte[] read = new byte[100];
+                Form1.peerStream.Read(read, 0, read.Length);
                 bTConnectionStatus = true;
             /////    MessageBox.Show("Connected!");
                 Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
@@ -169,13 +226,14 @@ namespace vConnect
                 Properties.Settings.Default.BTDeviceName = null;
                 Form1.peerStream.Close();
                 client.Dispose();
+                Form1.LogMessageToFile("CLOSER", "REached this point");
                 return true;
             }
             // If there is no connection to close, print to the screen, and print to screen.
             else
             {
-                MessageBox.Show("No connection to close.", "My Application",
-                  MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                //MessageBox.Show("No connection to close.", "My Application",
+                //  MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
                 return false;
             }
 

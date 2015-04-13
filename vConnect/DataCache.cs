@@ -71,8 +71,6 @@ namespace vConnect
         /// </returns>
         public bool SendToServer(string jsonString, string type)
         {
-            if (type == "data")
-                MessageBox.Show("stuff to send: \n\n" + jsonString);
             // Check if the cache-file (used for storing cached data that failed to send)
             //  contains any data. If it does, then read that data.
             try
@@ -84,6 +82,8 @@ namespace vConnect
             {
                 Form1.LogMessageToFile("Cache File Info Error", e.ToString());
             }
+            //if (type == "data")
+             //   MessageBox.Show("stuff to send: \n\n" + jsonString);
 
             string webAddress = null;
             // Create the web address to connect to
@@ -118,19 +118,22 @@ namespace vConnect
 
                     int statusCode = (int)httpResponse.StatusCode;
                     //                    MessageBox.Show("WHYYYY?");
-
+                    streamWriter.Close();
+                    streamWriter.Dispose();
                     if (statusCode == 204)
                     {
+                        
                         //          MessageBox.Show("This doesn't even make sense...");
                         connect_check = true;
-                        if (type == "alert")
-                            MessageBox.Show("Error codes successfully sent.");
-                        else
+                       // if (type == "alert")
+                      //      MessageBox.Show("Error codes successfully sent.");
+                        if (type == "data")
                         {
                             cache.Clear();
-                            MessageBox.Show("PID codes successfully sent.");
+                           // MessageBox.Show("PID codes successfully sent.");
                         }
                         // File.AppendAllText("test.txt", jsonString + "\n\nAND IT WORKED!\n\n");
+                        return true;
                     }
                     else
                     {
@@ -144,9 +147,10 @@ namespace vConnect
                             WriteToDisk();
                             cache.Clear();
                         }
+                        return false;
+
                     }
-                    streamWriter.Close();
-                    streamWriter.Dispose();
+                    
 
                 }
             }
@@ -166,7 +170,7 @@ namespace vConnect
            // MessageBox.Show("After its sent/not sent: " + JsonString);
 
             // MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
-            return true;
+            return false;
         }
 
         /// <summary>
