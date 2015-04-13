@@ -65,7 +65,7 @@ namespace vConnect
             catch (PlatformNotSupportedException)
             {
                 // Write the error to the log.
-                Form1.LogMessageToFile("Bluetooth Failure", "The application does not support the client's Bluetooth Stack.");
+                Form1.LogMessageToFile("error","Bluetooth Failure", "The application does not support the client's Bluetooth Stack.");
 
                 // Inform the user why the application will not run
                 MessageBox.Show("vConnect does not support the client's Bluetooth Stack.\n\nConsult the documentation for supported ones.", "Quitting");
@@ -112,9 +112,9 @@ namespace vConnect
             client.SetPin(pIN);
             // Tries to connect, catches exception is connection fails,
             // and then will try to connect seven more times before giving it up.
-            Form1.LogMessageToFile("BTCONNECTION", "BEfore try to connect");
-            Form1.LogMessageToFile("BTCONNECTION", bluetoothAddress.ToString());
-            Form1.LogMessageToFile("BTCONNECTION", serviceClass.ToString());
+            Form1.LogMessageToFile("event","BTCONNECTION", "BEfore try to connect");
+            Form1.LogMessageToFile("event","BTCONNECTION", bluetoothAddress.ToString());
+            Form1.LogMessageToFile("event","BTCONNECTION", serviceClass.ToString());
             try { client.Connect(endpoint); }
 
             catch (Exception ex)
@@ -122,7 +122,6 @@ namespace vConnect
                 if (connectLoop < connectionAttempts)
                 {
                     connectLoop++;
-               /////     MessageBox.Show("Reconnect attempt in BTConnection handler");
                    return EstablishBTConnection();
                 }
                 // If connection cannot be established after seven attempts, send Windows Error Message,
@@ -130,8 +129,7 @@ namespace vConnect
                 else
                 {
                     var msg = "failed to connect to BT Device. ERROR:\n\n " + ex;
-                //    MessageBox.Show(msg);
-                    Form1.LogMessageToFile("BT Connection ERROR", msg);
+                    Form1.LogMessageToFile("error","BT Connection ERROR", msg);
                     connectLoop = 0;
                     return false;
                 }
@@ -141,7 +139,7 @@ namespace vConnect
             // Name and BT address. 
             if (client.Connected)
             {
-                Form1.LogMessageToFile("BTCONNECTION", "in IF STSTEMETN");
+                Form1.LogMessageToFile("event","BTCONNECTION", "in IF STSTEMETN");
 
 
                 Form1.peerStream = client.GetStream();
@@ -172,7 +170,6 @@ namespace vConnect
 
                 byte[] seventh= System.Text.Encoding.ASCII.GetBytes("AT SP 0\r");
 
-              //  byte[] test = System.Text.Encoding.ASCII.GetBytes("AT SP 0");
                 Form1.peerStream.Write(first, 0, first.Length);
                 System.Threading.Thread.Sleep(500);
 
@@ -194,11 +191,9 @@ namespace vConnect
             //    Form1.peerStream.Write(seventh, 0, seventh.Length);
                 System.Threading.Thread.Sleep(500);
 
-                System.Threading.Thread.Sleep(500);
                 byte[] read = new byte[100];
                 Form1.peerStream.Read(read, 0, read.Length);
                 bTConnectionStatus = true;
-            /////    MessageBox.Show("Connected!");
                 Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
                 Properties.Settings.Default.Save();
                 connectLoop = 0;
@@ -226,14 +221,13 @@ namespace vConnect
                 Properties.Settings.Default.BTDeviceName = null;
                 Form1.peerStream.Close();
                 client.Dispose();
-                Form1.LogMessageToFile("CLOSER", "REached this point");
+                Form1.LogMessageToFile("event","CLOSER", "REached this point");
                 return true;
             }
             // If there is no connection to close, print to the screen, and print to screen.
             else
             {
-                //MessageBox.Show("No connection to close.", "My Application",
-                //  MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+             
                 return false;
             }
 

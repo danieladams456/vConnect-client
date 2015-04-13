@@ -19,28 +19,35 @@ namespace vConnect
         private string errorMessageToClient = "";
         private string ipAddress = "";
         private int portNumber = 0;
+        
 
+        /// <summary>
+        /// Function that sends a specific http request to the specified IP and port number to determine
+        /// if the server is currently accepting vConnect/OBDII requests. 
+        /// </summary>
+        /// <returns>
+        /// True => A http request to the server is verified.
+        /// False => A http request to the server fails. 
+        /// </returns>
         public bool CheckServerConnection()
         {
-            bool serverConnection = false;
             try
             {
+                // Web address to send the request to. 
                 string webAddress = "http://" + ipAddress + ":" + portNumber + "/status";
                 
-                // Create the web request with Json/Post attributes and given address
+                // Create the web request with /Post attributes and given address
                 var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
                 httpWebRequest.ContentType = "text/plain";
                 httpWebRequest.Method = "HEAD";
                 httpWebRequest.UserAgent = "vConnect";
-
-                MessageBox.Show("Before response part");
 
                 // Get web response (most importantly, status code)
                 var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
                 int statusCode = (int)httpResponse.StatusCode;
 
                 if (statusCode.ToString() == "204")
-                    serverConnection = true;
+                    return true;
             }
             catch (Exception e)
             {
@@ -48,7 +55,7 @@ namespace vConnect
                 return false;
             }
 
-            return serverConnection;
+            return false;
         }
 
         public bool SendServerErrorMessage()

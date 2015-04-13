@@ -8,6 +8,10 @@
  *  values to be sent to a server. It implements this using Json.Net in order to 
  *  store the data points in a list of dictionaries that are converted to a JSON
  *  string before being sent to the server. 
+ *  
+ * This class also supports general Json strings to be sent to a server, which 
+ * in the case of vConnect, also includes Alert/Error codes. 
+ *  
  */
 using System;
 using System.Collections.Generic;
@@ -27,12 +31,16 @@ namespace vConnect
     /// </summary>
     class DataCache
     {
+        // Cache list to hold data elements (will be in Json form.)
         List<Dictionary<string, object>> cache = new List<Dictionary<string, object>>();
         ServerConnectionHandler serverConnection;
 
         // File to write the cache to if necessary.
         const string CACHEFILE = "jsonCache.txt";
-        public bool connect_check = true;
+        
+        // Value used by Form1 to determine if the server has been connected with as
+        // of its last request. Used to keep UI up to date. 
+        private bool connect_check = true;
 
         /// <summary>
         /// Constructor for initializing the server connection.
@@ -80,68 +88,56 @@ namespace vConnect
             }
             catch (Exception e)
             {
-                Form1.LogMessageToFile("Cache File Info Error", e.ToString());
+                Form1.LogMessageToFile("error","Cache File Info Error", e.ToString());
             }
-            //if (type == "data")
-             //   MessageBox.Show("stuff to send: \n\n" + jsonString);
+            
 
             string webAddress = null;
+            
             // Create the web address to connect to
             webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber + "/" + type;
-            // MessageBox.Show(serverConnection.IPAddress);
+            
             // Create the web request with Json/Post attributes and given address
             var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
             httpWebRequest.UserAgent = "vConnect";
-            // MessageBox.Show("?");
             try
             {
-                //    MessageBox.Show("How about here0?");
-                // var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream());
-                // Write the current JSON string to the server
-
+                // Create streamWriter object to handle the request.
                 using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                 {
-
+                    // Send json string and close the stream. 
                     streamWriter.Write(jsonString + "\n");
-
                     streamWriter.Flush();
-                    //     MessageBox.Show("How about here3?");
-
                     streamWriter.Close();
-                    //   MessageBox.Show("How about here?");
 
                     // Get web response (most importantly, status code)
                     var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                    //   MessageBox.Show("OR here?");
 
                     int statusCode = (int)httpResponse.StatusCode;
-                    //                    MessageBox.Show("WHYYYY?");
-                    streamWriter.Close();
-                    streamWriter.Dispose();
+                   // streamWriter.Close();
+                   // streamWriter.Dispose();
                     if (statusCode == 204)
                     {
-                        
-                        //          MessageBox.Show("This doesn't even make sense...");
+                        // Set to true, to be used in Form1 to keep UI up to date in terms of 
+                        // server connection status. 
                         connect_check = true;
-                       // if (type == "alert")
-                      //      MessageBox.Show("Error codes successfully sent.");
+
+                        // Empty the cache since all stored data elements have been successfully
+                        // sent to the server.
                         if (type == "data")
-                        {
                             cache.Clear();
-                           // MessageBox.Show("PID codes successfully sent.");
-                        }
-                        // File.AppendAllText("test.txt", jsonString + "\n\nAND IT WORKED!\n\n");
+                           
                         return true;
                     }
                     else
                     {
-                        // If the web server returned an unexpceted response code or failure,
-                        //  write the current cache to disk, then clear it.
-                        ///// MessageBox.Show("Error, sending failed.");
+                        //  If the web server returned an unexpceted response code or failure,
+                        //  write the current cache to disk, then clear it, if this was called to set
+                        // data elements, and not alerts. 
                         connect_check = false;
-                        Form1.LogMessageToFile("Server Response Error", "The server returned a " + statusCode.ToString() + " code instead of a 204");
+                        Form1.LogMessageToFile("error","Server Response Error", "The server returned a " + statusCode.ToString() + " code instead of a 204");
                         if (type == "data")
                         {
                             WriteToDisk();
@@ -157,8 +153,7 @@ namespace vConnect
             catch (WebException e)
             {
                 // If the web server raised an exception, write the cached data to disk, then clear it.
-                MessageBox.Show("Could not connect to the server..." + e.Message, "Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
-                Form1.LogMessageToFile("Server Connect Error", e.ToString());
+                Form1.LogMessageToFile("error","Server Connect Error", e.ToString());
                 if (type == "data")
                 {
                     connect_check = false;
@@ -167,9 +162,6 @@ namespace vConnect
                 }
             }
 
-           // MessageBox.Show("After its sent/not sent: " + JsonString);
-
-            // MessageBox.Show(JsonString, "JSON Results", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             return false;
         }
 
@@ -187,7 +179,7 @@ namespace vConnect
             catch (IOException e)
             {
                 // If the write to file fails, log the error.
-                Form1.LogMessageToFile("Cache File Write Error", e.ToString());
+                Form1.LogMessageToFile("error","Cache File Write Error", e.ToString());
             }
         }
 
@@ -213,7 +205,7 @@ namespace vConnect
             catch (IOException e)
             {
                 // If the write to file fails, log the error.
-                Form1.LogMessageToFile("Cache File Read Error", e.ToString());
+                Form1.LogMessageToFile("error","Cache File Read Error", e.ToString());
             }
 
             try
@@ -225,7 +217,7 @@ namespace vConnect
             catch (JsonSerializationException e)
             {
                 // If the Json -> List<Dictionary<string,object>> fails, catch it.
-                Form1.LogMessageToFile("Cache File Read Error", "Malformed JSON in file:" + e.ToString());
+                Form1.LogMessageToFile("error","Cache File Read Error", "Malformed JSON in file:" + e.ToString());
             }
 
             // Create a temporary copy of the existing cache.
@@ -246,12 +238,13 @@ namespace vConnect
             catch (IOException e)
             {
                 // If the write to file fails, log the error.
-                Form1.LogMessageToFile("Cache File Empty Error", e.ToString());
+                Form1.LogMessageToFile("error","Cache File Empty Error", e.ToString());
             }
         }
 
         // C# Accessor Method
         public string JsonString { get { return JsonConvert.SerializeObject(cache); } set { JsonString = value; } }
+        public bool Connect_check { get { return connect_check; } set { connect_check = value; } }
 
     }
 }

@@ -164,7 +164,7 @@ namespace vConnect
         {
             peerStream.Close();
             BTConnection.Client.Dispose();
-            LogMessageToFile("OutOfRange", "OutofRangeWorked... or at least ran.");
+            LogMessageToFile("error","OutOfRange", "OutofRangeWorked... or at least ran.");
         }
 
         /// <summary>
@@ -219,7 +219,7 @@ namespace vConnect
             }
             catch (FileNotFoundException)
             {
-                LogMessageToFile("Error Log", "The error log could not be found/opened.");
+                LogMessageToFile("error","Error Log", "The error log could not be found/opened.");
             }
         }
 
@@ -274,7 +274,7 @@ namespace vConnect
                     else
                     {
                         MessageBox.Show("Invalid Port Number: Port number must be between 1 and 65534.");
-                        LogMessageToFile("Port Number", "Invalid Port number.");
+                        LogMessageToFile("error","Port Number", "Invalid Port number.");
 
                     }
 
@@ -283,7 +283,7 @@ namespace vConnect
                 catch
                 {
                     MessageBox.Show("Invalid Port Number: Port number must be between 1 and 65534.");
-                    LogMessageToFile("Port Number", "Invalid Port number.");
+                    LogMessageToFile("error","Port Number", "Invalid Port number.");
 
                 }
             }
@@ -369,7 +369,7 @@ namespace vConnect
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void update_schema_button_Click(object sender, EventArgs e)
+    /*    private void update_schema_button_Click(object sender, EventArgs e)
         {
             try
             {
@@ -386,9 +386,9 @@ namespace vConnect
             catch
             {
                 MessageBox.Show("ERROR: Could not retrieve schema.");
-                LogMessageToFile("Schema Retrieval", "Could not retrieve Schema from server.");
+                LogMessageToFile("error","Schema Retrieval", "Could not retrieve Schema from server.");
             }
-        }
+        }*/
 
 
         /// <summary>
@@ -422,13 +422,13 @@ namespace vConnect
                 });
                 pollingData = true;
                 pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
-                Form1.LogMessageToFile("Start polling", "Inside polling worked");
+                Form1.LogMessageToFile("event","Start polling", "Inside polling worked");
 
             }
             else
             {
                 MessageBox.Show("Error: No Schema detected, need to update schema.");
-                LogMessageToFile("Start Click", "Schema file was empty.");
+                LogMessageToFile("error","Start Click", "Schema file was empty.");
 
             }
             // }
@@ -451,6 +451,11 @@ namespace vConnect
         /// <param name="e"></param>
         private void stop_polling_button_Click(object sender, EventArgs e)
         {
+            if (pollingData == false)
+            {
+                MessageBox.Show("Currently not polling Data.");
+                return;
+            }
             stop_polling();
             poll_status.Text = "Polling";
             succeedCounter = 0;
@@ -466,24 +471,21 @@ namespace vConnect
 
         static private void stop_polling()
         {
-            // If no data is currently being polled, do nothing. 
 
-            if (pollingData == false)
-                MessageBox.Show("Currently not polling Data.");
-
+            
            // If data is still being polled, stop the process.  
-            else
+            if (pollingData)
             {
-
-
                 pollingData = false;
                 pollData.Change(Timeout.Infinite, Timeout.Infinite);
-                LogMessageToFile("Power Mode: Suspend", "Stop polling worked");
+                LogMessageToFile("event", "Power Mode: Suspend", "Stop polling worked");
 
                 System.Threading.Thread.Sleep(2050);
 
                 pollData = null;
             }
+            else
+                LogMessageToFile("error", "stop_polling()", "Attempted to stop polling when it was already stopped.");
 
         }
 
@@ -502,8 +504,7 @@ namespace vConnect
             catch (FileNotFoundException exception)
             {
                 schema = "NOT FOUND";
-                MessageBox.Show("Did not find the schema");
-                LogMessageToFile("Schema Error", "Could not retrieve schema:" + exception);
+                LogMessageToFile("error","Schema Error", "Could not retrieve schema:" + exception);
             }
             return schema;
         }
@@ -517,12 +518,12 @@ namespace vConnect
             {
                 case Microsoft.Win32.PowerModes.Resume:
 
-                    LogMessageToFile("PowerMode", "Resuming");
+                    LogMessageToFile("event","PowerMode", "Resuming");
                     if (pollingData)
                     {
                         try
                         {
-                            LogMessageToFile("Power Mode: Resumeing", "Inside try");
+                            LogMessageToFile("event","Power Mode: Resumeing", "Inside try");
 
                             pollingData = false;
                             BTConnection.EstablishBTConnection();
@@ -530,7 +531,7 @@ namespace vConnect
                         }
                         catch
                         {
-                            LogMessageToFile("Power Mode: Resume", "ERROR: " + e);
+                            LogMessageToFile("error","Power Mode: Resume", "ERROR: " + e);
                         }
                     }
                     break;
@@ -540,20 +541,20 @@ namespace vConnect
                         try
                         {
                             if (BTConnection.CloseBTConnection())
-                                LogMessageToFile("Power Mode: Suspend", "WOrked?");
+                                LogMessageToFile("event","Power Mode: Suspend", "WOrked?");
 
                             stop_polling();
                         }
                         catch
                         {
-                            LogMessageToFile("Power Mode: Suspend", "ERROR:" + e);
+                            LogMessageToFile("error","Power Mode: Suspend", "ERROR:" + e);
                         }
                         finally
                         {
                             pollingData = true;
                         }
                     }
-                    LogMessageToFile("PowerMode", "Suspending");
+                    LogMessageToFile("event","PowerMode", "Suspending");
                     break;
             }
         }
@@ -588,7 +589,6 @@ namespace vConnect
                 {
 
                     pollingData = true;
-                    //    MessageBox.Show("Starting.");
                     // Create a list of DataElements.
                     List<DataElement> elemList = new List<DataElement>();
 
@@ -684,7 +684,7 @@ namespace vConnect
                     return;
                 }
 
-                if (cache.connect_check)
+                if (cache.Connect_check)
                 {
                     this.Invoke((MethodInvoker)delegate
                     {
@@ -704,8 +704,7 @@ namespace vConnect
             {
                 System.Threading.Thread.Sleep(100);
 
-                LogMessageToFile("Pool Loop.", "Unknown Error in polling loop." + e);
-                MessageBox.Show("Unknown Polling Loop error.");
+                LogMessageToFile("error","Pool Loop.", "Unknown Error in polling loop." + e);
 
             }
         }
@@ -890,7 +889,7 @@ namespace vConnect
                 catch (Exception ex)
                 {
                     var msg = "Lost connection to OBDII device.  ";
-                    LogMessageToFile("Checking for error codes error", msg + ex);
+                    LogMessageToFile("error","Checking for error codes error", msg + ex);
                     return false;
                 }
                 if (!pollingData)
@@ -900,22 +899,19 @@ namespace vConnect
                 bool loopExit = false;
                 string toSend = null;
                 string hexLiteral = System.Text.Encoding.ASCII.GetString(errorCode);
-                //     MessageBox.Show("Literal: " + hexLiteral);
-                //    if (!System.Text.Encoding.ASCII.GetString(errorCode).Contains("NO DATA"))
                 if (System.Text.Encoding.ASCII.GetString(errorCode).Contains("4300\n4300\n\n"))
                 {
-
-
                     bool first = true;
                     while (!loopExit)
                     {
                         subErrorCode = errorCode.Skip(counter).Take(4).ToArray();
 
                         errorString = parseErrorCode(subErrorCode);
-                        // MessageBox.Show(errorString);
 
                         if (errorString == "P0000")
                             loopExit = true;
+                        else if (errorString == "-1")
+                            return false;
                         else
                         {
                             if (first)
@@ -927,9 +923,6 @@ namespace vConnect
                             else
                                 toSend = toSend + ",{\"VIN\":\"" + elemList[1].ValueToSend + "\",\"timestamp\":\"" + DateTime.Now.ToString()
                                     + "\",\"trouble_code\":\"" + errorString + "\"}";
-
-
-                            // cache.SendToServer(toSend, "alert");
                         }
                         counter += 4;
 
@@ -940,14 +933,10 @@ namespace vConnect
 
                     }
                     toSend = "[" + toSend + "]";
-                    //  MessageBox.Show("ALL THE CODES" + toSend);
                     cache.SendToServer(toSend, "alert");
-
-
                 }
                 else
                 {
-                    // MessageBox.Show("No error codes.");
                     return true;
                 }
 
@@ -955,7 +944,7 @@ namespace vConnect
             }
             catch (Exception e)
             {
-                LogMessageToFile("Error code check", "Lost BT connection: " + e.Message);
+                LogMessageToFile("error","Error code check", "Lost BT connection: " + e.Message);
                 return false;
             }
 
@@ -1008,8 +997,8 @@ namespace vConnect
             }
             catch (Exception e)
             {
-                LogMessageToFile("Parser", "Bad Parse" + e);
-                return "P0000";
+                LogMessageToFile("error","Parser", "Bad Parse" + e);
+                return "-1";
 
             }
             return errorString;
@@ -1089,20 +1078,31 @@ namespace vConnect
         ///     
         ///     3/1/2015 6:27:22 PM: [caller] message.
         ///     
-        ///     where   caller  ->  where the error occurred and 
+        ///     where   type    ->  whether logs to event or error log
+        ///             caller  ->  where the error occurred and 
         ///             message ->  the error message to write.
         ///     
         /// </summary>
         /// <param name="caller">This term gives anyone reading the log file
         ///                         a way to know from where the error came. </param>
         /// <param name="message">The error message to write to the file</param>
-        public static void LogMessageToFile(string caller, string message)
+        public static void LogMessageToFile(string type, string caller, string message)
         {
+            string FILE_TYPE = "";
+
             // File name of the error log
-            string ERROR_FILE = "error.log";
+            if (type == "error")
+                FILE_TYPE = "error.log";
+            else if (type == "event")
+                FILE_TYPE = "event.log";
+            else
+            {
+                LogMessageToFile("error", "LogMessageToFile", "ERROR: Invalid log file type used.");
+                return;
+            }
 
             // Append to the feild.
-            StreamWriter writer = File.AppendText(ERROR_FILE);
+            StreamWriter writer = File.AppendText(FILE_TYPE);
 
             try
             {
@@ -1133,14 +1133,12 @@ namespace vConnect
                         BTConnection.PIN = value;
                         Properties.Settings.Default.PIN = value;
                         Properties.Settings.Default.Save();
-
                     }
                     catch
                     {
                         MessageBox.Show("Must insert numerical value for PIN.");
 
                     }
-
                 }
             }
         }
@@ -1165,7 +1163,7 @@ namespace vConnect
                 catch
                 {
                     MessageBox.Show("ERROR: Could not retrieve schema.");
-                    LogMessageToFile("Schema Retrieval", "Could not retrieve Schema from server.");
+                    LogMessageToFile("error", "Schema Retrieval", "Could not retrieve Schema from server.");
                 }
             }
         }
