@@ -11,16 +11,20 @@ The application was developed to run on a **Windows 7** or **Windows 8** laptop 
 Consult [32feet.Net][4]'s documentation for more information.  
   
 ### Installation
-Describe how to install here.  
+vConnect contains an installer that installs the vConnect application, a monitor application, and its required files in a directory. 
+
+***Troy, can you explain here how to save the server and BT device information the first time of use?***
   
 ### Usage
-Describe usage here.
+After installation, execute vConnect.exe.
+
+The latest version of vConnect utilizes a Monitor application in order to ensure that the application continues to run. Whenever any situations cause the program to terminate, the monitor will restart it and begin polling for data.
 
 ### Code Structure
-Describe the basic classes and how they interact.
+![alt text](vConnect/Images/classDiagram.jpg)
 
 ### Architecture
-![alt text](vConnect/architecture.png)
+![alt text](vConnect/Images/architecture.png)
 
 ### Data Elements Currently Implemented
 | Element Name | Description | Unit |
