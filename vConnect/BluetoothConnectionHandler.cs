@@ -64,7 +64,7 @@ namespace vConnect
             catch (PlatformNotSupportedException)
             {
                 // Write the error to the log.
-                Form1.LogMessageToFile("error","Bluetooth Failure", "The application does not support the client's Bluetooth Stack.");
+                Form1.LogMessageToFile("error", "Bluetooth Failure", "The application does not support the client's Bluetooth Stack.");
 
                 // Inform the user why the application will not run
                 MessageBox.Show("vConnect does not support the client's Bluetooth Stack.\n\nConsult the documentation for supported ones.", "Quitting");
@@ -87,20 +87,23 @@ namespace vConnect
         public bool EstablishBTConnection()
         {
             // Close connection if already established. 
-            // Not sure if we want to try and auto-connect to previous. 
-  //          if (client.Connected)
-    //        {
-      //          MessageBox.Show("Close current BT connection before selecting another device.");
-        //        return true;
-         //   }
-            //if (client.Connected)
-              //  client.Dispose();
-            //            if (deviceID != "OBDLink LX")
-            //           {
-            //              MessageBox.Show("ERROR: attempted to connect to a non-OBDII device");
-            //             deviceID = null;
-            //            return false;
-            //       }
+            if (client.Connected)
+            {
+                Form1.peerStream.Close();
+                client.Dispose();
+            }
+            if (deviceID != "OBDLink LX")
+            {
+                MessageBox.Show("ERROR: attempted to connect to a non-OBDII device");
+                deviceID = null;
+                return false;
+            }
+            else
+            {
+                Properties.Settings.Default.BTDeviceName = deviceID;
+                Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
+                Properties.Settings.Default.Save();
+            }
             //pIN = "631434";
             client = new BluetoothClient();
             Guid serviceClass;                      // Process ID used for BT connection.
@@ -112,7 +115,7 @@ namespace vConnect
             client.SetPin(pIN);
             // Tries to connect, catches exception is connection fails,
             // and then will try to connect seven more times before giving it up.
-           
+
             try { client.Connect(endpoint); }
 
             catch (Exception ex)
@@ -120,20 +123,20 @@ namespace vConnect
                 if (connectLoop < connectionAttempts)
                 {
                     connectLoop++;
-                   return EstablishBTConnection();
+                    return EstablishBTConnection();
                 }
                 // If connection cannot be established after seven attempts, send Windows Error Message,
                 // and print message to the screen.
                 else
                 {
                     var msg = "failed to connect to BT Device. ERROR:\n\n " + ex;
-                    Form1.LogMessageToFile("error","EstablishBTConnection()", msg);
+                    Form1.LogMessageToFile("error", "EstablishBTConnection()", msg);
                     connectLoop = 0;
                     if (ex.ToString().Contains("An invalid argument was supplied"))
                     {
                         System.Threading.Thread.Sleep(500);
                         Application.Exit();
-                       // Environment.Exit(2);   
+                        Environment.Exit(2);
                     }
 
                     return false;
@@ -149,34 +152,34 @@ namespace vConnect
                 Form1.peerStream = client.GetStream();
                 byte[] test = System.Text.Encoding.ASCII.GetBytes("010D\r");
                 Form1.peerStream.Write(test, 0, test.Length);
-                System.Threading.Thread.Sleep(500);
+                System.Threading.Thread.Sleep(1000);
                 byte[] testRead = new byte[50];
-                Form1.peerStream.Read(testRead,0,testRead.Length);
+                Form1.peerStream.Read(testRead, 0, testRead.Length);
 
                 string check = System.Text.Encoding.ASCII.GetString(testRead);
-              
+
                 if (check.Contains("SEARCHING") || check.Contains("BUS INIT") || check.Contains("UNABLE TO CONNECT") || check.Contains("ERROR"))
                 {
                     CloseBTConnection();
                     return false;
                 }
-                byte[] first= System.Text.Encoding.ASCII.GetBytes("AT D\r");
-                byte[] second= System.Text.Encoding.ASCII.GetBytes("AT Z\r");
+                byte[] first = System.Text.Encoding.ASCII.GetBytes("AT D\r");
+                byte[] second = System.Text.Encoding.ASCII.GetBytes("AT Z\r");
 
-                byte[] third= System.Text.Encoding.ASCII.GetBytes("AT E0\r");
+                byte[] third = System.Text.Encoding.ASCII.GetBytes("AT E0\r");
 
-                byte[] fourth= System.Text.Encoding.ASCII.GetBytes("AT L0\r");
+                byte[] fourth = System.Text.Encoding.ASCII.GetBytes("AT L0\r");
 
-                byte[] fifth= System.Text.Encoding.ASCII.GetBytes("AT S0\r");
+                byte[] fifth = System.Text.Encoding.ASCII.GetBytes("AT S0\r");
 
-                byte[] sixth= System.Text.Encoding.ASCII.GetBytes("AT H0\r");
+                byte[] sixth = System.Text.Encoding.ASCII.GetBytes("AT H0\r");
 
-                byte[] seventh= System.Text.Encoding.ASCII.GetBytes("AT SP 0\r");
+                byte[] seventh = System.Text.Encoding.ASCII.GetBytes("AT SP 0\r");
 
                 Form1.peerStream.Write(first, 0, first.Length);
                 System.Threading.Thread.Sleep(500);
 
-//                Form1.peerStream.Write(second, 0, second.Length);
+                //                Form1.peerStream.Write(second, 0, second.Length);
                 System.Threading.Thread.Sleep(500);
 
                 Form1.peerStream.Write(third, 0, third.Length);
@@ -191,7 +194,7 @@ namespace vConnect
                 Form1.peerStream.Write(sixth, 0, sixth.Length);
                 System.Threading.Thread.Sleep(500);
 
-            //    Form1.peerStream.Write(seventh, 0, seventh.Length);
+                //    Form1.peerStream.Write(seventh, 0, seventh.Length);
                 System.Threading.Thread.Sleep(500);
 
                 byte[] read = new byte[100];
@@ -220,17 +223,17 @@ namespace vConnect
             // If connected to a BT device, close the connection and clear saved BT device name and address.
             if (client.Connected)
             {
-                Properties.Settings.Default.BTAddress = null;
-                Properties.Settings.Default.BTDeviceName = null;
+                // Properties.Settings.Default.BTAddress = null;
+                // Properties.Settings.Default.BTDeviceName = null;
                 Form1.peerStream.Close();
                 client.Dispose();
-                Form1.LogMessageToFile("event","CLOSER", "REached this point");
+                Form1.LogMessageToFile("event", "CLOSER", "REached this point");
                 return true;
             }
             // If there is no connection to close, print to the screen, and print to screen.
             else
             {
-             
+
                 return false;
             }
 
@@ -270,6 +273,6 @@ namespace vConnect
         public BluetoothClient Client { get { return client; } set { client = value; } }
         public BluetoothDeviceInfo DeviceInfo { get { return deviceInfo; } set { deviceInfo = value; } }
         public string PIN { get { return pIN; } set { pIN = value; } }
-        public bool ConnectionStatus { get { return client.Connected;  } }
+        public bool ConnectionStatus { get { return client.Connected; } }
     }
 }

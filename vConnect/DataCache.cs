@@ -33,23 +33,20 @@ namespace vConnect
     {
         // Cache list to hold data elements (will be in Json form.)
         List<Dictionary<string, object>> cache = new List<Dictionary<string, object>>();
-        ServerConnectionHandler serverConnection;
 
         // File to write the cache to if necessary.
         const string CACHEFILE = "jsonCache.txt";
-        
+
         // Value used by Form1 to determine if the server has been connected with as
         // of its last request. Used to keep UI up to date. 
         private bool connect_check = true;
 
-        /// <summary>
-        /// Constructor for initializing the server connection.
-        /// </summary>
-        /// <param name="serverConn"></param>
-        public DataCache(ServerConnectionHandler serverConn)
-        {
-            serverConnection = serverConn;
-        }
+
+        private string ipAddress = "";
+        private int portNumber = 0;
+
+
+        
 
         /// <summary>
         /// Empty constructor.
@@ -88,15 +85,15 @@ namespace vConnect
             }
             catch (Exception e)
             {
-                Form1.LogMessageToFile("error","Cache File Info Error", e.ToString());
+                Form1.LogMessageToFile("error", "Cache File Info Error", e.ToString());
             }
-            
+
 
             string webAddress = null;
-            
+
             // Create the web address to connect to
-            webAddress = "http://" + serverConnection.IPAddress + ":" + serverConnection.PortNumber + "/" + type;
-            
+            webAddress = "http://" + ipAddress + ":" + portNumber + "/" + type;
+
             // Create the web request with Json/Post attributes and given address
             var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
             httpWebRequest.ContentType = "application/json";
@@ -116,8 +113,8 @@ namespace vConnect
                     var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
 
                     int statusCode = (int)httpResponse.StatusCode;
-                   // streamWriter.Close();
-                   // streamWriter.Dispose();
+                    // streamWriter.Close();
+                    // streamWriter.Dispose();
                     if (statusCode == 204)
                     {
                         // Set to true, to be used in Form1 to keep UI up to date in terms of 
@@ -128,7 +125,7 @@ namespace vConnect
                         // sent to the server.
                         if (type == "data")
                             cache.Clear();
-                           
+
                         return true;
                     }
                     else
@@ -137,7 +134,7 @@ namespace vConnect
                         //  write the current cache to disk, then clear it, if this was called to set
                         // data elements, and not alerts. 
                         connect_check = false;
-                        Form1.LogMessageToFile("error","Server Response Error", "The server returned a " + statusCode.ToString() + " code instead of a 204");
+                        Form1.LogMessageToFile("error", "Server Response Error", "The server returned a " + statusCode.ToString() + " code instead of a 204");
                         if (type == "data")
                         {
                             WriteToDisk();
@@ -146,14 +143,14 @@ namespace vConnect
                         return false;
 
                     }
-                    
+
 
                 }
             }
             catch (WebException e)
             {
                 // If the web server raised an exception, write the cached data to disk, then clear it.
-                Form1.LogMessageToFile("error","Server Connect Error", e.ToString());
+                Form1.LogMessageToFile("error", "Server Connect Error", e.ToString());
                 if (type == "data")
                 {
                     connect_check = false;
@@ -179,7 +176,7 @@ namespace vConnect
             catch (IOException e)
             {
                 // If the write to file fails, log the error.
-                Form1.LogMessageToFile("error","Cache File Write Error", e.ToString());
+                Form1.LogMessageToFile("error", "Cache File Write Error", e.ToString());
             }
         }
 
@@ -205,7 +202,7 @@ namespace vConnect
             catch (IOException e)
             {
                 // If the write to file fails, log the error.
-                Form1.LogMessageToFile("error","Cache File Read Error", e.ToString());
+                Form1.LogMessageToFile("error", "Cache File Read Error", e.ToString());
             }
 
             try
@@ -217,7 +214,7 @@ namespace vConnect
             catch (JsonSerializationException e)
             {
                 // If the Json -> List<Dictionary<string,object>> fails, catch it.
-                Form1.LogMessageToFile("error","Cache File Read Error", "Malformed JSON in file:" + e.ToString());
+                Form1.LogMessageToFile("error", "Cache File Read Error", "Malformed JSON in file:" + e.ToString());
             }
 
             // Create a temporary copy of the existing cache.
@@ -238,13 +235,52 @@ namespace vConnect
             catch (IOException e)
             {
                 // If the write to file fails, log the error.
-                Form1.LogMessageToFile("error","Cache File Empty Error", e.ToString());
+                Form1.LogMessageToFile("error", "Cache File Empty Error", e.ToString());
             }
+        }
+
+
+        public bool CheckServerConnection()
+        {
+            // Web address to send the request to. 
+            string webAddress = "http://" + ipAddress + ":" + portNumber + "/status";
+
+
+
+            // Create the web request with /Post attributes and given address
+            var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
+            httpWebRequest.ContentType = "text/plain";
+            httpWebRequest.Method = "HEAD";
+            httpWebRequest.UserAgent = "vConnect";
+
+            try
+            {
+                using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+                {
+                    // Get web response (most importantly, status code)
+                    var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                    int statusCode = (int)httpResponse.StatusCode;
+
+                    if (statusCode.ToString() == "204")
+                        return true;
+
+                }
+
+            }
+            catch (Exception e)
+            {
+                Form1.LogMessageToFile("error", "Server Connection Handler", e.Message);
+                return false;
+            }
+
+            return false;
         }
 
         // C# Accessor Method
         public string JsonString { get { return JsonConvert.SerializeObject(cache); } set { JsonString = value; } }
         public bool Connect_check { get { return connect_check; } set { connect_check = value; } }
+        public string IPAddress { get { return ipAddress; } set { ipAddress = value; } }
+        public int PortNumber { get { return portNumber; } set { portNumber = value; } }
 
     }
 }
