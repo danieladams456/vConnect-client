@@ -33,7 +33,6 @@ namespace vConnect
         private string errorMessageToUI = "";           // Error Message to be used.
         private BluetoothAddress bluetoothAddress;      // Class object that contains formatted BT address.
         private BluetoothEndPoint endpoint;             // Class object that contains data for BT endpoint.
-        private Guid serviceClass;                      // Process ID used for BT connection.
         private int connectLoop = 0;                    // Integer used to keep track of automatic 
         //      reconnect attempts. 
         private BluetoothDeviceInfo deviceInfo = null;
@@ -102,19 +101,18 @@ namespace vConnect
             //             deviceID = null;
             //            return false;
             //       }
-            pIN = "631434";
+            //pIN = "631434";
             client = new BluetoothClient();
+            Guid serviceClass;                      // Process ID used for BT connection.
+
             // Initialize serviceClass and endpoint.
-           // serviceClass = BluetoothService.SerialPort;
-            serviceClass = new Guid("{00112233-4455-6677-8899-aabbccddeeff}");
+            serviceClass = BluetoothService.SerialPort;
             endpoint = new BluetoothEndPoint(bluetoothAddress, serviceClass);
             // Set the PIN to be used in the connection attempt.
             client.SetPin(pIN);
             // Tries to connect, catches exception is connection fails,
             // and then will try to connect seven more times before giving it up.
-            Form1.LogMessageToFile("event","BTCONNECTION", "BEfore try to connect");
-            Form1.LogMessageToFile("event","BTCONNECTION", bluetoothAddress.ToString());
-            Form1.LogMessageToFile("event","BTCONNECTION", serviceClass.ToString());
+           
             try { client.Connect(endpoint); }
 
             catch (Exception ex)
@@ -129,8 +127,15 @@ namespace vConnect
                 else
                 {
                     var msg = "failed to connect to BT Device. ERROR:\n\n " + ex;
-                    Form1.LogMessageToFile("error","BT Connection ERROR", msg);
+                    Form1.LogMessageToFile("error","EstablishBTConnection()", msg);
                     connectLoop = 0;
+                    if (ex.ToString().Contains("An invalid argument was supplied"))
+                    {
+                        System.Threading.Thread.Sleep(500);
+                        Application.Exit();
+                       // Environment.Exit(2);   
+                    }
+
                     return false;
                 }
             }
@@ -139,21 +144,19 @@ namespace vConnect
             // Name and BT address. 
             if (client.Connected)
             {
-                Form1.LogMessageToFile("event","BTCONNECTION", "in IF STSTEMETN");
 
 
                 Form1.peerStream = client.GetStream();
                 byte[] test = System.Text.Encoding.ASCII.GetBytes("010D\r");
                 Form1.peerStream.Write(test, 0, test.Length);
                 System.Threading.Thread.Sleep(500);
-                byte[] testRead = new byte[30];
+                byte[] testRead = new byte[50];
                 Form1.peerStream.Read(testRead,0,testRead.Length);
 
                 string check = System.Text.Encoding.ASCII.GetString(testRead);
               
                 if (check.Contains("SEARCHING") || check.Contains("BUS INIT") || check.Contains("UNABLE TO CONNECT") || check.Contains("ERROR"))
                 {
-                    MessageBox.Show("Invalid PIN number or vehicle is off.");
                     CloseBTConnection();
                     return false;
                 }

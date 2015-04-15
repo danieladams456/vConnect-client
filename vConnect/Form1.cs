@@ -45,7 +45,6 @@ namespace vConnect
         ServerConnectionHandler serverConnection = new ServerConnectionHandler();
         DataCache cache = null;
 
-
         // Instantiates a timer used to poll data from the OBDII module.
         static public System.Threading.Timer pollData;
 
@@ -93,7 +92,7 @@ namespace vConnect
             {
                 // Grabs the saved BT address from the settings file.
                 BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
-
+                BTConnection.PIN = Properties.Settings.Default.PIN;
                 // If connection is established with the device with the specified BT address above,
                 // save the Device's ID, indicated connection status on the GUI.
                 if (BTConnection.EstablishBTConnection())
@@ -101,21 +100,22 @@ namespace vConnect
                     BTConnection.DeviceID = Properties.Settings.Default.BTDeviceName;
                     BT_ID.Text = Properties.Settings.Default.BTDeviceName;
                     device_Status_Label.Text = "Connected";
-                    deviceDetect = true;
+                   // deviceDetect = true;
                 }
-                else
+            /*    else
                 {
+                    BT_ID.Text = "N/A";
                     Properties.Settings.Default.BTAddress = null;
                     Properties.Settings.Default.BTDeviceName = null;
                     Properties.Settings.Default.Save();
-                }
+                }*/
             }
             else
                 addrCheck = false;
 
             // If no OBDII connection is established, then print to the screen stating this fact, and then
             // load the GUI. 
-            if (deviceDetect == false)
+            /*if (deviceDetect == false)
             {
                 Properties.Settings.Default.BTAddress = null;
                 Properties.Settings.Default.BTDeviceName = null;
@@ -124,7 +124,7 @@ namespace vConnect
                 BTConnection.DeviceID = null;
                 BTConnection.DeviceInfo = null;
                 device_Status_Label.Text = "Disconnected";
-            }
+            }*/
 
             // Checks if any server connection data is saved in the settings file. If so, attempts to see if connection
             // can be established.
@@ -138,35 +138,28 @@ namespace vConnect
             else
                 MessageBox.Show("No server connection data was found, please add server IP address and port number");
 
-            // If connections have been established to the OBDII device and the server, then begin polling for 
-            // vehicle data. 
-            //            if (deviceDetect)// && serverDetect)
-            //           {
+          
             schema = SchemaUpdate();
 
-            poll_status.Text = "Polling";
             if (addrCheck)
             {
-                pollingData = true;
-                pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
+                if (schema != "NOT FOUND")
+                {
+                    poll_status.Text = "Polling";
+
+                    pollingData = true;
+                    pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
+                }
+                else
+                    MessageBox.Show("No Schema Found. Update Schema.");
             }
             else
             {
                 MessageBox.Show("No OBDII Connection info detected. Please set up OBDII Connection.");
-            }
-            x = BluetoothWin32Events.GetInstance();
-            x.OutOfRange += OnoutOfRange;
-
+            }       
         }
 
-        // Deal with stuff here....
-        private void OnoutOfRange(object sender, BluetoothWin32RadioOutOfRangeEventArgs e)
-        {
-            peerStream.Close();
-            BTConnection.Client.Dispose();
-            LogMessageToFile("error","OutOfRange", "OutofRangeWorked... or at least ran.");
-        }
-
+    
         /// <summary>
         /// Closes the Application GUI.
         /// </summary>
@@ -201,8 +194,11 @@ namespace vConnect
                    "Update Schema: Will query the vConnect server, and update the schema if it is out of data.\n\n" +
                    "Start: Will begin polling for data. \n\n" +
                    "Stop: Will stop polling for data.";
-
+            
+           
             MessageBox.Show(helpMessage);
+           
+            
         }
 
         /// <summary>
@@ -242,7 +238,7 @@ namespace vConnect
                 Properties.Settings.Default.ServerIP = value;
                 Properties.Settings.Default.Save();
             }
-            //  }
+           
         }
 
         /// <summary>
@@ -287,7 +283,7 @@ namespace vConnect
 
                 }
             }
-            //}
+            
         }
 
 
@@ -364,31 +360,6 @@ namespace vConnect
         }
 
 
-        /// <summary>
-        /// Update the Schema from the supplied web site, and store it in schema.json.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-    /*    private void update_schema_button_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // Address to request schema from.
-                string address = "http://vconnect-danieladams456.rhcloud.com/data/schema";
-                // Initialize the connection the address above.
-                WebClient client = new WebClient();
-                Stream stream = client.OpenRead(address);
-                StreamReader reader = new StreamReader(stream);
-                String json = reader.ReadToEnd();
-                MessageBox.Show(json);
-                File.WriteAllText("schema.json", json);
-            }
-            catch
-            {
-                MessageBox.Show("ERROR: Could not retrieve schema.");
-                LogMessageToFile("error","Schema Retrieval", "Could not retrieve Schema from server.");
-            }
-        }*/
 
 
         /// <summary>
@@ -409,8 +380,7 @@ namespace vConnect
 
             // If no data is currently being polled, update the schema, then
             // begin polling data.
-            // else if (BTConnection.BTConnectionStatus) //&& serverConnection.CheckServerConnection())
-            //{
+       
             schema = SchemaUpdate();
             if (schema != "NOT FOUND")
             {
@@ -431,17 +401,6 @@ namespace vConnect
                 LogMessageToFile("error","Start Click", "Schema file was empty.");
 
             }
-            // }
-            /*  else
-              {
-                  //  if (!BTConnection.BTConnectionStatus && !serverConnection.ServerConnectionStatus)
-                  //        MessageBox.Show("No connection to OBDII device or server, cannot start.");
-                  if (!BTConnection.BTConnectionStatus)
-                      MessageBox.Show("No connection to OBDII device, cannot start.");
-                  //    else if (!serverConnection.ServerConnectionStatus)
-                  //      MessageBox.Show("No connection to server, cannot start.");
-              }*/
-
         }
 
         /// <summary>
@@ -457,25 +416,34 @@ namespace vConnect
                 return;
             }
             stop_polling();
-            poll_status.Text = "Polling";
-            succeedCounter = 0;
-            failCounter = 0;
-            data_failed.Text = "0";
-            data_sent.Text = "0";
-            this.Invoke((MethodInvoker)delegate
-            {
-                poll_status.Text = "Not Polling";
-            });
+            
+            
+            
 
         }
 
-        static private void stop_polling()
+        private void stop_polling()
         {
 
             
            // If data is still being polled, stop the process.  
             if (pollingData)
             {
+                succeedCounter = 0;
+                failCounter = 0;
+            
+                this.Invoke((MethodInvoker)delegate
+                {
+                    data_failed.Text = "0";
+                });
+                this.Invoke((MethodInvoker)delegate
+                {
+                    data_sent.Text = "0";
+                });
+                this.Invoke((MethodInvoker)delegate
+                {
+                    poll_status.Text = "Not Polling";
+                });
                 pollingData = false;
                 pollData.Change(Timeout.Infinite, Timeout.Infinite);
                 LogMessageToFile("event", "Power Mode: Suspend", "Stop polling worked");
@@ -508,7 +476,6 @@ namespace vConnect
             }
             return schema;
         }
-        //   public event 
 
 
 
@@ -518,22 +485,8 @@ namespace vConnect
             {
                 case Microsoft.Win32.PowerModes.Resume:
 
-                    LogMessageToFile("event","PowerMode", "Resuming");
-                    if (pollingData)
-                    {
-                        try
-                        {
-                            LogMessageToFile("event","Power Mode: Resumeing", "Inside try");
-
-                            pollingData = false;
-                            BTConnection.EstablishBTConnection();
-                            start_polling();
-                        }
-                        catch
-                        {
-                            LogMessageToFile("error","Power Mode: Resume", "ERROR: " + e);
-                        }
-                    }
+                    System.Threading.Thread.Sleep(5000);
+                    Environment.Exit(2);
                     break;
                 case Microsoft.Win32.PowerModes.Suspend:
                     if (pollingData)
@@ -684,25 +637,10 @@ namespace vConnect
                     return;
                 }
 
-                if (cache.Connect_check)
-                {
-                    this.Invoke((MethodInvoker)delegate
-                    {
-                        server_status.Text = "Connected";
-                    });
-                }
-                else
-                {
-                    this.Invoke((MethodInvoker)delegate
-                    {
-                        server_status.Text = "Disconnected";
-                    });
-                    return;
-                }
+                
             }
             catch (Exception e)
             {
-                System.Threading.Thread.Sleep(100);
 
                 LogMessageToFile("error","Pool Loop.", "Unknown Error in polling loop." + e);
 
@@ -1178,9 +1116,9 @@ namespace vConnect
 
         }
 
+        private void Form1_Load(object sender, EventArgs e)
+        {
 
-
-
-
+        }
     }
 }

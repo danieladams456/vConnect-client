@@ -51,7 +51,7 @@ namespace vConnect
             }
             catch (Exception e)
             {
-                Form1.LogMessageToFile("Server Connection Handler", e.Message);
+                Form1.LogMessageToFile("error","Server Connection Handler", e.Message);
                 return false;
             }
 

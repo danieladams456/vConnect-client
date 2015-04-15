@@ -118,9 +118,9 @@
             this.port_number.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.port_number.Location = new System.Drawing.Point(446, 29);
             this.port_number.Name = "port_number";
-            this.port_number.Size = new System.Drawing.Size(45, 20);
+            this.port_number.Size = new System.Drawing.Size(18, 20);
             this.port_number.TabIndex = 12;
-            this.port_number.Text = "5000";
+            this.port_number.Text = "0";
             // 
             // server_IP
             // 
@@ -130,7 +130,7 @@
             this.server_IP.Name = "server_IP";
             this.server_IP.Size = new System.Drawing.Size(190, 20);
             this.server_IP.TabIndex = 13;
-            this.server_IP.Text = "www.google.com";
+            this.server_IP.Text = "N/A";
             // 
             // edit_port_button
             // 
@@ -158,9 +158,9 @@
             this.BT_ID.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.BT_ID.Location = new System.Drawing.Point(446, 96);
             this.BT_ID.Name = "BT_ID";
-            this.BT_ID.Size = new System.Drawing.Size(70, 20);
+            this.BT_ID.Size = new System.Drawing.Size(35, 20);
             this.BT_ID.TabIndex = 19;
-            this.BT_ID.Text = "BT-1459";
+            this.BT_ID.Text = "N/A";
             // 
             // DeviceStatue_label
             // 
@@ -178,9 +178,9 @@
             this.device_Status_Label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.device_Status_Label.Location = new System.Drawing.Point(446, 116);
             this.device_Status_Label.Name = "device_Status_Label";
-            this.device_Status_Label.Size = new System.Drawing.Size(87, 20);
+            this.device_Status_Label.Size = new System.Drawing.Size(116, 20);
             this.device_Status_Label.TabIndex = 21;
-            this.device_Status_Label.Text = "Connected";
+            this.device_Status_Label.Text = "Not Connected";
             // 
             // browse_button
             // 
@@ -320,9 +320,9 @@
             this.server_status.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
             this.server_status.Location = new System.Drawing.Point(125, 88);
             this.server_status.Name = "server_status";
-            this.server_status.Size = new System.Drawing.Size(87, 20);
+            this.server_status.Size = new System.Drawing.Size(116, 20);
             this.server_status.TabIndex = 39;
-            this.server_status.Text = "Connected";
+            this.server_status.Text = "Not Connected";
             // 
             // sent_label
             // 
@@ -403,6 +403,7 @@
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "vConnect";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
