@@ -60,7 +60,7 @@ namespace vConnect
         // running or not. 
         static public bool pollingData = false;
         static public Stream peerStream;
-        BluetoothWin32Events x;
+      //  BluetoothWin32Events x;
 
         // Constant that determines how often the data polling Timer will run. (In miliseconds)
         const int POLLTIME = 20000;
@@ -82,7 +82,9 @@ namespace vConnect
             // Create a Timer callback method for polling data. 
             tcb = RequestDataForElements;
             Microsoft.Win32.SystemEvents.PowerModeChanged += OnPowerChange;
-
+          //  x = BluetoothWin32Events.GetInstance();
+          //  x.InRange += OnInRange;
+          //  x.OutOfRange += OnOutOfRange;
             // Bool variable to record whether an OBDII device and server have been successfully detected and pinged/established connection. 
             bool deviceDetect = false;
             bool addrCheck = true;
@@ -100,7 +102,7 @@ namespace vConnect
                     BT_ID.Text = Properties.Settings.Default.BTDeviceName;
                     device_Status_Label.Text = "Connected";
                 }
-          
+
             }
             else
                 addrCheck = false;
@@ -118,10 +120,10 @@ namespace vConnect
             else
                 MessageBox.Show("No server connection data was found, please add server IP address and port number");
 
-          
+
             schema = SchemaUpdate();
 
-            if (addrCheck)
+            if (true==true)//addrCheck)
             {
                 if (schema != "NOT FOUND")
                 {
@@ -141,10 +143,23 @@ namespace vConnect
                 pollData = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
 
                 MessageBox.Show("No OBDII Connection info detected. Please set up OBDII Connection.");
-            }       
+            }
         }
 
-    
+
+     /*   private void OnInRange(object sender, BluetoothWin32RadioInRangeEventArgs e)
+        {
+
+
+        }
+
+        private void OnOutOfRange(object sender, BluetoothWin32RadioOutOfRangeEventArgs e)
+        {
+
+
+        }
+        */
+
         /// <summary>
         /// Closes the Application GUI.
         /// </summary>
@@ -179,11 +194,11 @@ namespace vConnect
                    "Update Schema: Will query the vConnect server, and update the schema if it is out of data.\n\n" +
                    "Start: Will begin polling for data. \n\n" +
                    "Stop: Will stop polling for data.";
-            
-           
+
+
             MessageBox.Show(helpMessage);
-           
-            
+
+
         }
 
         /// <summary>
@@ -200,7 +215,7 @@ namespace vConnect
             }
             catch (FileNotFoundException)
             {
-                LogMessageToFile("error","Error Log", "The error log could not be found/opened.");
+                LogMessageToFile("error", "Error Log", "The error log could not be found/opened.");
             }
         }
 
@@ -223,7 +238,7 @@ namespace vConnect
                 Properties.Settings.Default.ServerIP = value;
                 Properties.Settings.Default.Save();
             }
-           
+
         }
 
         /// <summary>
@@ -255,7 +270,7 @@ namespace vConnect
                     else
                     {
                         MessageBox.Show("Invalid Port Number: Port number must be between 1 and 65534.");
-                        LogMessageToFile("error","Port Number", "Invalid Port number.");
+                        LogMessageToFile("error", "Port Number", "Invalid Port number.");
 
                     }
 
@@ -264,11 +279,11 @@ namespace vConnect
                 catch
                 {
                     MessageBox.Show("Invalid Port Number: Port number must be between 1 and 65534.");
-                    LogMessageToFile("error","Port Number", "Invalid Port number.");
+                    LogMessageToFile("error", "Port Number", "Invalid Port number.");
 
                 }
             }
-            
+
         }
 
 
@@ -311,9 +326,9 @@ namespace vConnect
                     if (BTConnection.EstablishBTConnection())
                     {
                         device_Status_Label.Text = "Connected";
-                        
+
                         BT_ID.Text = device.DeviceName;
-                        
+
                     }
                 }
             }
@@ -364,7 +379,7 @@ namespace vConnect
             }
             // If no data is currently being polled, update the schema, then
             // begin polling data.
-       
+
             schema = SchemaUpdate();
             if (schema != "NOT FOUND")
             {
@@ -375,13 +390,13 @@ namespace vConnect
                 });
                 pollingData = true;
                 pollData.Change(0, POLLTIME);
-                Form1.LogMessageToFile("event","Start polling", "Inside polling worked");
+                Form1.LogMessageToFile("event", "Start polling", "Inside polling worked");
 
             }
             else
             {
                 MessageBox.Show("Error: No Schema detected, need to update schema.");
-                LogMessageToFile("error","Start Click", "Schema file was empty.");
+                LogMessageToFile("error", "Start Click", "Schema file was empty.");
 
             }
         }
@@ -395,25 +410,25 @@ namespace vConnect
         {
             if (pollingData == false)
                 MessageBox.Show("Currently not polling Data.");
-            
+
             else
                 stop_polling();
-            
-            
-            
+
+
+
 
         }
 
         private void stop_polling()
         {
 
-            
-           // If data is still being polled, stop the process.  
+
+            // If data is still being polled, stop the process.  
             if (pollingData)
             {
                 succeedCounter = 0;
                 failCounter = 0;
-            
+
                 this.Invoke((MethodInvoker)delegate
                 {
                     data_failed.Text = "0";
@@ -454,7 +469,7 @@ namespace vConnect
             catch (FileNotFoundException exception)
             {
                 schema = "NOT FOUND";
-                LogMessageToFile("error","Schema Error", "Could not retrieve schema:" + exception);
+                LogMessageToFile("error", "Schema Error", "Could not retrieve schema:" + exception);
             }
             return schema;
         }
@@ -476,20 +491,20 @@ namespace vConnect
                         try
                         {
                             if (BTConnection.CloseBTConnection())
-                                LogMessageToFile("event","Power Mode: Suspend", "WOrked?");
+                                LogMessageToFile("event", "Power Mode: Suspend", "WOrked?");
 
                             stop_polling();
                         }
                         catch
                         {
-                            LogMessageToFile("error","Power Mode: Suspend", "ERROR:" + e);
+                            LogMessageToFile("error", "Power Mode: Suspend", "ERROR:" + e);
                         }
                         finally
                         {
                             pollingData = true;
                         }
                     }
-                    LogMessageToFile("event","PowerMode", "Suspending");
+                    LogMessageToFile("event", "PowerMode", "Suspending");
                     break;
             }
         }
@@ -607,7 +622,7 @@ namespace vConnect
                 }
                 else
                 {
-                    if(cache.CheckServerConnection())
+                    if (cache.CheckServerConnection())
                     {
                         this.Invoke((MethodInvoker)delegate
                         {
@@ -632,7 +647,7 @@ namespace vConnect
                     try { peerStream.Close(); }
                     catch { ;}
 
-                    if(BTConnection.Client.Connected)
+                    if (BTConnection.Client.Connected)
                         BTConnection.Client.Dispose();
 
                     if (BTConnection.EstablishBTConnection())
@@ -642,17 +657,25 @@ namespace vConnect
                             device_Status_Label.Text = "Connected";
                         });
                     }
+                    else
+                    {
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            device_Status_Label.Text = "Connected";
+                        });
+
+                    }
 
 
                     return;
                 }
 
-                
+
             }
             catch (Exception e)
             {
 
-                LogMessageToFile("error","Pool Loop.", "Unknown Error in polling loop." + e);
+                LogMessageToFile("error", "Pool Loop.", "Unknown Error in polling loop." + e);
 
             }
         }
@@ -837,7 +860,7 @@ namespace vConnect
                 catch (Exception ex)
                 {
                     var msg = "Lost connection to OBDII device.  ";
-                    LogMessageToFile("error","Checking for error codes error", msg + ex);
+                    LogMessageToFile("error", "Checking for error codes error", msg + ex);
                     return false;
                 }
                 if (!pollingData)
@@ -892,7 +915,7 @@ namespace vConnect
             }
             catch (Exception e)
             {
-                LogMessageToFile("error","Error code check", "Lost BT connection: " + e.Message);
+                LogMessageToFile("error", "Error code check", "Lost BT connection: " + e.Message);
                 return false;
             }
 
@@ -945,7 +968,7 @@ namespace vConnect
             }
             catch (Exception e)
             {
-                LogMessageToFile("error","Parser", "Bad Parse" + e);
+                LogMessageToFile("error", "Parser", "Bad Parse" + e);
                 return "-1";
 
             }

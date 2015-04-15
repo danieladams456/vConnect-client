@@ -46,7 +46,7 @@ namespace vConnect
         private int portNumber = 0;
 
 
-        
+
 
         /// <summary>
         /// Empty constructor.
@@ -252,27 +252,41 @@ namespace vConnect
             httpWebRequest.ContentType = "text/plain";
             httpWebRequest.Method = "HEAD";
             httpWebRequest.UserAgent = "vConnect";
-
             try
             {
-                using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+                using (var client = new WebClient())
+                using (var stream = client.OpenRead("http://www.google.com"))
                 {
-                    // Get web response (most importantly, status code)
-                    var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                    int statusCode = (int)httpResponse.StatusCode;
+                    try
+                    {
+                        //  using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+                        // {
+                        // Get web response (most importantly, status code)
+                        var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                        int statusCode = (int)httpResponse.StatusCode;
+                        MessageBox.Show(statusCode.ToString());
+                        if (statusCode.ToString() == "204")
+                            return true;
 
-                    if (statusCode.ToString() == "204")
-                        return true;
+                        //}
+
+                    }
+                    catch (Exception e)
+                    {
+                        Form1.LogMessageToFile("error", "Server Connection Handler", e.Message);
+                        return false;
+                    }
 
                 }
-
+                
             }
-            catch (Exception e)
+            catch
             {
-                Form1.LogMessageToFile("error", "Server Connection Handler", e.Message);
                 return false;
             }
-
+            
+           
+            
             return false;
         }
 

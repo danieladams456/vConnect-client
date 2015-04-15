@@ -67,7 +67,7 @@ namespace vConnect
                 Form1.LogMessageToFile("error", "Bluetooth Failure", "The application does not support the client's Bluetooth Stack.");
 
                 // Inform the user why the application will not run
-                MessageBox.Show("vConnect does not support the client's Bluetooth Stack.\n\nConsult the documentation for supported ones.", "Quitting");
+                //MessageBox.Show("vConnect does not support the client's Bluetooth Stack.\n\nConsult the documentation for supported ones.", "Quitting");
 
                 // Exit the application with a (1) for error.
                 Environment.Exit(1);
@@ -95,6 +95,9 @@ namespace vConnect
             if (deviceID != "OBDLink LX")
             {
                 MessageBox.Show("ERROR: attempted to connect to a non-OBDII device");
+                Properties.Settings.Default.BTDeviceName = "";
+                Properties.Settings.Default.BTAddress = "";
+                Properties.Settings.Default.Save();
                 deviceID = null;
                 return false;
             }
@@ -134,6 +137,7 @@ namespace vConnect
                     connectLoop = 0;
                     if (ex.ToString().Contains("An invalid argument was supplied"))
                     {
+                        Form1.LogMessageToFile("event", "EstablishBTConnection()", "Exiting vConnect to restart.");
                         System.Threading.Thread.Sleep(500);
                         Application.Exit();
                         Environment.Exit(2);
