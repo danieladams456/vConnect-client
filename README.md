@@ -21,10 +21,10 @@ After installation, execute vConnect.exe.
 The latest version of vConnect utilizes a Monitor application in order to ensure that the application continues to run. Whenever any situations cause the program to terminate, the monitor will restart it and begin polling for data.
 
 ### Code Structure
-![alt text](vConnect/images/classDiagram.jpg)
+![alt text](vConnect/Images/classDiagram.jpg)
 
 ### Architecture
-![alt text](vConnect/images/architecture.png)
+![alt text](vConnect/Images/architecture.png)
 
 ### Data Elements Currently Implemented
 | Element Name | Description | Unit |
