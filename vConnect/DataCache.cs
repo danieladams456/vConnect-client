@@ -84,7 +84,7 @@ namespace vConnect
                     // Read from the 
                     ReadFromDisk();
                     jsonString = JsonString;
-                    
+
                     // Record read-cache-from-file to the event log
                     Form1.LogMessageToFile("event", "SendToServer", "Data to send: " + jsonString);
                 }
@@ -142,7 +142,7 @@ namespace vConnect
                         connect_check = false;
 
                         // Log the status code received in place of 204.
-                        Form1.LogMessageToFile("error", "Server Response Error", "The server returned a " 
+                        Form1.LogMessageToFile("error", "Server Response Error", "The server returned a "
                                                         + statusCode.ToString() + " code instead of a 204");
 
                         // Write the cache to file due to failed send and clear the cache object
@@ -165,7 +165,7 @@ namespace vConnect
                 // Log the error
                 // If the web server raised an exception, write the cached data to disk, then clear it.
                 Form1.LogMessageToFile("error", "Server Connect Error", e.ToString());
-                
+
                 // If dealing with data and not alerts, write to disk and clear.
                 if (type == "data")
                 {
@@ -211,7 +211,7 @@ namespace vConnect
             List<Dictionary<string, object>> readCache = new List<Dictionary<string, object>>();
             List<Dictionary<string, object>> tempCache = new List<Dictionary<string, object>>();
             string jsonFromFile = "";
-            
+
             // READ
             try
             {
@@ -273,30 +273,24 @@ namespace vConnect
             httpWebRequest.UserAgent = "vConnect";
             httpWebRequest.Timeout = 5000;
 
+
+
             try
             {
-                // Create a WebClient object that disposes upon close
-                using (var client = new WebClient())
-
-                // Attempt a connection to Google.
-                using (var stream = client.OpenRead("http://www.google.com"))
-                {
-                    try
-                    {   
-                        // Get web response (most importantly, status code)
-                        var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                        int statusCode = (int)httpResponse.StatusCode;
-                        httpResponse.Close();          
-                        if (statusCode.ToString() == "204")
-                            return true;         
-                    }
-                    catch (Exception e)
-                    {
-                        Form1.LogMessageToFile("error", "Server Connection Handler", e.Message);
-                        return false;
-                    }
-                }
+                // Get web response (most importantly, status code)
+                var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                int statusCode = (int)httpResponse.StatusCode;
+                httpResponse.Close();
+                if (statusCode.ToString() == "204")
+                    return true;
             }
+            catch (Exception e)
+            {
+                Form1.LogMessageToFile("error", "Server Connection Handler", e.Message);
+                return false;
+            }
+
+
             catch
             {
                 return false;
