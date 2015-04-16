@@ -88,7 +88,7 @@ namespace vConnect
             string hexLiteral;  // String that will contain a raw hex value returned from the OBDII module.
             string hexLiteral2; // String that will contain a raw hex value returned from the OBDII module. 
             // If BT device is connected. 
-            if (BTConnection.ConnectionStatus)
+            if (BTConnection.Client.Connected)
             {
                 
                 // If this is the vin data element, then do the following reads in order to get all 

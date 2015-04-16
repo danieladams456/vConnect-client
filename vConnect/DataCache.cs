@@ -81,13 +81,19 @@ namespace vConnect
             try
             {
                 if (new FileInfo(CACHEFILE).Length != 0 && type != "alert")
+                {
                     ReadFromDisk();
+                    jsonString = JsonString;
+                    Form1.LogMessageToFile("event", "SendToServer", "Data to send: " + jsonString);
+
+
+                }
+
             }
             catch (Exception e)
             {
                 Form1.LogMessageToFile("error", "Cache File Info Error", e.ToString());
             }
-            Form1.LogMessageToFile("event", "SendToServer", "Data to send: " + jsonString);
 
             string webAddress = null;
 
@@ -99,6 +105,7 @@ namespace vConnect
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
             httpWebRequest.UserAgent = "vConnect";
+            httpWebRequest.Timeout = 5000;
             try
             {
                 // Create streamWriter object to handle the request.
@@ -113,6 +120,7 @@ namespace vConnect
                     var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
 
                     int statusCode = (int)httpResponse.StatusCode;
+
                     streamWriter.Close();
                     streamWriter.Dispose();
                     if (statusCode == 204)
@@ -252,6 +260,7 @@ namespace vConnect
             httpWebRequest.ContentType = "text/plain";
             httpWebRequest.Method = "HEAD";
             httpWebRequest.UserAgent = "vConnect";
+            httpWebRequest.Timeout = 5000;
             try
             {
                 using (var client = new WebClient())

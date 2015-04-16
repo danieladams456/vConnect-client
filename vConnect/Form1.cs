@@ -617,11 +617,6 @@ namespace vConnect
                         {
                             data_sent.Text = succeedCounter.ToString();
                         });
-                        this.Invoke((MethodInvoker)delegate
-                        {
-                            server_status.Text = "Connected";
-                        });
-
                     }
                     if (cache.SendToServer(cache.JsonString, "data"))
                     {
@@ -904,7 +899,7 @@ namespace vConnect
                 bool loopExit = false;
                 string toSend = "";
                 string hexLiteral = System.Text.Encoding.ASCII.GetString(errorCode);
-                if (System.Text.Encoding.ASCII.GetString(errorCode).Contains("4300\n4300\n\n"))
+                if (!hexLiteral.Contains("4300\r4300"))
                 {
                     bool first = true;
                     while (!loopExit)
@@ -938,11 +933,27 @@ namespace vConnect
 
                     }
                     toSend = "[" + toSend + "]";
-                    cache.SendToServer(toSend, "alert");
+                    LogMessageToFile("event", "CheckForErrorCodes", "Error codes polled: " + toSend);
+
+                    if(!cache.SendToServer(toSend, "alert"))
+                    {
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            server_status.Text = "Disconnected";
+                        });
+                        return false;
+                    }
+                    else
+                    {
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            server_status.Text = "Connected";
+                        });
+                    }
                 }
                 else
                 {
-                    LogMessageToFile("event", "CheckForErrorCodes", "Error codes polled: " + toSend);
+                    LogMessageToFile("event", "CheckForErrorCodes", "No error codes");
                     return true;
                 }
 
