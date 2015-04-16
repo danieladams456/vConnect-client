@@ -114,7 +114,10 @@ namespace vConnect
 
                         Form1.peerStream.Read(vin1, 0, vin1.Length);
                         System.Threading.Thread.Sleep(100);
-                        
+                        Form1.LogMessageToFile("event", "Read Codes", "Da codes:" + System.Text.Encoding.ASCII.GetString(vin1));
+                        if (System.Text.Encoding.ASCII.GetString(vin1).Contains("NO DATA"))
+                            return false;
+    
                         // Read VIN from OBDII module.
                         Form1.peerStream.Read(vin2, 0, vin2.Length);
 
@@ -185,6 +188,7 @@ namespace vConnect
                     valueToSend = res;
                     valueToSend = Regex.Replace(valueToSend, @"\0", "");
                     valueToSend = Regex.Replace(valueToSend, @"[^a-zA-Z0-9]", "");
+                    Form1.LogMessageToFile("event", "Log thing", "Log to send: " + valueToSend);
                     return true;
                 }
 
@@ -206,6 +210,7 @@ namespace vConnect
                         // Read the OBDII code data from the OBDII module.
                         Form1.peerStream.Read(returnData, 0, returnData.Length);
                         // If polling has stopped, return. 
+                        
                         if (!Form1.pollingData)
                             return false;
                     }
@@ -217,7 +222,7 @@ namespace vConnect
                         Form1.LogMessageToFile("error","BT Connection Error", msg + ex);
                         return false;
                     }
-
+                    Form1.LogMessageToFile("event", "Other codes", "Other codes: " + System.Text.Encoding.ASCII.GetString(returnData));
                     // If the vehicle doesn't support this particular vehicle code, it will return "NO DATA",
                     // which we are handling by sending an empty string to the server.
                     if (System.Text.Encoding.ASCII.GetString(returnData).Contains("NO DATA"))
@@ -234,6 +239,7 @@ namespace vConnect
                             // calculate the vehicle info values. Some OBDII codes require one hex literal, others two. 
                             if (returnDataSize == 1)
                             {
+                               
                                 hexLiteral = System.Text.Encoding.ASCII.GetString(returnData, 4, 1) + System.Text.Encoding.ASCII.GetString(returnData, 5, 1);
                                 equVals[0] = Convert.ToInt32(hexLiteral, 16);
 
@@ -259,7 +265,7 @@ namespace vConnect
                     }
 
                 }
-
+                return true;
             }
 
             // If no connection, record in error log.

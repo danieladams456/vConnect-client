@@ -13,7 +13,7 @@ Consult [32feet.Net][4]'s documentation for more information.
 ### Installation
 vConnect contains an installer that installs the vConnect application, a monitor application, and its required files in a directory. 
 
-***Troy, can you explain here how to save the server and BT device information the first time of use?***
+  1) 
   
 ### Usage
 After installation, execute vConnect.exe.

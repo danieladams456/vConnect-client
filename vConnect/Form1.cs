@@ -60,7 +60,8 @@ namespace vConnect
         // running or not. 
         static public bool pollingData = false;
         static public Stream peerStream;
-      //  BluetoothWin32Events x;
+        //  BluetoothWin32Events x;
+
 
         // Constant that determines how often the data polling Timer will run. (In miliseconds)
         const int POLLTIME = 20000;
@@ -76,28 +77,32 @@ namespace vConnect
             this.ShowInTaskbar = false;
             InitializeComponent();
             this.WindowState = FormWindowState.Minimized;
-
+            
             // Initialize the dataCache.
             cache = new DataCache();
             // Create a Timer callback method for polling data. 
             tcb = RequestDataForElements;
             Microsoft.Win32.SystemEvents.PowerModeChanged += OnPowerChange;
-          //  x = BluetoothWin32Events.GetInstance();
-          //  x.InRange += OnInRange;
-          //  x.OutOfRange += OnOutOfRange;
+            //  x = BluetoothWin32Events.GetInstance();
+            //  x.InRange += OnInRange;
+            //  x.OutOfRange += OnOutOfRange;
             // Bool variable to record whether an OBDII device and server have been successfully detected and pinged/established connection. 
-            bool deviceDetect = false;
             bool addrCheck = true;
             // If there is a saved BT Address, attempt to connect with the device with that address.
-            if (Properties.Settings.Default.BTAddress != "" && Properties.Settings.Default.PIN != "")
+            if (Properties.Settings.Default.BTAddress != "" && Properties.Settings.Default.PIN != "" && Properties.Settings.Default.BTDeviceName != "")
             {
+                Form1.LogMessageToFile("event", "Constructor", "Detected saved OBDII Information.");
                 // Grabs the saved BT address from the settings file.
                 BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
                 BTConnection.PIN = Properties.Settings.Default.PIN;
+                BTConnection.DeviceID = Properties.Settings.Default.BTDeviceName;
+                BT_ID.Text = Properties.Settings.Default.BTDeviceName;
+
                 // If connection is established with the device with the specified BT address above,
                 // save the Device's ID, indicated connection status on the GUI.
                 if (BTConnection.EstablishBTConnection())
                 {
+                    LogMessageToFile("event", "Constructor", "Automatic BT connection successful");
                     BTConnection.DeviceID = Properties.Settings.Default.BTDeviceName;
                     BT_ID.Text = Properties.Settings.Default.BTDeviceName;
                     device_Status_Label.Text = "Connected";
@@ -112,6 +117,7 @@ namespace vConnect
             // can be established.
             if (Properties.Settings.Default.ServerIP != "" && Properties.Settings.Default.ServerPort != "")
             {
+                LogMessageToFile("event", "Constructor", "Server information detected");
                 cache.PortNumber = Convert.ToInt32(Properties.Settings.Default.ServerPort);
                 cache.IPAddress = Properties.Settings.Default.ServerIP;
                 port_number.Text = Properties.Settings.Default.ServerPort;
@@ -123,42 +129,47 @@ namespace vConnect
 
             schema = SchemaUpdate();
 
-            if (true==true)//addrCheck)
+            if (addrCheck)
             {
                 if (schema != "NOT FOUND")
                 {
                     poll_status.Text = "Polling";
 
                     pollingData = true;
+                    LogMessageToFile("event", "Constructor", "Polling Loop initiated and started");
+
                     pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
                 }
                 else
                 {
                     MessageBox.Show("No Schema Found. Update Schema.");
+                    LogMessageToFile("event", "Constructor", "Schema file is empty");
+                    LogMessageToFile("event", "Constructor", "Polling Loop initiated, but not started");
                     pollData = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
                 }
             }
             else
             {
                 pollData = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
-
+                LogMessageToFile("event", "Constructor", "No OBDII data was detected");
+                LogMessageToFile("event", "Constructor", "Polling Loop initiated, but not started");
                 MessageBox.Show("No OBDII Connection info detected. Please set up OBDII Connection.");
             }
         }
 
 
-     /*   private void OnInRange(object sender, BluetoothWin32RadioInRangeEventArgs e)
-        {
+        /*   private void OnInRange(object sender, BluetoothWin32RadioInRangeEventArgs e)
+           {
 
 
-        }
+           }
 
-        private void OnOutOfRange(object sender, BluetoothWin32RadioOutOfRangeEventArgs e)
-        {
+           private void OnOutOfRange(object sender, BluetoothWin32RadioOutOfRangeEventArgs e)
+           {
 
 
-        }
-        */
+           }
+           */
 
         /// <summary>
         /// Closes the Application GUI.
@@ -237,6 +248,7 @@ namespace vConnect
                 server_IP.Text = value;
                 Properties.Settings.Default.ServerIP = value;
                 Properties.Settings.Default.Save();
+                LogMessageToFile("event", "IP Address Button", "IP address changed.");
             }
 
         }
@@ -266,6 +278,8 @@ namespace vConnect
                         Properties.Settings.Default.ServerPort = value;
                         Properties.Settings.Default.Save();
                         port_number.Text = value;
+                        LogMessageToFile("event", "Port Number Button", "Port number changed.");
+
                     }
                     else
                     {
@@ -326,7 +340,7 @@ namespace vConnect
                     if (BTConnection.EstablishBTConnection())
                     {
                         device_Status_Label.Text = "Connected";
-
+                        LogMessageToFile("event", "Browse BT Device Button", "OBDII device connected via browse button");
                         BT_ID.Text = device.DeviceName;
 
                     }
@@ -351,7 +365,9 @@ namespace vConnect
                 if (!BTConnection.BTConnectionStatus)
                     MessageBox.Show("There are no OBDII devices connected.");
                 else if (BTConnection.CloseBTConnection())
+                {
                     device_Status_Label.Text = "Disconnected";
+                }
             }
 
         }
@@ -389,8 +405,11 @@ namespace vConnect
                     poll_status.Text = "Polling";
                 });
                 pollingData = true;
-                pollData.Change(0, POLLTIME);
-                Form1.LogMessageToFile("event", "Start polling", "Inside polling worked");
+                this.Invoke((MethodInvoker)delegate
+                {
+                    pollData.Change(0, POLLTIME);
+                });
+                Form1.LogMessageToFile("event", "start_polling()", "Polling Loop began");
 
             }
             else
@@ -443,7 +462,7 @@ namespace vConnect
                 });
                 pollingData = false;
                 pollData.Change(Timeout.Infinite, Timeout.Infinite);
-                LogMessageToFile("event", "Power Mode: Suspend", "Stop polling worked");
+                LogMessageToFile("event", "stop_polling()", "Polling was stopped");
 
                 System.Threading.Thread.Sleep(2050);
 
@@ -465,6 +484,7 @@ namespace vConnect
             {
                 StreamReader reader = new StreamReader("schema.json");
                 schema = reader.ReadToEnd();
+                LogMessageToFile("event", "SchemaUpdate()", "Schema file has been updated");
             }
             catch (FileNotFoundException exception)
             {
@@ -483,6 +503,7 @@ namespace vConnect
                 case Microsoft.Win32.PowerModes.Resume:
 
                     System.Threading.Thread.Sleep(5000);
+                    LogMessageToFile("event", "Power Mode: Resume", "Resumed Power, closeing vConnect...");
                     Environment.Exit(2);
                     break;
                 case Microsoft.Win32.PowerModes.Suspend:
@@ -491,7 +512,7 @@ namespace vConnect
                         try
                         {
                             if (BTConnection.CloseBTConnection())
-                                LogMessageToFile("event", "Power Mode: Suspend", "WOrked?");
+                                LogMessageToFile("event", "Power Mode: Suspend", "Closed BT Connection and Stopped Polling");
 
                             stop_polling();
                         }
@@ -533,6 +554,17 @@ namespace vConnect
         {
             try
             {
+                if (BTConnection.Client.Connected)
+                {
+                    if (!BTConnection.integrityCheck())
+                    {
+                        BTConnection.CloseBTConnection();
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            device_Status_Label.Text = "Disconnected";
+                        });
+                    }
+                }
                 if (BTConnection.Client.Connected)
                 {
 
@@ -622,6 +654,10 @@ namespace vConnect
                 }
                 else
                 {
+                    this.Invoke((MethodInvoker)delegate
+                    {
+                        device_Status_Label.Text = "Disconnected";
+                    });
                     if (cache.CheckServerConnection())
                     {
                         this.Invoke((MethodInvoker)delegate
@@ -652,19 +688,17 @@ namespace vConnect
 
                     if (BTConnection.EstablishBTConnection())
                     {
+                        Form1.LogMessageToFile("event", "Polling Loop", "BT Connection Reestablished in Polling Loop");
                         this.Invoke((MethodInvoker)delegate
                         {
                             device_Status_Label.Text = "Connected";
+                        });
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            BTID_label.Text = BTConnection.DeviceID;
                         });
                     }
-                    else
-                    {
-                        this.Invoke((MethodInvoker)delegate
-                        {
-                            device_Status_Label.Text = "Connected";
-                        });
 
-                    }
 
 
                     return;
@@ -675,7 +709,7 @@ namespace vConnect
             catch (Exception e)
             {
 
-                LogMessageToFile("error", "Pool Loop.", "Unknown Error in polling loop." + e);
+              //  LogMessageToFile("error", "Pool Loop.", "Unknown Error in polling loop." + e);
 
             }
         }
@@ -868,7 +902,7 @@ namespace vConnect
                 byte[] subErrorCode = new byte[4];
                 int counter = 2;
                 bool loopExit = false;
-                string toSend = null;
+                string toSend = "";
                 string hexLiteral = System.Text.Encoding.ASCII.GetString(errorCode);
                 if (System.Text.Encoding.ASCII.GetString(errorCode).Contains("4300\n4300\n\n"))
                 {
@@ -908,6 +942,7 @@ namespace vConnect
                 }
                 else
                 {
+                    LogMessageToFile("event", "CheckForErrorCodes", "Error codes polled: " + toSend);
                     return true;
                 }
 
@@ -1079,7 +1114,7 @@ namespace vConnect
             {
                 // Write according to "3/1/2015 6:27:22 PM: [caller] message." format
                 string logLine = String.Format(
-                    "{0:G}: [{1}] {2}.", System.DateTime.Now, caller, message);
+                    "{0:G}: [{1}] {2}.\n\n", System.DateTime.Now, caller, message);
                 writer.WriteLine(logLine);
             }
             finally

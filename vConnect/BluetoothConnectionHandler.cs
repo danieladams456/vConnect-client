@@ -103,6 +103,7 @@ namespace vConnect
             }
             else
             {
+
                 Properties.Settings.Default.BTDeviceName = deviceID;
                 Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
                 Properties.Settings.Default.Save();
@@ -132,15 +133,18 @@ namespace vConnect
                 // and print message to the screen.
                 else
                 {
-                    var msg = "failed to connect to BT Device. ERROR:\n\n " + ex;
-                    Form1.LogMessageToFile("error", "EstablishBTConnection()", msg);
-                    connectLoop = 0;
                     if (ex.ToString().Contains("An invalid argument was supplied"))
-                    {
-                        Form1.LogMessageToFile("event", "EstablishBTConnection()", "Exiting vConnect to restart.");
+                   {
+                        Form1.LogMessageToFile("event", "EstablishBTConnection", "Exiting vConnect to restart.");
                         System.Threading.Thread.Sleep(500);
                         Application.Exit();
                         Environment.Exit(2);
+                    }
+                    else
+                    {
+                        var msg = "failed to connect to BT Device. ERROR:\n\n " + ex;
+                        Form1.LogMessageToFile("error", "EstablishBTConnection", msg);
+                        connectLoop = 0;
                     }
 
                     return false;
@@ -152,21 +156,15 @@ namespace vConnect
             if (client.Connected)
             {
 
+                Form1.LogMessageToFile("event", "EstablishBTConnection()", "Initial Connection Made.");
 
                 Form1.peerStream = client.GetStream();
-                byte[] test = System.Text.Encoding.ASCII.GetBytes("010D\r");
-                Form1.peerStream.Write(test, 0, test.Length);
-                System.Threading.Thread.Sleep(1000);
-                byte[] testRead = new byte[50];
-                Form1.peerStream.Read(testRead, 0, testRead.Length);
-
-                string check = System.Text.Encoding.ASCII.GetString(testRead);
-
-                if (check.Contains("SEARCHING") || check.Contains("BUS INIT") || check.Contains("UNABLE TO CONNECT") || check.Contains("ERROR"))
+                if (!integrityCheck())
                 {
                     CloseBTConnection();
                     return false;
                 }
+
                 byte[] first = System.Text.Encoding.ASCII.GetBytes("AT D\r");
                 byte[] second = System.Text.Encoding.ASCII.GetBytes("AT Z\r");
 
@@ -179,11 +177,12 @@ namespace vConnect
                 byte[] sixth = System.Text.Encoding.ASCII.GetBytes("AT H0\r");
 
                 byte[] seventh = System.Text.Encoding.ASCII.GetBytes("AT SP 0\r");
+                System.Threading.Thread.Sleep(500);
 
                 Form1.peerStream.Write(first, 0, first.Length);
                 System.Threading.Thread.Sleep(500);
 
-                //                Form1.peerStream.Write(second, 0, second.Length);
+           //     Form1.peerStream.Write(second, 0, second.Length);
                 System.Threading.Thread.Sleep(500);
 
                 Form1.peerStream.Write(third, 0, third.Length);
@@ -198,21 +197,42 @@ namespace vConnect
                 Form1.peerStream.Write(sixth, 0, sixth.Length);
                 System.Threading.Thread.Sleep(500);
 
-                //    Form1.peerStream.Write(seventh, 0, seventh.Length);
-                System.Threading.Thread.Sleep(500);
+   //             Form1.peerStream.Write(seventh, 0, seventh.Length);
+                System.Threading.Thread.Sleep(5000);
 
-                byte[] read = new byte[100];
+                byte[] read = new byte[200];
                 Form1.peerStream.Read(read, 0, read.Length);
+                Form1.LogMessageToFile("event", "EstablishBTConnection()", "Read Value: " + System.Text.Encoding.ASCII.GetString(read));
+
+                
                 bTConnectionStatus = true;
                 Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
                 Properties.Settings.Default.Save();
                 connectLoop = 0;
+                Form1.LogMessageToFile("event", "EstablishBTConnection()", "Successfully finalized BT connection with OBDII module.");
                 return true;
             }
 
             return false;
         }
+        public bool integrityCheck()
+        {
+            byte[] test = System.Text.Encoding.ASCII.GetBytes("010D\r");
+            Form1.peerStream.Write(test, 0, test.Length);
+            System.Threading.Thread.Sleep(1000);
+            byte[] testRead = new byte[20];
+            Form1.peerStream.Read(testRead, 0, testRead.Length);
 
+            string check = System.Text.Encoding.ASCII.GetString(testRead);
+            Form1.LogMessageToFile("event", "EstablishBTConnection()", "Check Value: " + check);
+            if (check.Contains("SEARCHING") || check.Contains("BUS INIT") || check.Contains("UNABLE TO CONNECT") || check.Contains("ERROR") || check.Contains("NO DATA"))
+            {
+                Form1.LogMessageToFile("error", "EstablishBTConnection()", "Couldn't initialize OBDII connection, here is what was returned: " + check);
+                return false;
+            }
+
+            return true;
+        }
 
 
         /// <summary>
@@ -231,7 +251,7 @@ namespace vConnect
                 // Properties.Settings.Default.BTDeviceName = null;
                 Form1.peerStream.Close();
                 client.Dispose();
-                Form1.LogMessageToFile("event", "CLOSER", "REached this point");
+                Form1.LogMessageToFile("event", "CloseBTConnection()", "Closed BT connection with OBDII module");
                 return true;
             }
             // If there is no connection to close, print to the screen, and print to screen.
@@ -243,30 +263,7 @@ namespace vConnect
 
         }
 
-        /// <summary>
-        /// Send an error message to the Windows Event Log.
-        /// </summary>
-        /// <returns>
-        /// True - A Error message was sucessfully logged to the Windows Event Log
-        /// False - The error message was not logged to the Windows Event Log.
-        /// </returns>
-        public bool SendWindowsErrorMessage()
-        {
 
-            // Code should work for sending error message to event log. However, admin must either run this program
-            // or, more simply, have the admin privileges during installation and register a event log source 
-            // for this program. Answer from 
-            // http://stackoverflow.com/questions/9564420/the-source-was-not-found-but-some-or-all-event-logs-could-not-be-searched
-            /*
-                string msg = "vConnect failed to connect to the BT device with address" + bluetoothAddress;
-                EventLog vConnectLog = new EventLog();
-                EventLog.CreateEventSource("vConnect", "vConnect");
-                vConnectLog.Source = "vConnect";
-                vConnectLog.WriteEntry(msg);
-
-              */
-            return true;
-        }
 
         // C# Style Accessors. Refer to DataElement.cs for example usage.
 

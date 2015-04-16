@@ -87,7 +87,7 @@ namespace vConnect
             {
                 Form1.LogMessageToFile("error", "Cache File Info Error", e.ToString());
             }
-
+            Form1.LogMessageToFile("event", "SendToServer", "Data to send: " + jsonString);
 
             string webAddress = null;
 
@@ -113,8 +113,8 @@ namespace vConnect
                     var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
 
                     int statusCode = (int)httpResponse.StatusCode;
-                    // streamWriter.Close();
-                    // streamWriter.Dispose();
+                    streamWriter.Close();
+                    streamWriter.Dispose();
                     if (statusCode == 204)
                     {
                         // Set to true, to be used in Form1 to keep UI up to date in terms of 
@@ -259,16 +259,16 @@ namespace vConnect
                 {
                     try
                     {
-                        //  using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-                        // {
+                        
                         // Get web response (most importantly, status code)
                         var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
                         int statusCode = (int)httpResponse.StatusCode;
-                        MessageBox.Show(statusCode.ToString());
+                        httpResponse.Close();          
+
                         if (statusCode.ToString() == "204")
                             return true;
 
-                        //}
+                        httpResponse.Close();          
 
                     }
                     catch (Exception e)
