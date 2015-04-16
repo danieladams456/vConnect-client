@@ -317,7 +317,7 @@ namespace vConnect
 
                 // If there is already an established connection with an OBDII device, then
                 // prompt the user to disconnect with it before attempting to browse for a new device.
-                if (BTConnection.ConnectionStatus)
+                if (BTConnection.Client.Connected)
                     MessageBox.Show(msg);
 
                 // Open a dialog box that will show all detectable BT Devices. Selecting a device 
@@ -362,7 +362,7 @@ namespace vConnect
             }
             else
             {
-                if (!BTConnection.BTConnectionStatus)
+                if (!BTConnection.Client.Connected)
                     MessageBox.Show("There are no OBDII devices connected.");
                 else if (BTConnection.CloseBTConnection())
                 {
@@ -466,7 +466,6 @@ namespace vConnect
 
                 System.Threading.Thread.Sleep(2050);
 
-                pollData = null;
             }
             else
                 LogMessageToFile("error", "stop_polling()", "Attempted to stop polling when it was already stopped.");
@@ -502,9 +501,10 @@ namespace vConnect
             {
                 case Microsoft.Win32.PowerModes.Resume:
 
-                    System.Threading.Thread.Sleep(5000);
+                    System.Threading.Thread.Sleep(10000);
                     LogMessageToFile("event", "Power Mode: Resume", "Resumed Power, closeing vConnect...");
                     Environment.Exit(2);
+                    
                     break;
                 case Microsoft.Win32.PowerModes.Suspend:
                     if (pollingData)
@@ -556,7 +556,7 @@ namespace vConnect
             {
                 if (BTConnection.Client.Connected)
                 {
-                    if (!BTConnection.integrityCheck())
+                    if (!BTConnection.IntegrityCheck())
                     {
                         BTConnection.CloseBTConnection();
                         this.Invoke((MethodInvoker)delegate
