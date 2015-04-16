@@ -274,7 +274,7 @@ namespace vConnect
 
                 Form1.LogMessageToFile("error","DataElement", "Lost BT Connection");
                   
-                    return false;
+                return false;
                 
             }
 
