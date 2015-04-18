@@ -416,7 +416,6 @@ namespace vConnect
             {
                 MessageBox.Show("Error: No Schema detected, need to update schema.");
                 LogMessageToFile("error", "Start Click", "Schema file was empty.");
-
             }
         }
 
@@ -432,10 +431,6 @@ namespace vConnect
 
             else
                 stop_polling();
-
-
-
-
         }
 
         private void stop_polling()
@@ -863,9 +858,14 @@ namespace vConnect
         }
 
         /// <summary>
-        /// Check for any error codes, and immediately send them to the
-        /// server if detected. 
+        /// Requests the vehicles error codes (check engine PIDs) from the OBDII module.
+        /// If error codes are returned, parse out the actual error codes from the return byte
+        /// array using the ParseErrorCode function. Once all error codes have been parsed, send
+        /// the error codes to the server. If no error codes are detected, do not send any message
+        /// to ther server.
         /// </summary>
+        /// <param name="elemList"></param>
+        /// <returns></returns>
         private bool CheckForErrorCodes(List<DataElement> elemList)
         {
             byte[] errorCode = new byte[60];
@@ -970,15 +970,21 @@ namespace vConnect
 
 
         /// <summary>
-        /// Parses the bits from the a two byte error Code received from the OBDII module
-        /// into its actual error code representation. 
+        /// Receives a binary encoded errorCode as an input, and parses the bits out
+        /// in order to get the actual error code to send to the server.
+        /// For more information concerning the pattern in which the bits are parsed,
+        /// visit http://en.wikipedia.org/wiki/OBD-II_PIDs , and go view the Mode 3 
+        /// section.
         /// </summary>
         /// <param name="errorCode"></param>
         /// <returns></returns>
         private string parseErrorCode(byte[] errorCode)
         {
-            string errorString = "";
-            string DTC1 = "";
+            
+            string errorString = "";    // String that will hold the actual error code.
+            
+            // Strings that will hold parts of the error code.
+            string DTC1 = "";          
             string DTC2 = "";
             string DTC3 = "";
             string DTC4 = "";
@@ -986,7 +992,8 @@ namespace vConnect
 
             try
             {
-                // This is just using bytes based... 
+                // Retrieves the 3rd and 4th least significant bits of the first byte,
+                // and selects a value based on the bits integer values.
                 int DTC1Check = (errorCode[0] >> 2) & 0x3;
 
                 if (DTC1Check == 0)
@@ -998,26 +1005,39 @@ namespace vConnect
                 else if (DTC1Check == 3)
                     DTC1 = "U";
 
+                // Retrieves the 1st and 2nd least significant bits of the first byte,
+                // and get their integer value.
                 int DTC2Check = errorCode[0] & 0x3;
                 DTC2 = DTC2Check.ToString();
 
+                // Retrieves the 1-4 least significant bits of the second byte,
+                // and get their integer value.
                 int DTC3Check = errorCode[1] & 0xF;
                 DTC3 = DTC3Check.ToString();
 
+                // Retrieves the 1-4 least significant bits of the third byte,
+                // and get their integer value.
                 int DTC4Check = errorCode[2] & 0xF;
                 DTC4 = DTC4Check.ToString();
-
+                // Retrieves the 1-4 least significant bits of the fourth byte,
+                // and get their integer value.
                 int DTC5Check = errorCode[3] & 0xF;
                 DTC5 = DTC5Check.ToString();
 
+                // Connects all the strings into the correct error code to be
+                // sent to the server.
                 errorString = DTC1 + DTC2 + DTC3 + DTC4 + DTC5;
             }
+
+            // Received unexpected values and could not parse correctly.
             catch (Exception e)
             {
                 LogMessageToFile("error", "Parser", "Bad Parse" + e);
                 return "-1";
 
             }
+            
+            // Return the error code.
             return errorString;
         }
 

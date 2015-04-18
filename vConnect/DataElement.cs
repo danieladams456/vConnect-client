@@ -35,7 +35,7 @@ namespace vConnect
                                             //  the bytes returned by the car.
        
         
-        private int[] equVals = new int[10]; // Array that will contain raw values from the OBDII module 
+        private int[] equVals = new int[2]; // Array that will contain raw values from the OBDII module 
                                              // to be used in calculating formatted data values. 
 
         private bool noDataCheck = false; // Bool that will be switched to true if a data element
@@ -80,13 +80,15 @@ namespace vConnect
         /// </summary>
         /// <returns>
         /// true - ODBII codes was successfully requested and corresponding data was read successfully.  
-        /// False - Connection to the BT Device was lost. 
+        /// False - OBDII codes were not successfully read and converted into values to be used in 
+        /// computing the requested vehicle information.
         /// </returns>
         public bool RequestDataFromCar()
         {
             string writeString; // String that will contain the request to be send to the OBDII module.
             string hexLiteral;  // String that will contain a raw hex value returned from the OBDII module.
             string hexLiteral2; // String that will contain a raw hex value returned from the OBDII module. 
+            
             // If BT device is connected. 
             if (BTConnection.Client.Connected)
             {
@@ -96,8 +98,11 @@ namespace vConnect
               
                 if (name == "VIN")
                 {
-                    writeString = "09" + obdPID + "\r";// Write string for VIN.
-                    byte[] vin1 = new byte[50]; // Byte arrays to read in VIN.
+                  //  writeString = "09" + obdPID + "\r";// Write string for VIN.
+                    writeString = obdMode + obdPID + "\r";// Write string for VIN.
+                    
+                    // Byte arrays to read in VIN.
+                    byte[] vin1 = new byte[50];           
                     byte[] vin2 = new byte[50];
 
 
@@ -107,18 +112,26 @@ namespace vConnect
                     {
                         // Write the code to the OBDII module.
                         Form1.peerStream.Write(writeCode, 0, writeCode.Length);
+                        
                         // Must retrieve the VIN in two different reads. 
                         // Thread pauses are to give the OBDII module time to process
                         // requests and write to the buffer. 
                         System.Threading.Thread.Sleep(150);
 
+                        // Read the first part of the VIN
                         Form1.peerStream.Read(vin1, 0, vin1.Length);
+                        
+                        // Pause to let the output buffer fill up. 
                         System.Threading.Thread.Sleep(100);
-                        Form1.LogMessageToFile("event", "Read Codes", "Da codes:" + System.Text.Encoding.ASCII.GetString(vin1));
+
+                        // Error if VIN returns NO DATA.
                         if (System.Text.Encoding.ASCII.GetString(vin1).Contains("NO DATA"))
+                        {
+                            Form1.LogMessageToFile("error", "RequestDataFromCar()", "VIN returned NO DATA");
                             return false;
-    
-                        // Read VIN from OBDII module.
+                        }
+
+                        // Read second part of VIN from OBDII module.
                         Form1.peerStream.Read(vin2, 0, vin2.Length);
 
                         // If polling has stopped, exit.
@@ -138,24 +151,20 @@ namespace vConnect
                     // Format the raw data read from the OBDII module.
                     valueToSend = System.Text.Encoding.ASCII.GetString(vin1)
                         + System.Text.Encoding.ASCII.GetString(vin2);
-               
+                    Form1.LogMessageToFile("event", "RequestDataFromCar()", "Raw data to send.");
                     // REGEX Parses to clear extra characters from VIN string.
                     // NOTE: should probably make sure not to kill anything in vin...
                     valueToSend = Regex.Replace(valueToSend, @".:", "");
-                    valueToSend = Regex.Replace(valueToSend, @"014", "");
+                    valueToSend = Regex.Replace(valueToSend, @"^...", "");
                     valueToSend = Regex.Replace(valueToSend, @"49", "");
                     valueToSend = Regex.Replace(valueToSend, @"02", "");
                     valueToSend = Regex.Replace(valueToSend, @"01", "");
 
                     valueToSend = Regex.Replace(valueToSend, @"ELM327v1.4", "");
-                    valueToSend = Regex.Replace(valueToSend, @"CONNECTED", "");
-                    valueToSend = Regex.Replace(valueToSend, @"SEARCHING\.\.", "");
-                    valueToSend = Regex.Replace(valueToSend, @"0902", "");
                     valueToSend = Regex.Replace(valueToSend, @" ", "");
                     valueToSend = Regex.Replace(valueToSend, @"\r", "");
                     valueToSend = Regex.Replace(valueToSend, @">", "");
                     valueToSend = Regex.Replace(valueToSend, @"\?", "");
-                    valueToSend = Regex.Replace(valueToSend, @"BUS INIT: \.\.\.OK", "");
 
                     valueToSend = Regex.Replace(valueToSend, @"\0", "");
                     valueToSend = Regex.Replace(valueToSend, @"\.", "");
@@ -175,19 +184,22 @@ namespace vConnect
 
                         }
                     }
-                    // Catch some error caused by corrupted data sent by OBDII module. 
+                    // Catch  error caused by corrupted data sent by OBDII module that causes
+                    // Parser above to fail.
                     catch (Exception e)
                     {
-
                         Form1.LogMessageToFile("error","VIN Parser Error", e.Message);
                         return false;
                     }
-                   //     return false;
 
+                    // Clear out filler characters from VIN (I and 0 never occur in VINs, so they are
+                    // used as new line delimiters and filler)
                     res = Regex.Replace(res, @"I", "");
                     valueToSend = res;
                     valueToSend = Regex.Replace(valueToSend, @"\0", "");
                     valueToSend = Regex.Replace(valueToSend, @"[^a-zA-Z0-9]", "");
+                    
+                    // Log the message to send.
                     Form1.LogMessageToFile("event", "Log thing", "Log to send: " + valueToSend);
                     return true;
                 }
@@ -197,13 +209,15 @@ namespace vConnect
                 else
                 {
                     // OBDII request string. 
-                    writeString = "01" + obdPID + "\r";
-
+                    //writeString = "01" + obdPID + "\r";
+                    // OBDII request string. 
+                    writeString = obdMode + obdPID + "\r";
                     try
                     {
                         // Encode the writeString, then write it to the OBDII module. 
                         byte[] writeCode = System.Text.Encoding.ASCII.GetBytes(writeString);
                         Form1.peerStream.Write(writeCode, 0, writeCode.Length);
+                        
                         // Wait 0.15 seconds for the OBDII module to process the code request
                         System.Threading.Thread.Sleep(150);
 
@@ -222,7 +236,7 @@ namespace vConnect
                         Form1.LogMessageToFile("error","BT Connection Error", msg + ex);
                         return false;
                     }
-                    Form1.LogMessageToFile("event", "Other codes", "Other codes: " + System.Text.Encoding.ASCII.GetString(returnData));
+                   
                     // If the vehicle doesn't support this particular vehicle code, it will return "NO DATA",
                     // which we are handling by sending an empty string to the server.
                     if (System.Text.Encoding.ASCII.GetString(returnData).Contains("NO DATA"))
@@ -237,6 +251,7 @@ namespace vConnect
                             
                             // Get the Hex Literals representing the values to be used in the equations that 
                             // calculate the vehicle info values. Some OBDII codes require one hex literal, others two. 
+                            // Converst those literals into integers.
                             if (returnDataSize == 1)
                             {
                                
@@ -260,7 +275,6 @@ namespace vConnect
                             var msg = "Polled data was corrupted.";
                             Form1.LogMessageToFile("error","BT Connection Error", msg + e);
                             return false;
-
                         }
                     }
 
@@ -271,19 +285,14 @@ namespace vConnect
             // If no connection, record in error log.
             else
             {
-
-                Form1.LogMessageToFile("error","DataElement", "Lost BT Connection");
-                  
-                return false;
-                
+                Form1.LogMessageToFile("error","DataElement", "Lost BT Connection");                 
+                return false;                
             }
-
-            return true;
         }
 
 
         /// <summary>
-        /// Format the data correctly, using the specified equations for each type of data element.
+        /// Calculates the requested vehicle information using the integer values retrieved via OBDII module.
         /// </summary>
         public void FormatData()
         {
@@ -305,13 +314,12 @@ namespace vConnect
                         // If the equation only has an "A"
                         if (returnDataSize == 1)
                         {
-                            //expr.Parameters["A"] = byteList[1].ToString();
 
                             expr.Parameters["A"] = equVals[0];
                         }
 
 
-                        // If the equation has A and B...
+                        // If the equation has A and B
                         else if (ReturnDataSize == 2)
                         {
                             expr.Parameters["A"] = equVals[0];
@@ -326,13 +334,10 @@ namespace vConnect
                         ValueToSend = answerToExpression.ToString();
                         float temp = float.Parse(valueToSend);
                         ValueToSend = ((int)temp).ToString();
-
-
-
                     }
                 }
             }
-            // Catch any unknown error. 
+            // Catch any unexpected error. 
             catch (Exception e)
             {
                 Form1.LogMessageToFile("error","Format Data", e.ToString());

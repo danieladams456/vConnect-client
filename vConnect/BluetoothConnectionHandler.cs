@@ -36,7 +36,7 @@ namespace vConnect
         private BluetoothClient client = null;          // Class object that contains client info.
         private string pIN = "0";                       // PIN to be used in connection with the BT module.
 
-        const int CONNECTIONATTEMPTS = 3;         // Number of times vConnect will attempt to connect to the application. 
+        const int CONNECTIONATTEMPTS = 4;         // Number of times vConnect will attempt to connect to the application. 
 
 
         /// <summary>
@@ -177,35 +177,35 @@ namespace vConnect
 
                 // These are AT commands, which will change the settings of the OBDII module
                 // in order to increase data polling speed. 
-                byte[] first = System.Text.Encoding.ASCII.GetBytes("AT D\r");       // Set all to defaults 
-                byte[] second = System.Text.Encoding.ASCII.GetBytes("AT Z\r");      // reset all 
-                byte[] third = System.Text.Encoding.ASCII.GetBytes("AT E0\r");      // Turn request echo off
-                byte[] fourth = System.Text.Encoding.ASCII.GetBytes("AT L0\r");     // Turn linefeeds off
-                byte[] fifth = System.Text.Encoding.ASCII.GetBytes("AT S0\r");      // Turn printing of spaces off
-                byte[] sixth = System.Text.Encoding.ASCII.GetBytes("AT H0\r");      // Turn Headers off
-                byte[] seventh = System.Text.Encoding.ASCII.GetBytes("AT SP 00\r");  // Set Protocol to auto.
+                byte[] firstCode = System.Text.Encoding.ASCII.GetBytes("AT D\r");       // Set all to defaults 
+                byte[] secondCode = System.Text.Encoding.ASCII.GetBytes("AT Z\r");      // reset all 
+                byte[] thirdCode = System.Text.Encoding.ASCII.GetBytes("AT E0\r");      // Turn request echo off
+                byte[] fourthCode = System.Text.Encoding.ASCII.GetBytes("AT L0\r");     // Turn linefeeds off
+                byte[] fifthCode = System.Text.Encoding.ASCII.GetBytes("AT S0\r");      // Turn printing of spaces off
+                byte[] sixthCode = System.Text.Encoding.ASCII.GetBytes("AT H0\r");      // Turn Headers off
+                byte[] seventhCode = System.Text.Encoding.ASCII.GetBytes("AT SP 00\r");  // Set Protocol to auto.
 
                 // Write the AT commands listed above to the OBDII module to finalize the connection.
                 System.Threading.Thread.Sleep(500);
-                Form1.peerStream.Write(first, 0, first.Length);
+                Form1.peerStream.Write(firstCode, 0, firstCode.Length);
                 System.Threading.Thread.Sleep(500);
                 //Form1.peerStream.Write(second, 0, second.Length);
                 System.Threading.Thread.Sleep(500);
-                Form1.peerStream.Write(third, 0, third.Length);
+                Form1.peerStream.Write(thirdCode, 0, thirdCode.Length);
                 System.Threading.Thread.Sleep(500);
-                Form1.peerStream.Write(fourth, 0, fourth.Length);
+                Form1.peerStream.Write(fourthCode, 0, fourthCode.Length);
                 System.Threading.Thread.Sleep(500);
-                Form1.peerStream.Write(fifth, 0, fifth.Length);
+                Form1.peerStream.Write(fifthCode, 0, fifthCode.Length);
                 System.Threading.Thread.Sleep(500);
-                Form1.peerStream.Write(sixth, 0, sixth.Length);
+                Form1.peerStream.Write(sixthCode, 0, sixthCode.Length);
                 System.Threading.Thread.Sleep(500);
                 //Form1.peerStream.Write(seventh, 0, seventh.Length);
                 System.Threading.Thread.Sleep(5000);
 
                 // Read the responses from the AT commands and save them in event.log
-                byte[] read = new byte[200];
-                Form1.peerStream.Read(read, 0, read.Length);
-                Form1.LogMessageToFile("event", "EstablishBTConnection()", "Return values from AT commands: " + System.Text.Encoding.ASCII.GetString(read));
+                byte[] readBytes = new byte[100];
+                Form1.peerStream.Read(readBytes, 0, readBytes.Length);
+                Form1.LogMessageToFile("event", "EstablishBTConnection()", "Return values from AT commands: " + System.Text.Encoding.ASCII.GetString(readBytes));
 
                 Properties.Settings.Default.BTAddress = bluetoothAddress.ToString();
                 Properties.Settings.Default.Save();
@@ -231,10 +231,10 @@ namespace vConnect
             if (client.Connected)
             {
                 // Generic OBDII request. 
-                byte[] test = System.Text.Encoding.ASCII.GetBytes("010D\r");
+                byte[] testMessage = System.Text.Encoding.ASCII.GetBytes("010D\r");
 
                 // Write the request to the OBDII module, and read the response.
-                Form1.peerStream.Write(test, 0, test.Length);
+                Form1.peerStream.Write(testMessage, 0, testMessage.Length);
                 System.Threading.Thread.Sleep(1000);
                 byte[] testRead = new byte[20];
                 Form1.peerStream.Read(testRead, 0, testRead.Length);
