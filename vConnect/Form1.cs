@@ -547,11 +547,15 @@ namespace vConnect
         ///         data elements) to an array of JSON objects the JsonConvert.SerializeObject()
         ///         method from Json.net library. 
         ///         
-        ///     5. Request OBDII 
+        ///     5. Request OBDII Error Codes from the OBDII module, and send them to the server
+        ///        if any are detected.
         ///     
-        ///     6. Send OBDII data
+        ///     6. Send all vehicle information stored in the cache into the server.
         ///     
-        /// If there is no BT Connection, 
+        /// The details regarding how this function handles various failures are detailed in 
+        /// comments in the function itself.
+        ///     
+        /// If there is no BT Connection:s
         ///     
         ///     1. Increment the fail counter 
         ///     
@@ -566,12 +570,19 @@ namespace vConnect
         /// </summary>
         public void RequestDataForElements(object sender)
         {
+
+            // Try block in case of any unexpected exceptions.
             try
             {
+                // Check if the OBDII module is connected.
                 if (BTConnection.Client.Connected)
                 {
+                    // If so, perform an integrity check to make sure that 
+                    // the OBDII module is not sending corrupted data.
                     if (!BTConnection.IntegrityCheck())
                     {
+                        // Close the connection is corrupted data is detected,
+                        // and update the UI accordingly.
                         BTConnection.CloseBTConnection();
                         this.Invoke((MethodInvoker)delegate
                         {
@@ -579,9 +590,13 @@ namespace vConnect
                         });
                     }
                 }
+
+                // If OBDII module still connected, continue with requesting for data.
                 if (BTConnection.Client.Connected)
                 {
-
+                    // Mark that vConnect is currently polling data.
+                    // NOTE that polling data can be changed to false via the UI,
+                    // hence all the checks to see if pollingData is false.
                     pollingData = true;
                     // Create a list of DataElements.
                     List<DataElement> elemList = new List<DataElement>();
@@ -592,13 +607,21 @@ namespace vConnect
 
                     // Create the "shell" of empty elements from the schema.
                     elemList = CreateElementsFromSchema(schema);
-
-                    // Fill the contents of the elements with the data from the car
+        
+                    // return if no longer polling data.
                     if (!pollingData)
                         return;
+
+
+                    // Fill the contents of the elements with the data from the car
                     elemList = GetElementData(elemList);
+
+                    // If element list returned null, and polling data is false, return.
                     if (elemList == null && !pollingData)
                         return;
+
+                    // If just elemList is equal to null, then something failed in getting
+                    // element data. Increment the fail counter, update the UI, and return.
                     else if (elemList == null)
                     {
                         failCounter = failCounter + 1;
@@ -608,13 +631,20 @@ namespace vConnect
                         });
                         return;
                     }
+
                     // Create a dictionary out of the list of elements.
                     dictionary = CreateDictionary(elemList);
 
                     // Add the dictionary containing the data points to the cache.
                     cache.AddElementToCache(dictionary);
+
+                    // If no longer polling data, return.
                     if (!pollingData)
                         return;
+
+                    // Attempt to check for error codes. If it returns false,
+                    // some error occurred with checking for error codes, in 
+                    // which case increment the fail counter.
                     if (CheckForErrorCodes(elemList[1].ValueToSend) == false)
                     {
                         failCounter = failCounter + 1;
@@ -624,6 +654,9 @@ namespace vConnect
                         });
                         return;
                     }
+
+                    // If error codes were sent correctly, or if there were no 
+                    // error codes, increment the succeedCounter.
                     else
                     {
                         succeedCounter = succeedCounter + 1;
@@ -632,6 +665,11 @@ namespace vConnect
                             data_sent.Text = succeedCounter.ToString();
                         });
                     }
+
+                    // Attempt to send the data points stored in the 
+                    // cache to the server. If it succeeds, increment
+                    // the succeed Counter, and update the UI in regards
+                    // to the server status.
                     if (cache.SendToServer(cache.JsonString, "data"))
                     {
                         succeedCounter = succeedCounter + 1;
@@ -645,6 +683,10 @@ namespace vConnect
                         });
 
                     }
+
+                    // If sending codes to the server fails, increment
+                    // the fail counter, update the UI in regards to the
+                    // server connection status, and return.
                     else
                     {
                         failCounter = failCounter + 1;
@@ -663,13 +705,25 @@ namespace vConnect
                 }
                 
                 
-                
+                // Else, if the OBDII module is disconnected, do the following.
                 else
                 {
+                    // Update to device status UI label.
                     this.Invoke((MethodInvoker)delegate
                     {
                         device_Status_Label.Text = "Disconnected";
                     });
+
+                    // Increment the fail counter.
+                    failCounter = failCounter + 1;
+                    this.Invoke((MethodInvoker)delegate
+                    {
+                        data_failed.Text = failCounter.ToString();
+                    });
+                   
+                    // Check if vConnect can still connect with the server,
+                    // whatever the result, update the server status UI label
+                    // accordingly.
                     if (cache.CheckServerConnection())
                     {
                         this.Invoke((MethodInvoker)delegate
@@ -686,18 +740,19 @@ namespace vConnect
                         });
 
                     }
-                    failCounter = failCounter + 1;
-                    this.Invoke((MethodInvoker)delegate
-                    {
-                        data_failed.Text = failCounter.ToString();
-                    });
 
+                    
+                    // Try to close the stream if it is open.
                     try { peerStream.Close(); }
                     catch { ;}
 
+                    // If the OBDII module regained partial (faulty) connection
+                    // with vConnect, dispose of the connection.
                     if (BTConnection.Client.Connected)
                         BTConnection.Client.Dispose();
 
+                    // Attempt to re-establish BT connection with the OBDII module.
+                    // If successfully, update the UI and log.
                     if (BTConnection.EstablishBTConnection())
                     {
                         Form1.LogMessageToFile("event", "Polling Loop", "BT Connection Reestablished in Polling Loop");
@@ -710,19 +765,14 @@ namespace vConnect
                             BTID_label.Text = BTConnection.DeviceID;
                         });
                     }
-
-
-
                     return;
                 }
-
-
             }
-            catch (Exception e)
+            
+            // Catch the error and return. vConnect should be able to resolve the issue itself. 
+            catch
             {
-
-                //  LogMessageToFile("error", "Pool Loop.", "Unknown Error in polling loop." + e);
-
+                return;
             }
         }
 
@@ -942,8 +992,14 @@ namespace vConnect
             byte[] subErrorCode = new byte[4];  // Array to hold each error code.
             int counter = 2;                    // Counter used to keep track of location in errorCode array.
             bool loopExit = false;              // Bool for loop value.
-            string toSend = "";
+            string toSend = "";                 // String that will store the message with error codes to 
+                                                // be sent to the server
+
+            // String that has the actual string value of the bytes in errorCode.
             string hexLiteral = System.Text.Encoding.ASCII.GetString(errorCode);
+            
+            
+            // If the errorCode byte array contains 4300\r4300, then it has no error codes.
             if (!hexLiteral.Contains("4300\r4300"))
             {
                 bool firstError = true;
