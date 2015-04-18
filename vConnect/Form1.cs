@@ -77,7 +77,7 @@ namespace vConnect
             this.ShowInTaskbar = false;
             InitializeComponent();
             this.WindowState = FormWindowState.Minimized;
-            
+
             // Initialize the dataCache.
             cache = new DataCache();
             // Create a Timer callback method for polling data. 
@@ -499,7 +499,7 @@ namespace vConnect
                     System.Threading.Thread.Sleep(10000);
                     LogMessageToFile("event", "Power Mode: Resume", "Resumed Power, closeing vConnect...");
                     Environment.Exit(2);
-                    
+
                     break;
                 case Microsoft.Win32.PowerModes.Suspend:
                     if (pollingData)
@@ -525,8 +525,11 @@ namespace vConnect
             }
         }
         /// <summary>
-        /// This function serves as the launching point for requesting data.
+        /// This function serves as the launching point for requesting data. Note that 
+        /// this function is being used as a time callback method for a Threading Timer object,
+        /// so it is being called repeatedly, as long as vConnect is polling for Data.
         /// 
+        /// If there is a BT Connection, do the following:
         /// The format method of retrieving and sending data is as follows:
         ///     
         ///     1. Create a list of DataElement objects.
@@ -543,6 +546,22 @@ namespace vConnect
         ///         cache will convert the List of Dictionaries (each containing name,value of
         ///         data elements) to an array of JSON objects the JsonConvert.SerializeObject()
         ///         method from Json.net library. 
+        ///         
+        ///     5. Request OBDII 
+        ///     
+        ///     6. Send OBDII data
+        ///     
+        /// If there is no BT Connection, 
+        ///     
+        ///     1. Increment the fail counter 
+        ///     
+        ///     2. Mark the device label as diconnected if it is not so already.
+        ///     
+        ///     3. Check if vConnect has connection with the server, and edit the server connection
+        ///        label as needed.
+        ///        
+        ///     4. Attempt to reconnect with the registered OBDII module.
+        /// 
         ///         
         /// </summary>
         public void RequestDataForElements(object sender)
@@ -642,6 +661,9 @@ namespace vConnect
 
                     }
                 }
+                
+                
+                
                 else
                 {
                     this.Invoke((MethodInvoker)delegate
@@ -699,7 +721,7 @@ namespace vConnect
             catch (Exception e)
             {
 
-              //  LogMessageToFile("error", "Pool Loop.", "Unknown Error in polling loop." + e);
+                //  LogMessageToFile("error", "Pool Loop.", "Unknown Error in polling loop." + e);
 
             }
         }
@@ -864,7 +886,8 @@ namespace vConnect
         /// the error codes to the server. If no error codes are detected, do not send any message
         /// to ther server.
         /// </summary>
-        /// <param name="VIN"> VIN of the car that is being checked for error codes. VIN
+        /// <param name="VIN"> 
+        /// VIN of the car that is being checked for error codes. VIN
         /// is needed to send error codes to the server.</param>
         /// <returns>
         /// True if no error codes are detected, or if error codes are detected, correctly
@@ -877,107 +900,135 @@ namespace vConnect
 
 
             byte[] errorCode = new byte[200];   // Byte array to store error code. 
-            
+
             string errorString = "";            // String to hold error code after being parsed 
-                                                // from byte array.
-            
-                // Return false if vConnect polling has ceased.
-                if (!pollingData)
-                    return false;
-                
-            
-                // Try to request and receive error codes.
-                try
+            // from byte array.
+
+            // Return false if vConnect polling has ceased.
+            if (!pollingData)
+                return false;
+
+
+            // Try to request and receive error codes.
+            try
+            {
+                // Create the code request
+                byte[] writeCode = System.Text.Encoding.ASCII.GetBytes("03 \r");
+
+                // Write code to OBDII module
+                peerStream.Flush();
+                peerStream.Write(writeCode, 0, writeCode.Length);
+
+                // Pause to let OBDII module process request.
+                System.Threading.Thread.Sleep(2000);
+
+                // Read OBDII error codes. 
+                peerStream.Read(errorCode, 0, errorCode.Length);
+            }
+
+
+            // Catch exception for losing BT connection with OBDII module, log the error
+            // and return false.
+            catch (Exception ex)
+            {
+                LogMessageToFile("error", "CheckForErrorCodes()", ex.ToString());
+                return false;
+            }
+
+            // Return false if vConnect has ceased polling data.
+            if (!pollingData)
+                return false;
+
+            byte[] subErrorCode = new byte[4];  // Array to hold each error code.
+            int counter = 2;                    // Counter used to keep track of location in errorCode array.
+            bool loopExit = false;              // Bool for loop value.
+            string toSend = "";
+            string hexLiteral = System.Text.Encoding.ASCII.GetString(errorCode);
+            if (!hexLiteral.Contains("4300\r4300"))
+            {
+                bool firstError = true;
+                while (!loopExit)
                 {
-                    // Create the code request
-                    byte[] writeCode = System.Text.Encoding.ASCII.GetBytes("03 \r");
-                    
-                    // Write code to OBDII module
-                    peerStream.Flush();
-                    peerStream.Write(writeCode, 0, writeCode.Length);
+                    // Get the error code from errorCode.
+                    subErrorCode = errorCode.Skip(counter).Take(4).ToArray();
 
-                    // Pause to let OBDII module process request.
-                    System.Threading.Thread.Sleep(2000);
-
-                    // Read OBDII error codes. 
-                    peerStream.Read(errorCode, 0, errorCode.Length);
-                }
+                    // Parse the error code byte array.
+                    errorString = parseErrorCode(subErrorCode);
 
 
-                // Catch exception for losing BT connection with OBDII module, log the error
-                // and return false.
-                catch (Exception ex)
-                {
-                    var msg = "Lost connection to OBDII device.  ";
-                    LogMessageToFile("error", "CheckForErrorCodes()", ex.ToString());
-                    return false;
-                }
-                if (!pollingData)
-                    return false;
-                byte[] subErrorCode = new byte[4];
-                int counter = 2;
-                bool loopExit = false;
-                string toSend = "";
-                string hexLiteral = System.Text.Encoding.ASCII.GetString(errorCode);
-                if (!hexLiteral.Contains("4300\r4300"))
-                {
-                    bool first = true;
-                    while (!loopExit)
-                    {
-                        subErrorCode = errorCode.Skip(counter).Take(4).ToArray();
+                    // If the error code was all 0's (signifying that there are no more
+                    // error codes), exit the loop.
+                    if (errorString == "P0000")
+                        loopExit = true;
 
-                        errorString = parseErrorCode(subErrorCode);
-
-                        if (errorString == "P0000")
-                            loopExit = true;
-                        else if (errorString == "-1")
-                            return false;
-                        else
-                        {
-                            if (first)
-                            {
-                                toSend = toSend + "{\"VIN\":\"" + VIN + "\",\"timestamp\":\"" + DateTime.Now.ToString()
-                                    + "\",\"trouble_code\":\"" + errorString + "\"}";
-                                first = false;
-                            }
-                            else
-                                toSend = toSend + ",{\"VIN\":\"" + VIN + "\",\"timestamp\":\"" + DateTime.Now.ToString()
-                                    + "\",\"trouble_code\":\"" + errorString + "\"}";
-                        }
-                        counter += 4;
-
-                        if (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) == "\r" && System.Text.Encoding.ASCII.GetString(errorCode, 1 + counter, 1) == "\r")
-                            loopExit = true;
-                        else if (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) == "\r")
-                            counter += 3;
-
-                    }
-                    toSend = "[" + toSend + "]";
-                    LogMessageToFile("event", "CheckForErrorCodes", "Error codes polled: " + toSend);
-
-                    if(!cache.SendToServer(toSend, "alert"))
-                    {
-                        this.Invoke((MethodInvoker)delegate
-                        {
-                            server_status.Text = "Disconnected";
-                        });
+                    // If errorString = -1, then ParseErrorCode encountered an error due to 
+                    // corrupted data from the OBDII module.
+                    else if (errorString == "-1")
                         return false;
-                    }
+
+                    // Format the errorCode in a Json Message.
                     else
                     {
-                        this.Invoke((MethodInvoker)delegate
+                        // If its the first error Code read, format the first part of the error Code message to ther server.
+                        if (firstError)
                         {
-                            server_status.Text = "Connected";
-                        });
+                            toSend = toSend + "{\"VIN\":\"" + VIN + "\",\"timestamp\":\"" + DateTime.Now.ToString()
+                                + "\",\"trouble_code\":\"" + errorString + "\"}";
+                            firstError = false;
+                        }
+                        // If it it not the first error code read, then add this error code to the message to be sent
+                        // to the server.
+                        else
+                            toSend = toSend + ",{\"VIN\":\"" + VIN + "\",\"timestamp\":\"" + DateTime.Now.ToString()
+                                + "\",\"trouble_code\":\"" + errorString + "\"}";
                     }
+                    // Move the counter forward in the Byte array.
+                    counter += 4;
+
+                    // If the next two characters in the array are newline characters, there are no more error codes, so exit the loop.
+                    if (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) == "\r" && System.Text.Encoding.ASCII.GetString(errorCode, 1 + counter, 1) == "\r")
+                        loopExit = true;
+                    // If not, there are more error codes, so increment the counter by 3 to pass the newline character and two placeholder bytes.
+                    else if (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) == "\r")
+                        counter += 3;
+
+                }
+
+                // Enclose the message with brackets to be sent to the server.
+                toSend = "[" + toSend + "]";
+
+                // Log the error codes to the log.
+                LogMessageToFile("event", "CheckForErrorCodes()", "Error codes polled: " + toSend);
+
+
+                // Attempt to send the error codes to the server. If Sending is successful, update the
+                // UI to reflect this and return true, if sending failed, update the UI to signify vConnect has lost 
+                // server connectivity, and return false.
+                if (!cache.SendToServer(toSend, "alert"))
+                {
+                    this.Invoke((MethodInvoker)delegate
+                    {
+                        server_status.Text = "Disconnected";
+                    });
+                    return false;
                 }
                 else
                 {
-                    LogMessageToFile("event", "CheckForErrorCodes", "No error codes");
+                    this.Invoke((MethodInvoker)delegate
+                    {
+                        server_status.Text = "Connected";
+                    });
                     return true;
                 }
-          
-            return true;
+            }
+
+            // If no error codes, log to the event log.
+            else
+            {
+                LogMessageToFile("event", "CheckForErrorCodes()", "No error codes");
+                return true;
+            }
+
         }
 
 
@@ -988,15 +1039,20 @@ namespace vConnect
         /// visit http://en.wikipedia.org/wiki/OBD-II_PIDs , and go view the Mode 3 
         /// section.
         /// </summary>
-        /// <param name="errorCode"></param>
-        /// <returns></returns>
+        /// <param name="errorCode">
+        /// The binary encoded error code to be parsed.
+        /// </param>
+        /// <returns>
+        /// If the error code is parsed correctly, then return that error code string.
+        /// If some error occured while parsing the error code, return -1.
+        /// </returns>
         private string parseErrorCode(byte[] errorCode)
         {
-            
+
             string errorString = "";    // String that will hold the actual error code.
-            
+
             // Strings that will hold parts of the error code.
-            string DTC1 = "";          
+            string DTC1 = "";
             string DTC2 = "";
             string DTC3 = "";
             string DTC4 = "";
@@ -1045,11 +1101,10 @@ namespace vConnect
             // return -1 to signify failure.
             catch (Exception e)
             {
-                LogMessageToFile("error", "ParseErrorCode", "Bad Parse" + e);
+                LogMessageToFile("error", "ParseErrorCode()", "Bad Parse" + e);
                 return "-1";
-
             }
-            
+
             // Return the error code.
             return errorString;
         }
