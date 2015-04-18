@@ -168,7 +168,7 @@ namespace vConnect
                 pollData = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
                 LogMessageToFile("event", "Constructor", "No OBDII data was detected");
                 LogMessageToFile("event", "Constructor", "Polling Loop initiated, but not started");
-                MessageBox.Show("No OBDII Connection info detected. Please set up OBDII Connection.");
+                MessageBox.Show("No OBDII connection info detected. Please set up OBDII Connection.");
             }
         }
 
