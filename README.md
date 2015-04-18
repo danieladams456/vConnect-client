@@ -13,8 +13,8 @@ Consult [32feet.Net][4]'s documentation for more information.
 ### Installation
 vConnect contains an installer that installs the vConnect application, a monitor application, and its required files in a directory. 
 
-  1) Insert OBDLink LX module into the vehicle's OBDII port located underneath the driver-side dash board.
-  2) On Windows laptop, go to Control Panel -> Hardware and Sound -> Devices and Printers.
+  1* Insert OBDLink LX module into the vehicle's OBDII port located underneath the driver-side dash board.
+  2* On Windows laptop, go to Control Panel -> Hardware and Sound -> Devices and Printers.
   4) On the OBDLink LX module, press the BT Pair Button, located on the face of the module.
   5) Click Add a device in the Devices and Printers window. 
   6) Select OBDLink LX, and click the Next Button. (Note that the OBDLink LX module will only be discoverable for two minutes after pressing the BT Pair Button. If your laptop does not detect the device, press the BT Pair Button again)
