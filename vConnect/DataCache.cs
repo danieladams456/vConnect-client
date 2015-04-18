@@ -266,11 +266,13 @@ namespace vConnect
             // Web address to send the request to. 
             string webAddress = "http://" + ipAddress + ":" + portNumber + "/status";
 
-            // Create the web request with Post attributes and given address
+            // Create the web request with Post attributes and given address.
             var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
             httpWebRequest.ContentType = "text/plain";
             httpWebRequest.Method = "HEAD";
             httpWebRequest.UserAgent = "vConnect";
+            
+            // Will timeout if no connection is made in 5 seconds.
             httpWebRequest.Timeout = 5000;
 
 
@@ -281,18 +283,16 @@ namespace vConnect
                 var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
                 int statusCode = (int)httpResponse.StatusCode;
                 httpResponse.Close();
+
+                // If the status code 204, then connection was successfully made with the server, return true.
                 if (statusCode.ToString() == "204")
                     return true;
             }
+
+            // If the connection attempt times out or fails, catch the exception and log it.
             catch (Exception e)
             {
-                Form1.LogMessageToFile("error", "Server Connection Handler", e.Message);
-                return false;
-            }
-
-
-            catch
-            {
+                Form1.LogMessageToFile("error", "CheckServerConnection()", e.Message);
                 return false;
             }
             return false;
