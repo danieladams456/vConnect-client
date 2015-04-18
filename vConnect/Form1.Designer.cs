@@ -343,7 +343,6 @@
             this.fail_label.Size = new System.Drawing.Size(117, 20);
             this.fail_label.TabIndex = 41;
             this.fail_label.Text = "Packets Failed:";
-            this.fail_label.Click += new System.EventHandler(this.label4_Click);
             // 
             // data_sent
             // 
@@ -364,7 +363,6 @@
             this.data_failed.Size = new System.Drawing.Size(18, 20);
             this.data_failed.TabIndex = 43;
             this.data_failed.Text = "0";
-            this.data_failed.Click += new System.EventHandler(this.label6_Click);
             // 
             // Form1
             // 
@@ -403,7 +401,6 @@
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "vConnect";
-            this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

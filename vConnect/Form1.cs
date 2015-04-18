@@ -30,13 +30,8 @@ using Newtonsoft.Json.Linq;
 using System.Configuration;
 using System.Text.RegularExpressions;
 
-
-
-
 namespace vConnect
 {
-
-
     public partial class Form1 : Form
     {
         // Instantiates objects from the classes BluetoothConnectionHandler, ServerConnectionHandler,
@@ -56,23 +51,28 @@ namespace vConnect
         // String that will hold the current schema.
         String schema = "";
 
+        // Location
+        const String SCHEMA_LOCATION = "schema.json";
+
         // Bool value specifying whether the data polling asychronous operation is currently
         // running or not. 
         static public bool pollingData = false;
         static public Stream peerStream;
         //  BluetoothWin32Events x;
 
-
         // Constant that determines how often the data polling Timer will run. (In miliseconds)
         const int POLLTIME = 20000;
 
-
-
         // Timer CallBack to be used for polling data.
         TimerCallback tcb;
-
+        
+        /// <summary>
+        /// This is the constructor for Form1. It handles checking for existing BT devices, updating
+        ///  the schema, beginning polling, and other functionality.
+        /// </summary>
         public Form1()
         {
+            // Minimize the program to the taskbar to start
             this.Visible = false;
             this.ShowInTaskbar = false;
             InitializeComponent();
@@ -80,18 +80,28 @@ namespace vConnect
 
             // Initialize the dataCache.
             cache = new DataCache();
+
             // Create a Timer callback method for polling data. 
             tcb = RequestDataForElements;
+
+            // ********
             Microsoft.Win32.SystemEvents.PowerModeChanged += OnPowerChange;
-            //  x = BluetoothWin32Events.GetInstance();
-            //  x.InRange += OnInRange;
-            //  x.OutOfRange += OnOutOfRange;
-            // Bool variable to record whether an OBDII device and server have been successfully detected and pinged/established connection. 
+            // x = BluetoothWin32Events.GetInstance();
+            // x.InRange += OnInRange;
+            // x.OutOfRange += OnOutOfRange;
+            
+            // Bool variable to record whether an OBDII device and server have been successfully 
+            //  detected and pinged/established connection. 
             bool addrCheck = true;
+            
             // If there is a saved BT Address, attempt to connect with the device with that address.
-            if (Properties.Settings.Default.BTAddress != "" && Properties.Settings.Default.PIN != "" && Properties.Settings.Default.BTDeviceName != "")
+            if (Properties.Settings.Default.BTAddress != "" 
+                && Properties.Settings.Default.PIN != "" 
+                && Properties.Settings.Default.BTDeviceName != "")
             {
+                // Write to event log
                 Form1.LogMessageToFile("event", "Constructor", "Detected saved OBDII Information.");
+                
                 // Grabs the saved BT address from the settings file.
                 BTConnection.BluetoothAddress = BluetoothAddress.Parse(Properties.Settings.Default.BTAddress);
                 BTConnection.PIN = Properties.Settings.Default.PIN;
@@ -110,6 +120,7 @@ namespace vConnect
 
             }
             else
+                // IF the check failed
                 addrCheck = false;
 
 
@@ -126,20 +137,22 @@ namespace vConnect
             else
                 MessageBox.Show("No server connection data was found, please add server IP address and port number");
 
-
+            // Update the schema at startup
             schema = SchemaUpdate();
 
+            // If there was a saved BT address
             if (addrCheck)
             {
+                // If there is a schema, begin polling
                 if (schema != "NOT FOUND")
                 {
                     poll_status.Text = "Polling";
-
                     pollingData = true;
                     LogMessageToFile("event", "Constructor", "Polling Loop initiated and started");
-
                     pollData = new System.Threading.Timer(tcb, null, 0, POLLTIME);
                 }
+
+                // If there was no schema, log the error
                 else
                 {
                     MessageBox.Show("No Schema Found. Update Schema.");
@@ -148,6 +161,8 @@ namespace vConnect
                     pollData = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
                 }
             }
+            
+            // If there was no BT device
             else
             {
                 pollData = new System.Threading.Timer(tcb, null, Timeout.Infinite, Timeout.Infinite);
@@ -156,20 +171,6 @@ namespace vConnect
                 MessageBox.Show("No OBDII Connection info detected. Please set up OBDII Connection.");
             }
         }
-
-
-        /*   private void OnInRange(object sender, BluetoothWin32RadioInRangeEventArgs e)
-           {
-
-
-           }
-
-           private void OnOutOfRange(object sender, BluetoothWin32RadioOutOfRangeEventArgs e)
-           {
-
-
-           }
-           */
 
         /// <summary>
         /// Closes the Application GUI.
@@ -206,10 +207,7 @@ namespace vConnect
                    "Start: Will begin polling for data. \n\n" +
                    "Stop: Will stop polling for data.";
 
-
             MessageBox.Show(helpMessage);
-
-
         }
 
         /// <summary>
@@ -219,10 +217,12 @@ namespace vConnect
         /// <param name="e"></param>
         private void view_error_log_button_Click(object sender, EventArgs e)
         {
-            int NUM_LINES = 5;
+            // Number of lines to show
+            const int NUM_LINES = 5;
             try
             {
-                MessageBox.Show("The 5 most recent error messages recorded are: \n\n" + string.Join("\r\n", File.ReadLines("error.log").Reverse().Take(NUM_LINES).Reverse()), "Error Log");
+                MessageBox.Show("The 5 most recent error messages recorded are: \n\n" + string.Join("\r\n", 
+                    File.ReadLines("error.log").Reverse().Take(NUM_LINES).Reverse()), "Error Log");
             }
             catch (FileNotFoundException)
             {
@@ -244,7 +244,6 @@ namespace vConnect
             if (InputBox("New IP Address", "New IP Address:", ref value) == DialogResult.OK)
             {
                 cache.IPAddress = value;
-
                 server_IP.Text = value;
                 Properties.Settings.Default.ServerIP = value;
                 Properties.Settings.Default.Save();
@@ -264,37 +263,33 @@ namespace vConnect
             string value = "Port Number";
             if (InputBox("New Port Number", "New Port Number (1-65535):", ref value) == DialogResult.OK)
             {
-
                 // Bounds checking for a valid port number
                 // Saves Port Number to the settings file, as well as the server connection handler.
                 int valueInt = 0;
                 try
                 {
+                    // Ensure that the port number is valid.
                     valueInt = Int32.Parse(value);
                     if (valueInt > 0 && valueInt < 65535)
                     {
                         cache.PortNumber = Int32.Parse(value);
-
                         Properties.Settings.Default.ServerPort = value;
                         Properties.Settings.Default.Save();
                         port_number.Text = value;
-                        LogMessageToFile("event", "Port Number Button", "Port number changed.");
 
+                        LogMessageToFile("event", "Port Number Button", "Port number changed.");
                     }
                     else
                     {
+                        // Log the error and D
                         MessageBox.Show("Invalid Port Number: Port number must be between 1 and 65534.");
                         LogMessageToFile("error", "Port Number", "Invalid Port number.");
-
                     }
-
                 }
-
                 catch
                 {
                     MessageBox.Show("Invalid Port Number: Port number must be between 1 and 65534.");
                     LogMessageToFile("error", "Port Number", "Invalid Port number.");
-
                 }
             }
 
@@ -308,8 +303,11 @@ namespace vConnect
         /// <param name="e"></param>
         private void browse_button_Click(object sender, EventArgs e)
         {
+            // Do not do anything for "browse" button if polling
             if (pollingData)
                 MessageBox.Show("Must stop polling data before changing OBDII device.");
+
+            // If not polling, allow the user to browse for a BT device.
             else
             {
                 var msg = "Please disconnect current OBDII connection " +
@@ -342,7 +340,6 @@ namespace vConnect
                         device_Status_Label.Text = "Connected";
                         LogMessageToFile("event", "Browse BT Device Button", "OBDII device connected via browse button");
                         BT_ID.Text = device.DeviceName;
-
                     }
                 }
             }
@@ -356,14 +353,20 @@ namespace vConnect
         /// <param name="e"></param>
         private void disconnect_BT_button_Click(object sender, EventArgs e)
         {
+            // Do not disconnect if currently polling
             if (pollingData)
             {
                 MessageBox.Show("Stop Polling Data before disconnecting OBDII device.");
             }
+
+            // If not polling, attempt to disconnect.
             else
             {
+                // If there are no devices connected
                 if (!BTConnection.Client.Connected)
                     MessageBox.Show("There are no OBDII devices connected.");
+
+                // Close the connection
                 else if (BTConnection.CloseBTConnection())
                 {
                     device_Status_Label.Text = "Disconnected";
@@ -372,9 +375,6 @@ namespace vConnect
 
         }
 
-
-
-
         /// <summary>
         /// Start polling data from the vehicle, if able. 
         /// </summary>
@@ -382,20 +382,24 @@ namespace vConnect
         /// <param name="e"></param>
         private void start_button_Click(object sender, EventArgs e)
         {
+            // Begin polling
             start_polling();
         }
 
-
+        /// <summary>
+        /// Begin the polling process
+        /// </summary>
         private void start_polling()
         {
+            // If currently polling, this function does nothing
             if (pollingData)
             {
                 MessageBox.Show("Already Polling Data");
                 return;
             }
+
             // If no data is currently being polled, update the schema, then
             // begin polling data.
-
             schema = SchemaUpdate();
             if (schema != "NOT FOUND")
             {
@@ -404,14 +408,18 @@ namespace vConnect
                 {
                     poll_status.Text = "Polling";
                 });
-                pollingData = true;
-                this.Invoke((MethodInvoker)delegate
-                {
-                    pollData.Change(0, POLLTIME);
-                });
-                Form1.LogMessageToFile("event", "start_polling()", "Polling Loop began");
 
+                pollingData = true;
+                this.Invoke((MethodInvoker)delegate 
+                { 
+                    pollData.Change(0, POLLTIME); 
+                });
+
+                // Log the event
+                Form1.LogMessageToFile("event", "start_polling()", "Polling Loop began");
             }
+
+            // Log a failed start due to schema
             else
             {
                 MessageBox.Show("Error: No Schema detected, need to update schema.");
@@ -426,23 +434,28 @@ namespace vConnect
         /// <param name="e"></param>
         private void stop_polling_button_Click(object sender, EventArgs e)
         {
+            // If not polling data, do nothing
             if (pollingData == false)
                 MessageBox.Show("Currently not polling Data.");
 
+            // Stop polling 
             else
                 stop_polling();
         }
 
+        /// <summary>
+        /// This function stops the polling processes and resets some variables.
+        /// </summary>
         private void stop_polling()
         {
-
-
             // If data is still being polled, stop the process.  
             if (pollingData)
             {
+                // Reset the GUI counters
                 succeedCounter = 0;
                 failCounter = 0;
 
+                // Set some variables in the GUI
                 this.Invoke((MethodInvoker)delegate
                 {
                     data_failed.Text = "0";
@@ -455,16 +468,22 @@ namespace vConnect
                 {
                     poll_status.Text = "Not Polling";
                 });
+
+                // Stop the polling thread
                 pollingData = false;
                 pollData.Change(Timeout.Infinite, Timeout.Infinite);
+
+                // Log the event
                 LogMessageToFile("event", "stop_polling()", "Polling was stopped");
 
+                // Sleep for a couple seconds to avoid errors
                 System.Threading.Thread.Sleep(2050);
 
             }
+
+            // Log that the function failed
             else
                 LogMessageToFile("error", "stop_polling()", "Attempted to stop polling when it was already stopped.");
-
         }
 
         /// <summary>
@@ -476,20 +495,32 @@ namespace vConnect
             // Read the schema from the file.
             try
             {
-                StreamReader reader = new StreamReader("schema.json");
+                // Read the contents of the schema file into the schema variable
+                StreamReader reader = new StreamReader(SCHEMA_LOCATION);
                 schema = reader.ReadToEnd();
+
+                // Log the event
                 LogMessageToFile("event", "SchemaUpdate()", "Schema file has been updated");
             }
+
+            // If the schema isn't found, log the error
+            //  Also set the schema variable to "NOT FOUND" to indicate that it was not found.
             catch (FileNotFoundException exception)
             {
                 schema = "NOT FOUND";
                 LogMessageToFile("error", "Schema Error", "Could not retrieve schema:" + exception);
             }
+
+            // Return the schema
             return schema;
         }
 
 
-
+        /// <summary>
+        /// **********
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="e"></param>
         private void OnPowerChange(object s, Microsoft.Win32.PowerModeChangedEventArgs e)
         {
             switch (e.Mode)
@@ -570,7 +601,6 @@ namespace vConnect
         /// </summary>
         public void RequestDataForElements(object sender)
         {
-
             // Try block in case of any unexpected exceptions.
             try
             {
@@ -777,7 +807,6 @@ namespace vConnect
         }
 
 
-
         /// <summary>
         /// This function creates a list of DataElement objects from the schema.
         /// </summary>
@@ -867,22 +896,27 @@ namespace vConnect
             //  get data from the car and format it.
             foreach (DataElement elem in elemList)
             {
+                // If the element is a date, get the current date, and store it
                 if (elem.DataType == "date")
                 {
                     elem.ValueToSend = DateTime.Now.ToString();
                 }
+
+                // If the element was not a date, request data from the car
                 else
                 {
+                    // If not polling return the list that was passed
                     if (!pollingData)
                         return elemList;
-                    // Get data from the car for the element and format it.
+
+                    // Get data from the car for the element
                     if (!elem.RequestDataFromCar())
                     {
-                        //  if (!BTConnection.ConnectionStatus)
-                        //     stop_polling();
-
+                        // Return null upon failure
                         return null;
                     }
+
+                    // Format the data for the given data element (make it human-readable)
                     elem.FormatData();
                 }
             }
@@ -947,17 +981,15 @@ namespace vConnect
         /// </returns>
         private bool CheckForErrorCodes(string VIN)
         {
+            // Byte array to store error code. 
+            byte[] errorCode = new byte[200];
 
-
-            byte[] errorCode = new byte[200];   // Byte array to store error code. 
-
-            string errorString = "";            // String to hold error code after being parsed 
-            // from byte array.
+            // String to hold error code after being parsed from byte array.
+            string errorString = "";            
 
             // Return false if vConnect polling has ceased.
             if (!pollingData)
                 return false;
-
 
             // Try to request and receive error codes.
             try
@@ -1011,7 +1043,6 @@ namespace vConnect
                     // Parse the error code byte array.
                     errorString = parseErrorCode(subErrorCode);
 
-
                     // If the error code was all 0's (signifying that there are no more
                     // error codes), exit the loop.
                     if (errorString == "P0000")
@@ -1028,10 +1059,12 @@ namespace vConnect
                         // If its the first error Code read, format the first part of the error Code message to ther server.
                         if (firstError)
                         {
+                            // Format the string to send
                             toSend = toSend + "{\"VIN\":\"" + VIN + "\",\"timestamp\":\"" + DateTime.Now.ToString()
                                 + "\",\"trouble_code\":\"" + errorString + "\"}";
                             firstError = false;
                         }
+
                         // If it it not the first error code read, then add this error code to the message to be sent
                         // to the server.
                         else
@@ -1044,6 +1077,7 @@ namespace vConnect
                     // If the next two characters in the array are newline characters, there are no more error codes, so exit the loop.
                     if (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) == "\r" && System.Text.Encoding.ASCII.GetString(errorCode, 1 + counter, 1) == "\r")
                         loopExit = true;
+
                     // If not, there are more error codes, so increment the counter by 3 to pass the newline character and two placeholder bytes.
                     else if (System.Text.Encoding.ASCII.GetString(errorCode, counter, 1) == "\r")
                         counter += 3;
@@ -1055,7 +1089,6 @@ namespace vConnect
 
                 // Log the error codes to the log.
                 LogMessageToFile("event", "CheckForErrorCodes()", "Error codes polled: " + toSend);
-
 
                 // Attempt to send the error codes to the server. If Sending is successful, update the
                 // UI to reflect this and return true, if sending failed, update the UI to signify vConnect has lost 
@@ -1104,8 +1137,8 @@ namespace vConnect
         /// </returns>
         private string parseErrorCode(byte[] errorCode)
         {
-
-            string errorString = "";    // String that will hold the actual error code.
+            // String that will hold the actual error code.
+            string errorString = "";
 
             // Strings that will hold parts of the error code.
             string DTC1 = "";
@@ -1170,37 +1203,43 @@ namespace vConnect
         ///  This handles a simple input dialog box. Taken from 
         ///     http://www.csharp-examples.net/inputbox/
         /// </summary>
-        /// <param name="title"></param>
-        /// <param name="promptText"></param>
-        /// <param name="value"></param>
+        /// <param name="title">Title of the box</param>
+        /// <param name="promptText">Text to prompt the user for</param>
+        /// <param name="value">value sent</param>
         /// <returns></returns>
         public static DialogResult InputBox(string title, string promptText, ref string value)
         {
+            // Create a new form
             Form form = new Form();
             Label label = new Label();
             TextBox textBox = new TextBox();
             Button buttonOk = new Button();
             Button buttonCancel = new Button();
 
+            // Set the form's variables
             form.Text = title;
             label.Text = promptText;
             textBox.Text = value;
 
+            // Fill in the data 
             buttonOk.Text = "OK";
             buttonCancel.Text = "Cancel";
             buttonOk.DialogResult = DialogResult.OK;
             buttonCancel.DialogResult = DialogResult.Cancel;
 
+            // Create the size of the form elements
             label.SetBounds(9, 20, 372, 13);
             textBox.SetBounds(12, 36, 372, 20);
             buttonOk.SetBounds(228, 72, 75, 23);
             buttonCancel.SetBounds(309, 72, 75, 23);
 
+            // Anchor the form
             label.AutoSize = true;
             textBox.Anchor = textBox.Anchor | AnchorStyles.Right;
             buttonOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
 
+            // Make the form look pretty
             form.ClientSize = new Size(396, 107);
             form.Controls.AddRange(new Control[] { label, textBox, buttonOk, buttonCancel });
             form.ClientSize = new Size(Math.Max(300, label.Right + 10), form.ClientSize.Height);
@@ -1210,11 +1249,11 @@ namespace vConnect
             form.MaximizeBox = false;
             form.AcceptButton = buttonOk;
             form.CancelButton = buttonCancel;
-
+            
+            // Show the dialog box and return the user input
             DialogResult dialogResult = form.ShowDialog();
             value = textBox.Text;
             return dialogResult;
-
         }
 
         /// <summary>
@@ -1319,7 +1358,7 @@ namespace vConnect
                     Stream stream = client.OpenRead(address);
                     StreamReader reader = new StreamReader(stream);
                     String json = reader.ReadToEnd();
-                    File.WriteAllText("schema.json", json);
+                    File.WriteAllText(SCHEMA_LOCATION, json);
                 }
                 catch
                 {
@@ -1327,21 +1366,6 @@ namespace vConnect
                     LogMessageToFile("error", "Schema Retrieval", "Could not retrieve Schema from server.");
                 }
             }
-        }
-
-        private void label4_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label6_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
         }
     }
 }
