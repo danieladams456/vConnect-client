@@ -22,16 +22,16 @@ vConnect contains an installer that installs the vConnect application, a monitor
   7. Run vConnect.exe.
   8. Click through the message boxes stating ___
   9. Double click on the vConnect Icon (check mark) located in the Windows tool bar to open the vConnect UI.
- 10. Click the Set Pin Button.
- 11. Enter the VIN you recorded in step 7, and click OK.
- 12. Click the Select OBDII Device Button.
- 13. Select the OBDLink LX module, and click the Next Button. The Device Status Label should change to "Connected", and the Bluetooth Device ID should read OBDLink LX.
- 14. Click the Update Schema Button.
- 15. Click the Configure Server Address Button.
- 16. Enter the address of the server that vConnect's database is being stored on, and click the OK Button. (vconnect-danieladams456.rhcloud.com)
- 17. Click the Configure Port Button.
- 18. Enter the port number of the database server to be using to connect, and click the OK Button. (Port 80) 
- 19. Click the Start Button.
+  10. Click the Set Pin Button.
+  11. Enter the VIN you recorded in step 7, and click OK.
+  12. Click the Select OBDII Device Button.
+  13. Select the OBDLink LX module, and click the Next Button. The Device Status Label should change to "Connected", and the Bluetooth Device ID should read OBDLink LX.
+  14. Click the Update Schema Button.
+  15. Click the Configure Server Address Button.
+  16. Enter the address of the server that vConnect's database is being stored on, and click the OK Button. (vconnect-danieladams456.rhcloud.com)
+  17. Click the Configure Port Button.
+  18. Enter the port number of the database server to be using to connect, and click the OK Button. (Port 80) 
+  19. Click the Start Button.
  
 If Configured correct, the Polling status will read "Polling", and the Server Status will "Connected" if the laptop currently has internet access. 
  
