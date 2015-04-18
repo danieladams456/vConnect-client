@@ -15,18 +15,18 @@ vConnect contains an installer that installs the vConnect application, a monitor
 
   1. Install vConnect.msi.
   2. Insert OBDLink LX module into the vehicle's OBDII port located underneath the driver-side dash board.
-  3. On Windows laptop, go to Control Panel -> Hardware and Sound -> Devices and Printers.
+  3. On Windows laptop that has vConnect installed, go to Control Panel &rarr Hardware and Sound &rarr Devices and Printers.
   4. On the OBDLink LX module, press the BT Pair Button, located on the face of the module.
   5. Click Add a device in the Devices and Printers window. 
   6. Select OBDLink LX, and click the Next Button. (Note that the OBDLink LX module will only be discoverable for two minutes after pressing the BT Pair Button. If your laptop does not detect the device, press the BT Pair Button again)
-  7. A window will be displayed with a PIN for the OBDLink LX module. Record this number and click the connect button.
+  7. A window will be displayed with a PIN for the OBDLink LX module. Record this number and Click the Connect Button.
   8. Run C:\vConnect\vConnect.exe.
   9. Click through the message boxes stating that no server connection data was found, and that no OBDII connection info was detected.
   10. Double click on the vConnect Icon (check mark) located in the Windows tool bar to open the vConnect UI.
   11. Click the Set Pin Button.
   12. Enter the VIN you recorded in step 7, and click the OK Button.
   13. Click the Select OBDII Device Button.
-  14. Select the OBDLink LX module, and click the Next Button. The Device Status Label should change to "Connected", and the Bluetooth Device ID should read OBDLink LX.
+  14. Select the OBDLink LX module, and click the Next Button. The Device Status Label should change to "Connected", and the Bluetooth Device ID should read "OBDLink LX".
   15. Click the Update Schema Button.
   16. Click the Configure Server Address Button.
   17. Enter the address of the server that vConnect's database is being stored on, and click the OK Button. (vconnect-danieladams456.rhcloud.com)
