@@ -38,6 +38,15 @@ If Configured correct, the Polling status will read "Polling", and the Server St
 
 NOTE: This installation process must be repeated if you wish to use a different OBDLink LX module/laptop pair. However, once you successfully complete this installation process for a OBDLink LX module/laptop pair, you can switch vehicles simply by inserting the OBDLink LX module into another vehicle's OBDII port.
 
+  
+  
+### Usage
+After installation, execute vConnect.exe.
+
+If vConnect was correctly configured during installation, it will start-up automatically when Windows powers on, and will automatically connect to the paired OBDLink LX module and begin polling data.
+
+To change vConnect's configuration settings, open up the Settings UI by double-clicking on the vConnect icon (green checkmark) in the Windows Taskbar.
+
   * To Stop Polling: Press the Stop Button.
   * To Start Polling: Press the Start Button. If you receive an error due to no schema file being detected, click the Update Schmea Button and then click the Start Button.
   * To change the server connection information: Click the Configure Server Address Button and/or Configure Port Button, and enter the desired server address and port number.
@@ -51,17 +60,6 @@ NOTE: This installation process must be repeated if you wish to use a different 
   * To view help options: Click the Help Button.
   * To view the error log: Navigate to C:\vConnect, and open the error.log file.
   * To view the event log: Nagivate to C:\vConnect, and open the event.log file.
-  
-### Usage
-After installation, execute vConnect.exe.
-
-If vConnect was correctly configured during installation, it will start-up automatically when Windows powers on, and will automatically connect to the paired OBDLink LX module and begin polling data.
-
-To change vConnect's configuration settings, open up the Settings UI by double-clicking on the vConnect icon (green checkmark) in the Windows Taskbar.
-
-To  
-
- 
 
 The latest version of vConnect utilizes a Monitor application in order to ensure that the application continues to run. Whenever any situations cause the program to terminate, the monitor will restart it and begin polling for data.
 
