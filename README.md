@@ -13,25 +13,25 @@ Consult [32feet.Net][4]'s documentation for more information.
 ### Installation
 vConnect contains an installer that installs the vConnect application, a monitor application, and its required files in a directory. 
 
-  1* Insert OBDLink LX module into the vehicle's OBDII port located underneath the driver-side dash board.
-  2* On Windows laptop, go to Control Panel -> Hardware and Sound -> Devices and Printers.
-  4) On the OBDLink LX module, press the BT Pair Button, located on the face of the module.
-  5) Click Add a device in the Devices and Printers window. 
-  6) Select OBDLink LX, and click the Next Button. (Note that the OBDLink LX module will only be discoverable for two minutes after pressing the BT Pair Button. If your laptop does not detect the device, press the BT Pair Button again)
-  7) A window will be displayed with a PIN for the OBDLink LX module. Record this number and click the connect button.
-  8) Run vConnect.exe.
-  9) Click through the message boxes stating ___
- 10) Double click on the vConnect Icon (check mark) located in the Windows tool bar to open the vConnect UI.
- 11) Click the Set Pin Button.
- 12) Enter the VIN you recorded in step 7, and click OK.
- 13) Click the Select OBDII Device Button.
- 14) Select the OBDLink LX module, and click the Next Button. The Device Status Label should change to "Connected", and the Bluetooth Device ID should read OBDLink LX.
- 15) Click the Update Schema Button.
- 16) Click the Configure Server Address Button.
- 17) Enter the address of the server that vConnect's database is being stored on, and click the OK Button. (vconnect-danieladams456.rhcloud.com)
- 18) Click the Configure Port Button.
- 19) Enter the port number of the database server to be using to connect, and click the OK Button. (Port 80) 
- 20) Click the Start Button.
+  - Insert OBDLink LX module into the vehicle's OBDII port located underneath the driver-side dash board.
+  - On Windows laptop, go to Control Panel -> Hardware and Sound -> Devices and Printers.
+  - On the OBDLink LX module, press the BT Pair Button, located on the face of the module.
+  - Click Add a device in the Devices and Printers window. 
+  - Select OBDLink LX, and click the Next Button. (Note that the OBDLink LX module will only be discoverable for two minutes after pressing the BT Pair Button. If your laptop does not detect the device, press the BT Pair Button again)
+  - A window will be displayed with a PIN for the OBDLink LX module. Record this number and click the connect button.
+  - Run vConnect.exe.
+  - Click through the message boxes stating ___
+  - Double click on the vConnect Icon (check mark) located in the Windows tool bar to open the vConnect UI.
+  - Click the Set Pin Button.
+  - Enter the VIN you recorded in step 7, and click OK.
+  - Click the Select OBDII Device Button.
+  - Select the OBDLink LX module, and click the Next Button. The Device Status Label should change to "Connected", and the Bluetooth Device ID should read OBDLink LX.
+  - Click the Update Schema Button.
+  - Click the Configure Server Address Button.
+  - Enter the address of the server that vConnect's database is being stored on, and click the OK Button. (vconnect-danieladams456.rhcloud.com)
+  - Click the Configure Port Button.
+  - Enter the port number of the database server to be using to connect, and click the OK Button. (Port 80) 
+  - Click the Start Button.
  
 If Configured correct, the Polling status will read "Polling", and the Server Status will "Connected" if the laptop currently has internet access. 
  
