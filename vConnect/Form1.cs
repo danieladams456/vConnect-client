@@ -596,7 +596,7 @@ namespace vConnect
                     cache.AddElementToCache(dictionary);
                     if (!pollingData)
                         return;
-                    if (CheckForErrorCodes(elemList) == false)
+                    if (CheckForErrorCodes(elemList[1].ValueToSend) == false)
                     {
                         failCounter = failCounter + 1;
                         this.Invoke((MethodInvoker)delegate
@@ -864,32 +864,52 @@ namespace vConnect
         /// the error codes to the server. If no error codes are detected, do not send any message
         /// to ther server.
         /// </summary>
-        /// <param name="elemList"></param>
-        /// <returns></returns>
-        private bool CheckForErrorCodes(List<DataElement> elemList)
+        /// <param name="VIN"> VIN of the car that is being checked for error codes. VIN
+        /// is needed to send error codes to the server.</param>
+        /// <returns>
+        /// True if no error codes are detected, or if error codes are detected, correctly
+        /// parsed, and then successfully sent to the server.
+        /// False if vConnect has stopped polling data, BT Connection is lost with the OBDII module,
+        /// the parser function fails,
+        /// </returns>
+        private bool CheckForErrorCodes(string VIN)
         {
-            byte[] errorCode = new byte[60];
-            string errorString = "";
-            try
-            {
+
+
+            byte[] errorCode = new byte[200];   // Byte array to store error code. 
+            
+            string errorString = "";            // String to hold error code after being parsed 
+                                                // from byte array.
+            
+                // Return false if vConnect polling has ceased.
                 if (!pollingData)
                     return false;
-                // encode message
+                
+            
+                // Try to request and receive error codes.
                 try
                 {
+                    // Create the code request
                     byte[] writeCode = System.Text.Encoding.ASCII.GetBytes("03 \r");
+                    
+                    // Write code to OBDII module
                     peerStream.Flush();
                     peerStream.Write(writeCode, 0, writeCode.Length);
+
+                    // Pause to let OBDII module process request.
                     System.Threading.Thread.Sleep(2000);
+
+                    // Read OBDII error codes. 
                     peerStream.Read(errorCode, 0, errorCode.Length);
-                    //  MessageBox.Show("ERROR MESSAGE: \n\n" + System.Text.Encoding.ASCII.GetString(errorCode));
-                    //peerStream.Close();
                 }
 
+
+                // Catch exception for losing BT connection with OBDII module, log the error
+                // and return false.
                 catch (Exception ex)
                 {
                     var msg = "Lost connection to OBDII device.  ";
-                    LogMessageToFile("error", "Checking for error codes error", msg + ex);
+                    LogMessageToFile("error", "CheckForErrorCodes()", ex.ToString());
                     return false;
                 }
                 if (!pollingData)
@@ -916,12 +936,12 @@ namespace vConnect
                         {
                             if (first)
                             {
-                                toSend = toSend + "{\"VIN\":\"" + elemList[1].ValueToSend + "\",\"timestamp\":\"" + DateTime.Now.ToString()
+                                toSend = toSend + "{\"VIN\":\"" + VIN + "\",\"timestamp\":\"" + DateTime.Now.ToString()
                                     + "\",\"trouble_code\":\"" + errorString + "\"}";
                                 first = false;
                             }
                             else
-                                toSend = toSend + ",{\"VIN\":\"" + elemList[1].ValueToSend + "\",\"timestamp\":\"" + DateTime.Now.ToString()
+                                toSend = toSend + ",{\"VIN\":\"" + VIN + "\",\"timestamp\":\"" + DateTime.Now.ToString()
                                     + "\",\"trouble_code\":\"" + errorString + "\"}";
                         }
                         counter += 4;
@@ -956,15 +976,7 @@ namespace vConnect
                     LogMessageToFile("event", "CheckForErrorCodes", "No error codes");
                     return true;
                 }
-
-
-            }
-            catch (Exception e)
-            {
-                LogMessageToFile("error", "Error code check", "Lost BT connection: " + e.Message);
-                return false;
-            }
-
+          
             return true;
         }
 
@@ -1029,10 +1041,11 @@ namespace vConnect
                 errorString = DTC1 + DTC2 + DTC3 + DTC4 + DTC5;
             }
 
-            // Received unexpected values and could not parse correctly.
+            // Received unexpected values and could not parse correctly,
+            // return -1 to signify failure.
             catch (Exception e)
             {
-                LogMessageToFile("error", "Parser", "Bad Parse" + e);
+                LogMessageToFile("error", "ParseErrorCode", "Bad Parse" + e);
                 return "-1";
 
             }
