@@ -517,21 +517,30 @@ namespace vConnect
 
 
         /// <summary>
-        /// **********
+        /// Event handler that is called when Windows goes to sleep or resumes power after sleeping.
         /// </summary>
-        /// <param name="s"></param>
-        /// <param name="e"></param>
-        private void OnPowerChange(object s, Microsoft.Win32.PowerModeChangedEventArgs e)
+        /// <param name="sender">
+        /// Object that calls OnPowerChange()
+        /// </param>
+        /// <param name="e">
+        /// Event handling variable for changes of power mode.
+        /// </param>
+        private void OnPowerChange(object sender, Microsoft.Win32.PowerModeChangedEventArgs e)
         {
+            // Switch statement for the type of power change.
             switch (e.Mode)
             {
+                // If power has resumed, wait 10 seconds for the BT stack to restart, then exit the application.
+                // The monitor will restart vConnect.
                 case Microsoft.Win32.PowerModes.Resume:
 
                     System.Threading.Thread.Sleep(10000);
                     LogMessageToFile("event", "Power Mode: Resume", "Resumed Power, closeing vConnect...");
                     Environment.Exit(2);
-
                     break;
+
+                // If power has been suspended. if currently polling data, disconnect from OBDII module if connected,
+                // and then stop polling.
                 case Microsoft.Win32.PowerModes.Suspend:
                     if (pollingData)
                     {
@@ -542,15 +551,15 @@ namespace vConnect
 
                             stop_polling();
                         }
+
+                        // Catch error.
                         catch
                         {
                             LogMessageToFile("error", "Power Mode: Suspend", "ERROR:" + e);
                         }
-                        finally
-                        {
-                            pollingData = true;
-                        }
                     }
+
+                    // Log event. 
                     LogMessageToFile("event", "PowerMode", "Suspending");
                     break;
             }
