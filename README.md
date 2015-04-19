@@ -2,6 +2,8 @@
 
 The vConnect client application is a C# application built with .NET 4.0. It was created by Troy Cosner and Charlie Snyder for their capstone software engineering project at Liberty University in 2015.
 
+[vConnect Client Video][5]
+
 ###The application utilizes the following external libraries:
   * [32feet.NET][1] (Bluetooth Library)
   * [NCalc][2] (Mathematical Expressions Evaluator)
@@ -85,3 +87,4 @@ note: The data elements used are specified in the JSON schema on the web server.
 [2]: https://ncalc.codeplex.com/
 [3]: http://www.newtonsoft.com/json
 [4]: https://32feet.codeplex.com/wikipage?title=Supported%20Hardware%20and%20Software
+[5]: https://www.youtube.com/watch?v=snEuYtQGKTM
