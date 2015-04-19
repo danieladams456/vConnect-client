@@ -37,8 +37,6 @@ vConnect contains an installer that installs the vConnect application, a monitor
 If Configured correctly, the Polling status will read "Polling", and the Server Status will "Connected" if the laptop currently has internet access. 
 
 NOTE: This installation process must be repeated if you wish to use a different OBDLink LX module/laptop pair. However, once you successfully complete this installation process for a OBDLink LX module/laptop pair, you can switch vehicles simply by inserting the OBDLink LX module into another vehicle's OBDII port.
-
-  
   
 ### Usage
 After installation, execute vConnect.exe.
@@ -63,6 +61,7 @@ To change vConnect's configuration settings, open up the Settings UI by double-c
 
 The latest version of vConnect utilizes a Monitor application in order to ensure that the application continues to run. Whenever any situations cause the program to terminate, the monitor will restart it and begin polling for data.
 
+NOTE: The buttons and labels on the vConnect Settings UI are all self-explanatory. However, for the Packets Sent label, it will be incremented if no error codes are detected, even though no message was actually sent to the server. This is because vConnect "successfully" detected that there were no error detected.
 ### Code Structure
 ![alt text](vConnect/Images/classDiagram.jpg)
 
