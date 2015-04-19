@@ -75,13 +75,13 @@ namespace vConnect
         {
 
             // Check if the cache-file (used for storing cached data that failed to send)
-            //      contains any data. If it does, then read that data into the existing cache string.
+            // contains any data. If it does, then read that data into the existing cache string.
             try
             {
                 // If the file is not empty and we are not sending alerts, read the file.
                 if (new FileInfo(CACHEFILE).Length != 0 && type != "alert")
                 {
-                    // Read from the 
+                    // Read from the json cache file.
                     ReadFromDisk();
                     jsonString = JsonString;
 
@@ -97,13 +97,12 @@ namespace vConnect
 
             // Construct the address of the server
             string webAddress = "http://" + ipAddress + ":" + portNumber + "/" + type;
-
             // Create the HTTP request with Json/Post attributes and the given address
             var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
             httpWebRequest.UserAgent = "vConnect";
-            httpWebRequest.Timeout = 5000;
+        //    httpWebRequest.Timeout = 5000;
 
             // Begin writing to the server
             try
@@ -113,13 +112,14 @@ namespace vConnect
                 {
                     // Send json string and close the stream. 
                     streamWriter.Write(jsonString + "\n");
-
+                    streamWriter.Close();
+                    
                     // Get web response (most importantly, the status code from the server)
                     // Note: 204 expected.
                     var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-
                     // Get the status code form the response
                     int statusCode = (int)httpResponse.StatusCode;
+                    httpResponse.Close();
 
                     // Correct response from the server = HTTP 204
                     if (statusCode == 204)
@@ -131,8 +131,10 @@ namespace vConnect
                         // Empty the cache since all stored data elements have been successfully
                         // sent to the server. Note: Don't do this if sending alerts only.
                         if (type == "data")
+                        {
+                            File.WriteAllText(CACHEFILE, string.Empty);
                             cache.Clear();
-
+                        }
                         // Return true since a successful send.
                         return true;
                     }
@@ -149,12 +151,12 @@ namespace vConnect
                         //      if sending data and not alerts
                         if (type == "data")
                         {
+                            File.WriteAllText(CACHEFILE, string.Empty);
                             WriteToDisk();
                             cache.Clear();
                         }
 
                         // Return false due to unexpected server reply.
-                        return false;
                     }
                 }
             }
@@ -164,12 +166,13 @@ namespace vConnect
             {
                 // Log the error
                 // If the web server raised an exception, write the cached data to disk, then clear it.
-                Form1.LogMessageToFile("error", "Server Connect Error", e.ToString());
+                Form1.LogMessageToFile("error", "SendToServer()", e.ToString());
 
                 // If dealing with data and not alerts, write to disk and clear.
                 if (type == "data")
                 {
                     connect_check = false;
+                    File.WriteAllText(CACHEFILE, string.Empty);
                     WriteToDisk();
                     cache.Clear();
                 }
@@ -248,16 +251,6 @@ namespace vConnect
             cache.AddRange(readCache);
             cache.AddRange(tempCache);
 
-            // Empty the cache-file contents.
-            try
-            {
-                File.WriteAllText(CACHEFILE, string.Empty);
-            }
-            catch (IOException e)
-            {
-                // If the write to file fails, log the error.
-                Form1.LogMessageToFile("error", "Cache File Empty Error", e.ToString());
-            }
         }
 
 
@@ -267,22 +260,21 @@ namespace vConnect
             string webAddress = "http://" + ipAddress + ":" + portNumber + "/status";
 
             // Create the web request with Post attributes and given address.
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
-            httpWebRequest.ContentType = "text/plain";
-            httpWebRequest.Method = "HEAD";
-            httpWebRequest.UserAgent = "vConnect";
+            var checkWebRequest = (HttpWebRequest)WebRequest.Create(webAddress);
+            checkWebRequest.ContentType = "text/plain";
+            checkWebRequest.Method = "HEAD";
+            checkWebRequest.UserAgent = "vConnect";
             
             // Will timeout if no connection is made in 5 seconds.
-            httpWebRequest.Timeout = 5000;
-
-
+         //   checkWebRequest.Timeout = 5000;
 
             try
             {
                 // Get web response (most importantly, status code)
-                var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                int statusCode = (int)httpResponse.StatusCode;
-                httpResponse.Close();
+                var checkhttpResponse = (HttpWebResponse)checkWebRequest.GetResponse();
+                int statusCode = (int)checkhttpResponse.StatusCode;
+                checkhttpResponse.Close();
+                
 
                 // If the status code 204, then connection was successfully made with the server, return true.
                 if (statusCode.ToString() == "204")

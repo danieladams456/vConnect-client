@@ -42,14 +42,22 @@ namespace vConnect
         // Instantiates a timer used to poll data from the OBDII module.
         static public System.Threading.Timer pollData;
 
+
+        // Counter to keep track of how many failed and successful vehicle data packets 
+        // have been sent to the server.
         int failCounter = 0;
         int succeedCounter = 0;
+        
         // List that will used to hold OBDII codes before being inserted into the cache.
         List<Dictionary<string, object>> elementDictionaryList =
                                                 new List<Dictionary<string, object>>();
 
         // String that will hold the current schema.
         String schema = "";
+
+        // File contains help button message.
+        const string HELP_FILE = "help.txt";
+
 
         // Location
         const String SCHEMA_LOCATION = "schema.json";
@@ -61,7 +69,7 @@ namespace vConnect
         //  BluetoothWin32Events x;
 
         // Constant that determines how often the data polling Timer will run. (In miliseconds)
-        const int POLLTIME = 20000;
+        const int POLLTIME = 15000;
 
         // Timer CallBack to be used for polling data.
         TimerCallback tcb;
@@ -84,11 +92,9 @@ namespace vConnect
             // Create a Timer callback method for polling data. 
             tcb = RequestDataForElements;
 
-            // ********
+            // Register for Power Change Events. 
             Microsoft.Win32.SystemEvents.PowerModeChanged += OnPowerChange;
-            // x = BluetoothWin32Events.GetInstance();
-            // x.InRange += OnInRange;
-            // x.OutOfRange += OnOutOfRange;
+       
             
             // Bool variable to record whether an OBDII device and server have been successfully 
             //  detected and pinged/established connection. 
@@ -189,24 +195,7 @@ namespace vConnect
         /// <param name="e"></param>
         private void help_button_Click(object sender, EventArgs e)
         {
-            string helpMessage = "This GUI is used to setup and manange vConnect's Windows Aplication. \n\n " +
-                   "Please note that this GUI cannot manage the server, or search for stored data.\n\n" +
-                   "Listed here are the details concerning the various attributes of this GUI:\n\n" +
-                   "BT Device ID: The ID of the OBDII Device that is currently assigned to vConnect.\n\n" +
-                   "Device Status: Whether the OBDII Device listed above is connected or disconnect. \n\n" +
-                   "Connect to OBDII Device: Will open up a dialog that shows all detectable BT Devices, " +
-                   "selecting a device will attempt to connect with it. \n\n" +
-                   "Disconnect BT Device: Will disconnect to the OBDII device (if one is connected).\n\n" +
-                   "Server IP Address: The IP address that is assigned to vConnect, the edit button will " +
-                   "alter this value.\n\n" +
-                   "Server Port Number: The port number that is assigned to vConnect, the edit button will " +
-                   "alter this value.\n\n" +
-                   "Server Status: Whether the vConnect is currently connected with the server with the IP address " +
-                   " and port number assigned to vConnect.\n\n" +
-                   "Update Schema: Will query the vConnect server, and update the schema if it is out of data.\n\n" +
-                   "Start: Will begin polling for data. \n\n" +
-                   "Stop: Will stop polling for data.";
-
+            string helpMessage = File.ReadAllText(HELP_FILE);
             MessageBox.Show(helpMessage);
         }
 
@@ -1274,6 +1263,12 @@ namespace vConnect
             return BTConnection;
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void trayIcon_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             this.WindowState = FormWindowState.Normal;
@@ -1316,6 +1311,8 @@ namespace vConnect
             try
             {
                 // Write according to "3/1/2015 6:27:22 PM: [caller] message." format
+                // Also, write to either event or error log file, whichever is specified in
+                // the function call.
                 string logLine = String.Format(
                     "{0:G}: [{1}] {2}.\n\n", System.DateTime.Now, caller, message);
                 writer.WriteLine(logLine);
@@ -1327,15 +1324,32 @@ namespace vConnect
             }
         }
 
+        /// <summary>
+        /// Function that occurs when the Set PIN Button is Clicked.
+        /// Allows the user to save a PIN to be used in connecting with the OBDII module.
+        /// </summary>
+        /// <param name="sender">
+        /// Event that calls this function.
+        /// </param>
+        /// <param name="e">
+        /// Event argument for this event caller.
+        /// </param>
         private void Set_PIN_Button_Click(object sender, EventArgs e)
         {
+            // Cannot change PIN if vConnect is currently polling data.
             if (pollingData)
                 MessageBox.Show("Must stop polling before changing PIN");
+            
+            
             else
             {
                 string value = null;
+
+                // If a value is returned in the Input Box.
                 if (InputBox("New PIN", "New PIN:", ref value) == DialogResult.OK)
                 {
+                    // Try to convert the given value to an integer. If it is not 
+                    // an integer, it is not a value PIN number, and this is invalid. 
                     try
                     {
                         int test = Convert.ToInt32(value);
@@ -1343,6 +1357,8 @@ namespace vConnect
                         Properties.Settings.Default.PIN = value;
                         Properties.Settings.Default.Save();
                     }
+
+                    // Catch the exception thrown by trying to convert a invalid value into an integer.
                     catch
                     {
                         MessageBox.Show("Must insert numerical value for PIN.");
@@ -1352,23 +1368,45 @@ namespace vConnect
             }
         }
 
+        /// <summary>
+        /// Function that is called when the Update Schema Button is clicked. This function
+        /// will retrieve the most up to date vConnect schema from the server. 
+        /// </summary>
+        /// <param name="sender">
+        /// Event caller for this function. 
+        /// </param>
+        /// <param name="e">
+        /// Event arguement for this function call.
+        /// </param>
         private void update_schema_button_Click_1(object sender, EventArgs e)
         {
+            // Cannot change schema if vConnect is currently polling.
             if (pollingData)
                 MessageBox.Show("Must stop polling before updating schema");
             else
             {
+                // Try to read the new schema from the vConnect server.
                 try
                 {
                     // Address to request schema from.
                     string address = "http://vconnect-danieladams456.rhcloud.com/data/schema";
                     // Initialize the connection the address above.
                     WebClient client = new WebClient();
+
+                    // Open up the stream.
                     Stream stream = client.OpenRead(address);
+
+                    // Initialize the read stream.
                     StreamReader reader = new StreamReader(stream);
+
+                    // Read the schema information from the stream.
                     String json = reader.ReadToEnd();
+
+                    // Write the schema to the local schema file.
                     File.WriteAllText(SCHEMA_LOCATION, json);
                 }
+
+                // If unable to connect to the given vConnect server address, catch the resulting exception and log the error.
                 catch
                 {
                     MessageBox.Show("ERROR: Could not retrieve schema.");

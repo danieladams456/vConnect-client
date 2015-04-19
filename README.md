@@ -34,7 +34,7 @@ vConnect contains an installer that installs the vConnect application, a monitor
   19. Enter the port number of the database server to be using to connect, and click the OK Button. (Port 80) 
   20. Click the Start Button.
  
-If Configured correct, the Polling status will read "Polling", and the Server Status will "Connected" if the laptop currently has internet access. 
+If Configured correctly, the Polling status will read "Polling", and the Server Status will "Connected" if the laptop currently has internet access. 
 
 NOTE: This installation process must be repeated if you wish to use a different OBDLink LX module/laptop pair. However, once you successfully complete this installation process for a OBDLink LX module/laptop pair, you can switch vehicles simply by inserting the OBDLink LX module into another vehicle's OBDII port.
 
@@ -48,18 +48,18 @@ If vConnect was correctly configured during installation, it will start-up autom
 To change vConnect's configuration settings, open up the Settings UI by double-clicking on the vConnect icon (green checkmark) in the Windows Taskbar.
 
   * To Stop Polling: Press the Stop Button.
-  * To Start Polling: Press the Start Button. If you receive an error due to no schema file being detected, click the Update Schmea Button and then click the Start Button.
+  * To Start Polling: Press the Start Button. If you receive an error due to no schema file being detected, click the Update Schema Button and then click the Start Button.
   * To change the server connection information: Click the Configure Server Address Button and/or Configure Port Button, and enter the desired server address and port number.
   * To Connect to a New OBDII Module: 
  * If Poll Status is currently Polling, click the Stop Button.
  * Click the Disconnect BT Device Button if the Device Status reads Connected.
  * Remove the old OBDII Module from the vehicle's OBDII port.
  * Perform steps 2-7, 12-14.
-  * To Update Schema: Click the Update Scheam Button.
+  * To Update Schema: Click the Update Schema Button.
   * To close the settings UI: Click the Close Button.
   * To view help options: Click the Help Button.
   * To view the error log: Navigate to C:\vConnect, and open the error.log file.
-  * To view the event log: Nagivate to C:\vConnect, and open the event.log file.
+  * To view the event log: Navigate to C:\vConnect, and open the event.log file.
 
 The latest version of vConnect utilizes a Monitor application in order to ensure that the application continues to run. Whenever any situations cause the program to terminate, the monitor will restart it and begin polling for data.
 

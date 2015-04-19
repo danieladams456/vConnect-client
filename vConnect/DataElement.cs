@@ -98,8 +98,8 @@ namespace vConnect
               
                 if (name == "VIN")
                 {
-                  //  writeString = "09" + obdPID + "\r";// Write string for VIN.
-                    writeString = obdMode + obdPID + "\r";// Write string for VIN.
+                    writeString = "09" + obdPID + "\r";// Write string for VIN.
+                   // writeString = obdMode + obdPID + "\r";// Write string for VIN.
                     
                     // Byte arrays to read in VIN.
                     byte[] vin1 = new byte[50];           
@@ -127,7 +127,7 @@ namespace vConnect
                         // Error if VIN returns NO DATA.
                         if (System.Text.Encoding.ASCII.GetString(vin1).Contains("NO DATA"))
                         {
-                            Form1.LogMessageToFile("error", "RequestDataFromCar()", "VIN returned NO DATA");
+                            Form1.LogMessageToFile("error", "RequestDataFromCar()", "VIN returned " + System.Text.Encoding.ASCII.GetString(vin1));
                             return false;
                         }
 
@@ -152,13 +152,12 @@ namespace vConnect
                     valueToSend = System.Text.Encoding.ASCII.GetString(vin1)
                         + System.Text.Encoding.ASCII.GetString(vin2);
                     Form1.LogMessageToFile("event", "RequestDataFromCar()", "Raw data to send.");
+
                     // REGEX Parses to clear extra characters from VIN string.
-                    // NOTE: should probably make sure not to kill anything in vin...
                     valueToSend = Regex.Replace(valueToSend, @".:", "");
                     valueToSend = Regex.Replace(valueToSend, @"^...", "");
-                    valueToSend = Regex.Replace(valueToSend, @"49", "");
-                    valueToSend = Regex.Replace(valueToSend, @"02", "");
-                    valueToSend = Regex.Replace(valueToSend, @"01", "");
+                    valueToSend = Regex.Replace(valueToSend, @"490201", "");
+                 
 
                     valueToSend = Regex.Replace(valueToSend, @"ELM327v1.4", "");
                     valueToSend = Regex.Replace(valueToSend, @" ", "");
@@ -209,9 +208,9 @@ namespace vConnect
                 else
                 {
                     // OBDII request string. 
-                    //writeString = "01" + obdPID + "\r";
+                    writeString = "01" + obdPID + "\r";
                     // OBDII request string. 
-                    writeString = obdMode + obdPID + "\r";
+                  //  writeString = obdMode + obdPID + "\r";
                     try
                     {
                         // Encode the writeString, then write it to the OBDII module. 
