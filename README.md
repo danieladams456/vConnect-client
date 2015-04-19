@@ -87,4 +87,4 @@ note: The data elements used are specified in the JSON schema on the web server.
 [2]: https://ncalc.codeplex.com/
 [3]: http://www.newtonsoft.com/json
 [4]: https://32feet.codeplex.com/wikipage?title=Supported%20Hardware%20and%20Software
-[5]: https://www.youtube.com/watch?v=snEuYtQGKTM
+[5]: https://www.youtube.com/watch?v=cx5EbRd3sHs
