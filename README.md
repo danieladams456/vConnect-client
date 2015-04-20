@@ -2,8 +2,6 @@
 
 The vConnect client application is a C# application built with .NET 4.0. It was created by Troy Cosner and Charlie Snyder for their capstone software engineering project at Liberty University in 2015.
 
-[vConnect Client Video][5]
-
 ###The application utilizes the following external libraries:
   * [32feet.NET][1] (Bluetooth Library)
   * [NCalc][2] (Mathematical Expressions Evaluator)
@@ -15,7 +13,7 @@ Consult [32feet.Net][4]'s documentation for more information.
 ### Installation
 vConnect contains an installer that installs the vConnect application, a monitor application, and its required files in a directory. 
 
-  1. Install vConnect.msi.
+  1. Install vConnectInstaller.exe
   2. Insert OBDLink LX module into the vehicle's OBDII port located underneath the driver-side dash board.
   3. On Windows laptop that has vConnect installed, go to Control Panel &rarr; Hardware and Sound &rarr; Devices and Printers.
   4. On the OBDLink LX module, press the BT Pair Button, located on the face of the module.
@@ -51,10 +49,10 @@ To change vConnect's configuration settings, open up the Settings UI by double-c
   * To Start Polling: Press the Start Button. If you receive an error due to no schema file being detected, click the Update Schema Button and then click the Start Button.
   * To change the server connection information: Click the Configure Server Address Button and/or Configure Port Button, and enter the desired server address and port number.
   * To Connect to a New OBDII Module: 
- * If Poll Status is currently Polling, click the Stop Button.
- * Click the Disconnect BT Device Button if the Device Status reads Connected.
- * Remove the old OBDII Module from the vehicle's OBDII port.
- * Perform steps 2-7, 12-14.
+  * If Poll Status is currently Polling, click the Stop Button.
+  * Click the Disconnect BT Device Button if the Device Status reads Connected.
+  * Remove the old OBDII Module from the vehicle's OBDII port.
+  * Perform steps 2-7, 12-14.
   * To Update Schema: Click the Update Schema Button.
   * To close the settings UI: Click the Close Button.
   * To view help options: Click the Help Button.
@@ -64,6 +62,9 @@ To change vConnect's configuration settings, open up the Settings UI by double-c
 The latest version of vConnect utilizes a Monitor application in order to ensure that the application continues to run. Whenever any situations cause the program to terminate, the monitor will restart it and begin polling for data.
 
 NOTE: The buttons and labels on the vConnect Settings UI are all self-explanatory. However, for the Packets Sent label, it will be incremented if no error codes are detected, even though no message was actually sent to the server. This is because vConnect "successfully" detected that there were no error detected.
+
+*[Instructional Video for Client Application][5]*
+
 ### Code Structure
 ![alt text](vConnect/Images/classDiagram.jpg)
 
